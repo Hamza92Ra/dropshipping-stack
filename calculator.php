@@ -55,10 +55,13 @@ include __DIR__ . '/header.php';
 .input-group { margin-bottom: 18px; }
 .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
 .input-with-prefix { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg); }
+.input-with-prefix:focus-within { border-color: var(--accent); }
 .input-prefix { padding: 10px 12px; background: var(--border); font-size: 14px; font-weight: 700; color: var(--muted); border-right: 1.5px solid var(--border); flex-shrink: 0; }
 .input-with-prefix input { border: none; background: none; padding: 10px 12px; font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--ink); width: 100%; outline: none; }
+.input-suffix { padding: 10px 12px; background: var(--border); font-size: 12px; font-weight: 700; color: var(--muted); border-left: 1.5px solid var(--border); flex-shrink: 0; white-space: nowrap; }
 .range-input { width: 100%; accent-color: var(--accent); margin-top: 6px; }
 .input-val { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+.input-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
 .tool-toggles { margin-top: 20px; }
 .tool-toggles h4 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
 .tool-toggle { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -71,12 +74,13 @@ include __DIR__ . '/header.php';
 .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
 .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle-switch input:focus-visible + .toggle-slider { outline: 2px solid var(--accent); outline-offset: 2px; }
 .calc-results { display: flex; flex-direction: column; gap: 16px; }
-.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; transition: border-color 0.2s, background 0.2s; }
 .result-card.highlight { border-color: var(--green); background: #f0fdf4; }
 .result-card.danger { border-color: var(--red); background: #fef2f2; }
 .result-icon { font-size: 28px; flex-shrink: 0; }
-.result-info { flex: 1; }
+.result-info { flex: 1; min-width: 0; }
 .result-name { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
 .result-detail { font-size: 12px; color: var(--muted); }
 .result-numbers { text-align: right; flex-shrink: 0; }
@@ -84,7 +88,7 @@ include __DIR__ . '/header.php';
 .result-roi { font-size: 12px; color: var(--green); font-weight: 600; margin-top: 2px; }
 .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
 .summary-card { background: var(--dark); color: #fff; border-radius: var(--radius); padding: 18px; text-align: center; }
-.summary-val { font-size: 26px; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; display: block; line-height: 1; }
+.summary-val { font-size: 26px; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; display: block; line-height: 1; word-break: break-word; }
 .summary-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
 .profit-meter { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
 .profit-meter-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -93,9 +97,22 @@ include __DIR__ . '/header.php';
 
 /* Save button */
 .save-bar { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
-.btn-save { width: 100%; padding: 11px; background: linear-gradient(135deg,#6c63ff,#5a52e0); border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-save { width: 100%; padding: 11px; background: linear-gradient(135deg,#6c63ff,#5a52e0); border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s, transform 0.1s; }
 .btn-save:hover { opacity: 0.9; }
+.btn-save:active { transform: scale(0.98); }
 .save-success { text-align: center; font-size: 12px; color: var(--green); margin-top: 8px; font-weight: 600; display: none; }
+
+/* Responsive */
+@media (max-width: 760px) {
+    .calc-wrap { padding: 32px 16px 60px; }
+    .calc-grid { grid-template-columns: 1fr; }
+    .calc-inputs { position: static; }
+    .summary-cards { grid-template-columns: 1fr 1fr; }
+    .summary-cards .summary-card:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+    .summary-val { font-size: 21px; }
+}
 </style>
 
 <div class="calc-wrap">
@@ -114,7 +131,7 @@ include __DIR__ . '/header.php';
                 <label>Monthly Revenue</label>
                 <div class="input-with-prefix">
                     <span class="input-prefix">$</span>
-                    <input type="number" id="revenue" value="<?= $def_revenue ?>" min="0" max="1000000" oninput="calculate()">
+                    <input type="number" id="revenue" value="<?= $def_revenue ?>" min="0" step="50" inputmode="numeric" oninput="calculate()">
                 </div>
             </div>
 
@@ -124,8 +141,13 @@ include __DIR__ . '/header.php';
             </div>
 
             <div class="input-group">
-                <label>Ad Spend: <span class="input-val" id="adspendVal">$<?= number_format($def_adspend) ?>/mo</span></label>
-                <input type="range" class="range-input" id="adspend" min="0" max="10000" step="100" value="<?= $def_adspend ?>" oninput="document.getElementById('adspendVal').textContent='$'+parseInt(this.value).toLocaleString()+'/mo';calculate()">
+                <label>Monthly Ad Spend</label>
+                <div class="input-with-prefix">
+                    <span class="input-prefix">$</span>
+                    <input type="number" id="adspend" value="<?= $def_adspend ?>" min="0" step="50" inputmode="numeric" oninput="calculate()">
+                    <span class="input-suffix">/mo</span>
+                </div>
+                <div class="input-hint">No cap — enter whatever you actually spend.</div>
             </div>
 
             <div class="tool-toggles">
@@ -154,7 +176,7 @@ include __DIR__ . '/header.php';
                     <label class="toggle-switch">
                         <input type="checkbox" class="tool-check"
                             data-price="<?= $price ?>"
-                            data-name="<?= $name ?>"
+                            data-name="<?= htmlspecialchars($name) ?>"
                             data-icon="<?= $icon ?>"
                             data-slug="<?= $slug ?>"
                             <?= $checked ?>
@@ -191,11 +213,12 @@ include __DIR__ . '/header.php';
 
 <script>
 function calculate() {
-    const revenue    = parseFloat(document.getElementById('revenue').value) || 0;
-    const margin     = parseFloat(document.getElementById('margin').value) / 100;
-    const adspend    = parseFloat(document.getElementById('adspend').value) || 0;
-    const grossProfit = revenue * margin;
-    const netBeforeTools = grossProfit - adspend;
+    const revenue = Math.max(parseFloat(document.getElementById('revenue').value) || 0, 0);
+    const margin  = Math.max(parseFloat(document.getElementById('margin').value) || 0, 0) / 100;
+    const adspend = Math.max(parseFloat(document.getElementById('adspend').value) || 0, 0);
+
+    const grossProfit    = revenue * margin;
+    const netBeforeTools  = grossProfit - adspend;
 
     const tools = [...document.querySelectorAll('.tool-check:checked')].map(el => ({
         name:  el.dataset.name,
@@ -205,11 +228,21 @@ function calculate() {
     }));
 
     const totalToolCost = tools.reduce((s, t) => s + t.price, 0);
-    const netProfit = netBeforeTools - totalToolCost;
-    const toolPct = grossProfit > 0 ? Math.min((totalToolCost / grossProfit) * 100, 100) : 0;
+    const netProfit      = netBeforeTools - totalToolCost;
 
-    const fmt = n => '$' + Math.round(n).toLocaleString();
+    // Tools as % of profit — if there's no gross profit to speak of, tools are effectively
+    // "100% of nothing", so treat any cost as maxed out rather than showing 0%.
+    const toolPct = grossProfit > 0
+        ? Math.min((totalToolCost / grossProfit) * 100, 100)
+        : (totalToolCost > 0 ? 100 : 0);
+
+    const fmt = n => (n < 0 ? '-$' : '$') + Math.round(Math.abs(n)).toLocaleString();
     const profitColor = netProfit >= 0 ? 'var(--green)' : 'var(--red)';
+
+    const adPct = revenue > 0 ? Math.round((adspend / revenue) * 100) : 0;
+    const adPctLabel = revenue > 0
+        ? `${adPct}% of revenue — ${adspend / revenue < 0.3 ? '✅ healthy ratio' : '⚠️ high ad spend'}`
+        : 'Add your revenue to see this as a % of sales';
 
     let html = `
         <div class="summary-cards">
@@ -230,25 +263,28 @@ function calculate() {
             <div class="result-icon">📊</div>
             <div class="result-info">
                 <div class="result-name">Ad Spend</div>
-                <div class="result-detail">${Math.round((adspend/revenue)*100)||0}% of revenue — ${adspend/revenue<0.3?'✅ healthy ratio':'⚠️ high ad spend'}</div>
+                <div class="result-detail">${adPctLabel}</div>
             </div>
             <div class="result-numbers"><div class="result-cost" style="color:var(--amber)">${fmt(adspend)}/mo</div></div>
         </div>`;
 
     tools.forEach(t => {
-        const pct = grossProfit > 0 ? ((t.price/grossProfit)*100).toFixed(1) : 0;
-        const roiRev = grossProfit > 0 ? (grossProfit/t.price).toFixed(1) : 0;
-        const isWorth = t.price/grossProfit < 0.05;
+        const pct    = grossProfit > 0 ? ((t.price / grossProfit) * 100).toFixed(1) : null;
+        const roiRev = grossProfit > 0 ? (grossProfit / t.price).toFixed(1) : null;
+        const isWorth = grossProfit > 0 && (t.price / grossProfit) < 0.05;
+        const detail = grossProfit > 0
+            ? `${pct}% of gross profit · ${roiRev}x ROI potential`
+            : `No gross profit yet at these numbers`;
         html += `
             <div class="result-card ${isWorth?'highlight':''}">
                 <div class="result-icon">${t.icon}</div>
                 <div class="result-info">
                     <div class="result-name">${t.name}</div>
-                    <div class="result-detail">${pct}% of gross profit · ${roiRev}x ROI potential</div>
+                    <div class="result-detail">${detail}</div>
                 </div>
                 <div class="result-numbers">
                     <div class="result-cost">${fmt(t.price)}/mo</div>
-                    <div class="result-roi">${isWorth?'✓ Worth it':'⚠ Monitor ROI'}</div>
+                    <div class="result-roi">${grossProfit>0 ? (isWorth?'✓ Worth it':'⚠ Monitor ROI') : '—'}</div>
                 </div>
             </div>`;
     });
@@ -281,7 +317,7 @@ function saveSettings() {
     fetch('/dropshipping/calculator.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `save_settings=1&revenue=${revenue}&margin=${margin}&adspend=${adspend}&tools=${tools}`
+        body: `save_settings=1&revenue=${encodeURIComponent(revenue)}&margin=${encodeURIComponent(margin)}&adspend=${encodeURIComponent(adspend)}&tools=${encodeURIComponent(tools)}`
     }).then(() => {
         const msg = document.getElementById('saveSuccess');
         msg.style.display = 'block';
