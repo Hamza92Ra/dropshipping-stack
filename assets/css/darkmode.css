@@ -1,0 +1,224 @@
+/* ============================================================
+   DropshippingStack — Dark Mode (matches "Still Water" palette)
+   ------------------------------------------------------------
+   Hooks into the EXISTING variable system in your stylesheet
+   (--bg, --surface, --border, --ink, --body, --muted, --accent…)
+   so every rule that already references var(--ink) etc. just
+   works with no markup changes.
+
+   Usage: add data-theme="dark" to <html>, e.g.
+     document.documentElement.setAttribute('data-theme', 'dark');
+   ============================================================ */
+
+html[data-theme="dark"] {
+    /* Core surfaces */
+    --bg: #0b0b13;
+    --surface: #16151f;
+    --border: #26253a;
+    --ink: #f4f4f8;
+    --body: #b7b7cf;
+    --muted: #74748f;
+
+    /* Accent — sage, matching light mode's --accent: #7C9885 */
+    --accent: #8FAE97;
+    --accent-h: #A3C2AB;
+    --accent-light: rgba(124, 152, 133, 0.18);
+
+    /* Teal — lightened so it still reads on a dark bg */
+    --teal: #8FB9C4;
+    --teal-light: rgba(143, 185, 196, 0.14);
+
+    /* Green (mirrors accent family) */
+    --green: #7FBF95;
+
+    /* Amber — softened "soft honey" tone, same family as light mode */
+    --amber: #E9C87E;
+    --featured: #E9C87E;
+
+    /* Red — dusty rose, same family as light mode's --red */
+    --red: #E0958E;
+
+    /* Cyan (unused elsewhere but kept in family) */
+    --cyan: #E9C87E;
+
+    /* Shadows need more spread + darker alpha to read on a dark bg */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow: 0 4px 20px rgba(0,0,0,0.45);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.55);
+}
+
+/* ── Base ───────────────────────────────── */
+html[data-theme="dark"] body {
+    background: var(--bg);
+    color: var(--body);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Tool cards ─────────────────────────── */
+html[data-theme="dark"] .tool-card:hover { border-color: var(--accent); }
+html[data-theme="dark"] .tool-card.featured {
+    border-color: var(--featured);
+    background: linear-gradient(180deg, var(--accent-light) 0%, var(--surface) 40%);
+}
+
+html[data-theme="dark"] .tool-logo,
+html[data-theme="dark"] .tool-logo-lg {
+    background: #1e1d2e;
+    border-color: var(--border);
+}
+
+/* ── Price badges ───────────────────────── */
+html[data-theme="dark"] .price-free     { background: rgba(127, 191, 149, 0.14); color: #A8D9B8; }
+html[data-theme="dark"] .price-freemium { background: rgba(233, 200, 126, 0.14); color: #F0D9A3; }
+html[data-theme="dark"] .price-paid     { background: var(--accent-light); color: var(--accent-h); }
+
+html[data-theme="dark"] .commission-line {
+    background: rgba(143, 185, 196, 0.1);
+    border-color: rgba(143, 185, 196, 0.25);
+    color: var(--teal);
+}
+
+/* ── Flash messages ─────────────────────── */
+html[data-theme="dark"] .flash-success { background: rgba(127, 191, 149, 0.12); border-color: rgba(127, 191, 149, 0.3); color: var(--green); }
+html[data-theme="dark"] .flash-error   { background: rgba(224, 149, 142, 0.12); border-color: rgba(224, 149, 142, 0.3); color: var(--red); }
+
+/* ── Filters ────────────────────────────── */
+html[data-theme="dark"] .filter-btn { background: var(--surface); border-color: var(--border); color: var(--body); }
+html[data-theme="dark"] .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+html[data-theme="dark"] .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0b0b13; }
+
+html[data-theme="dark"] .cat-pill:hover {
+    background: rgba(244,244,248,0.08) !important;
+    color: #fff !important;
+    border-color: rgba(244,244,248,0.18) !important;
+}
+html[data-theme="dark"] .active-pill {
+    background: var(--accent) !important;
+    color: #0b0b13 !important;
+    border-color: var(--accent) !important;
+}
+
+html[data-theme="dark"] .upvote-btn.upvoted {
+    background: var(--accent) !important;
+    color: #0b0b13 !important;
+}
+
+/* ── Forms (review form, submit form, register) ── */
+html[data-theme="dark"] .form-group input,
+html[data-theme="dark"] .form-group textarea,
+html[data-theme="dark"] .form-group select {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--ink);
+}
+html[data-theme="dark"] .form-group input:focus,
+html[data-theme="dark"] .form-group textarea:focus,
+html[data-theme="dark"] .form-group select:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* ── Submit page plan cards ─────────────── */
+html[data-theme="dark"] .plan-option { border-color: var(--border); }
+html[data-theme="dark"] .plan-option:hover { border-color: var(--accent); }
+html[data-theme="dark"] .plan-option.selected { border-color: var(--accent); background: var(--accent-light); }
+
+/* ── Pros / cons list markers ───────────── */
+html[data-theme="dark"] .pros-list li::before { color: var(--teal); }
+html[data-theme="dark"] .cons-list li::before { color: var(--red); }
+
+/* ── Sidebar CTA / commission badge ─────── */
+html[data-theme="dark"] .sidebar-cta::before {
+    background: radial-gradient(circle at 30% 0%, rgba(124,152,133,0.25), transparent 70%);
+}
+html[data-theme="dark"] .commission-badge strong { color: var(--amber); }
+
+/* ── Admin ──────────────────────────────── */
+html[data-theme="dark"] .admin-main { background: var(--bg); }
+html[data-theme="dark"] .admin-table tr:hover td { background: var(--surface); }
+html[data-theme="dark"] .stat-card:hover { box-shadow: var(--shadow); }
+
+/* ── Hero / category hero radial glows ──── */
+html[data-theme="dark"] .hero::before {
+    background: radial-gradient(circle at 50% 0%, rgba(124,152,133,0.2), transparent 60%);
+}
+html[data-theme="dark"] .cat-hero::before {
+    background: radial-gradient(circle at 50% 0%, rgba(143,185,196,0.2), transparent 65%);
+}
+
+/* ── Barcode / divider rule ──────────────── */
+html[data-theme="dark"] .barcode-rule {
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--accent) 20%,
+        var(--teal) 50%,
+        var(--accent) 80%,
+        transparent 100%);
+}
+
+/* ============================================================
+   Theme toggle button
+   ============================================================ */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--dark-border, rgba(255,255,255,0.12));
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: #fff;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s, border-color 0.15s;
+}
+.theme-toggle:hover { background: rgba(255,255,255,0.1); }
+.theme-toggle .icon { font-size: 14px; line-height: 1; }
+
+.theme-toggle.on-light {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--ink);
+}
+.theme-toggle.on-light:hover { border-color: var(--accent); color: var(--accent); }
+/* ── Visit Site / primary buttons — fix invisible button + dark-mode polish ── */
+html[data-theme="dark"] .btn-primary {
+    background: var(--accent);
+    color: #0b0b13;
+    font-weight: 700;
+    box-shadow: 0 0 0 1px rgba(143, 174, 151, 0.25), 0 4px 14px rgba(143, 174, 151, 0.2);
+    transition: background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+html[data-theme="dark"] .btn-primary:hover {
+    background: var(--accent-h);
+    box-shadow: 0 0 0 1px rgba(163, 194, 171, 0.35), 0 6px 20px rgba(143, 174, 151, 0.35);
+    transform: translateY(-2px);
+}
+html[data-theme="dark"] .btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Sidebar "Visit Site" CTA — same fix, slightly stronger glow since it's the main sidebar CTA */
+html[data-theme="dark"] .btn-visit {
+    background: var(--amber);
+    color: #1a1608;
+    box-shadow: 0 0 0 1px rgba(233, 200, 126, 0.3), 0 4px 16px rgba(233, 200, 126, 0.25);
+}
+html[data-theme="dark"] .btn-visit:hover {
+    box-shadow: 0 0 0 1px rgba(233, 200, 126, 0.45), 0 6px 22px rgba(233, 200, 126, 0.4);
+    transform: translateY(-2px);
+}
+
+/* btn-secondary ("Review") also needs a check — border was tuned for light bg */
+html[data-theme="dark"] .btn-secondary {
+    border-color: var(--border);
+    color: var(--ink);
+}
+html[data-theme="dark"] .btn-secondary:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent-h);
+}

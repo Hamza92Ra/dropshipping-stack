@@ -1,0 +1,13 @@
+Options -Indexes
+
+RewriteEngine On
+
+RewriteRule ^tool/([a-z0-9-]+)/?$ /dropshipping/tool/index.php?slug=$1 [L,QSA]
+
+RewriteRule ^category/([a-z0-9-]+)/?$ /dropshipping/category/index.php?slug=$1 [L,QSA]
+
+RewriteRule ^go/([a-z0-9-]+)/?$ /dropshipping/go.php?slug=$1 [L,QSA]
+
+<Files "config.php">
+    Require all denied
+</Files>
