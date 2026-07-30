@@ -2,6 +2,8 @@ Options -Indexes
 
 RewriteEngine On
 
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
 RewriteRule ^tool/([a-z0-9-]+)/?$ /dropshipping/tool/index.php?slug=$1 [L,QSA]
 
 RewriteRule ^category/([a-z0-9-]+)/?$ /dropshipping/category/index.php?slug=$1 [L,QSA]
