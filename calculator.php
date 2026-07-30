@@ -198,7 +198,7 @@ include __DIR__ . '/header.php';
                         <script>document.addEventListener('DOMContentLoaded',()=>{ document.getElementById('saveSuccess').style.display='block'; });</script>
                     <?php endif; ?>
                 <?php else: ?>
-                    <a href="/dropshipping/login.php"
+                    <a href="/login.php"
                         style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px;background:rgba(108,99,255,0.1);border:1.5px dashed rgba(108,99,255,0.4);border-radius:8px;color:#6c63ff;font-size:13px;font-weight:600;text-decoration:none;box-sizing:border-box">
                         🔒 Login to save your settings
                     </a>
@@ -314,7 +314,7 @@ function saveSettings() {
     const adspend = document.getElementById('adspend').value;
     const tools   = [...document.querySelectorAll('.tool-check:checked')].map(el => el.dataset.slug).join(',');
 
-    fetch('/dropshipping/calculator.php', {
+    fetch('/calculator.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `save_settings=1&revenue=${encodeURIComponent(revenue)}&margin=${encodeURIComponent(margin)}&adspend=${encodeURIComponent(adspend)}&tools=${encodeURIComponent(tools)}`

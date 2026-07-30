@@ -61,7 +61,7 @@ include __DIR__ . '/partials/head.php';
                             <td><?= number_format($t['clicks']) ?></td>
                             <td>⭐ <?= number_format($t['rating'], 1) ?></td>
                             <td>
-                                <a href="/dropshipping/admin/tools/edit.php?slug=<?= e($t['slug']) ?>" style="color:var(--accent);font-size:12px;font-weight:600">Edit</a>
+                                <a href="/admin/tools/edit.php?slug=<?= e($t['slug']) ?>" style="color:var(--accent);font-size:12px;font-weight:600">Edit</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

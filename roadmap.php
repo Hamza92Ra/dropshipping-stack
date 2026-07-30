@@ -1,4 +1,4 @@
-    <?php
+<?php
     @define('APP', true);
     require_once __DIR__ . '/config.php';
     // Load saved roadmap if logged in
@@ -578,7 +578,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Validate your niche with free tools</div>
-                            <div class="step-desc">Use Google Trends to check search interest. Check TikTok hashtags for your niche. Make sure people are actively searching for it.</div><a href="http://localhost/dropshipping/go.php?slug=minea" class="step-tool step-free">🔍 Try Minea Free</a>
+                            <div class="step-desc">Use Google Trends to check search interest. Check TikTok hashtags for your niche. Make sure people are actively searching for it.</div><a href="http://hdropshipping.com/go.php?slug=minea" class="step-tool step-free">🔍 Try Minea Free</a>
                         </div>
                     </div>
                 </div>
@@ -600,7 +600,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Choose your platform</div>
-                            <div class="step-desc">Shopify is the best for beginners — easy to use, great apps, and designed for dropshipping. WooCommerce is free if budget is tight.</div><a href="http://localhost/dropshipping/go.php?slug=shopify" class="step-tool">🏪 Start Shopify Free Trial</a>
+                            <div class="step-desc">Shopify is the best for beginners — easy to use, great apps, and designed for dropshipping. WooCommerce is free if budget is tight.</div><a href="http://hdropshipping.com/go.php?slug=shopify" class="step-tool">🏪 Start Shopify Free Trial</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -643,14 +643,14 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Find your first winning product</div>
-                            <div class="step-desc">Look for: solving a problem, hard to find in stores, good margin (sell for 3x cost), visually demonstrable (good for video ads).</div><a href="http://localhost/dropshipping/go.php?slug=sell-the-trend" class="step-tool">🔍 Find Products on Sell The Trend</a>
+                            <div class="step-desc">Look for: solving a problem, hard to find in stores, good margin (sell for 3x cost), visually demonstrable (good for video ads).</div><a href="http://hdropshipping.com/go.php?slug=sell-the-trend" class="step-tool">🔍 Find Products on Sell The Trend</a>
                         </div>
                     </div>
                     <div class="step-card">
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Connect a supplier</div>
-                            <div class="step-desc">DSers (free) for AliExpress products. Zendrop for US-based faster shipping. Start with DSers to keep costs low.</div><a href="http://localhost/dropshipping/go.php?slug=zendrop" class="step-tool step-free">📦 Try Zendrop Free</a>
+                            <div class="step-desc">DSers (free) for AliExpress products. Zendrop for US-based faster shipping. Start with DSers to keep costs low.</div><a href="http://hdropshipping.com/go.php?slug=zendrop" class="step-tool step-free">📦 Try Zendrop Free</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -693,14 +693,14 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Set up Facebook/Instagram ads (paid)</div>
-                            <div class="step-desc">Start with $10–20/day. Test 3–5 different creatives. Use video ads — they outperform images for dropshipping.</div><a href="http://localhost/dropshipping/go.php?slug=adcreative-ai" class="step-tool">🎨 Create Ads with AdCreative.ai</a>
+                            <div class="step-desc">Start with $10–20/day. Test 3–5 different creatives. Use video ads — they outperform images for dropshipping.</div><a href="http://hdropshipping.comgo.php?slug=adcreative-ai" class="step-tool">🎨 Create Ads with AdCreative.ai</a>
                         </div>
                     </div>
                     <div class="step-card">
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Add live chat to recover visitors</div>
-                            <div class="step-desc">Install Tidio — free plan is enough. Answer questions in real time. Converts hesitant visitors into buyers.</div><a href="http://localhost/dropshipping/go.php?slug=tidio" class="step-tool step-free">💬 Add Tidio Free</a>
+                            <div class="step-desc">Install Tidio — free plan is enough. Answer questions in real time. Converts hesitant visitors into buyers.</div><a href="http://hdropshipping.com/go.php?slug=tidio" class="step-tool step-free">💬 Add Tidio Free</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -752,7 +752,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Track your real profit (not just revenue)</div>
-                            <div class="step-desc">Revenue means nothing without knowing your COGS, ad spend, app costs, and refunds. Know your actual margin per order.</div><a href="http://localhost/dropshipping/go.php?slug=triple-whale" class="step-tool">📊 Track Profit with Triple Whale</a>
+                            <div class="step-desc">Revenue means nothing without knowing your COGS, ad spend, app costs, and refunds. Know your actual margin per order.</div><a href="http://hdropshipping.com/go.php?slug=triple-whale" class="step-tool">📊 Track Profit with Triple Whale</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -794,7 +794,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Add social proof — photo reviews</div>
-                            <div class="step-desc">Install Loox or Judge.me. Import reviews from AliExpress or collect real ones. Stores with reviews convert 15–40% better.</div><a href="http://localhost/dropshipping/go.php?slug=loox" class="step-tool">⭐ Add Reviews with Loox</a>
+                            <div class="step-desc">Install Loox or Judge.me. Import reviews from AliExpress or collect real ones. Stores with reviews convert 15–40% better.</div><a href="http://hdropshipping.com/go.php?slug=loox" class="step-tool">⭐ Add Reviews with Loox</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -836,7 +836,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Set up Klaviyo email flows</div>
-                            <div class="step-desc">Build: Welcome series, Abandoned Cart (3 emails), Post-Purchase, Win-Back. These 4 flows alone can add 20–30% revenue.</div><a href="http://localhost/dropshipping/go.php?slug=klaviyo" class="step-tool step-free">📧 Start Klaviyo Free</a>
+                            <div class="step-desc">Build: Welcome series, Abandoned Cart (3 emails), Post-Purchase, Win-Back. These 4 flows alone can add 20–30% revenue.</div><a href="http://hdropshipping.com/go.php?slug=klaviyo" class="step-tool step-free">📧 Start Klaviyo Free</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -878,14 +878,14 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Switch to faster suppliers</div>
-                            <div class="step-desc">Move from AliExpress (15–30 days) to Zendrop or Spocket (3–7 days). Faster shipping = fewer refund requests and better reviews.</div><a href="http://localhost/dropshipping/go.php?slug=spocket" class="step-tool step-free">📦 Try Spocket Free</a>
+                            <div class="step-desc">Move from AliExpress (15–30 days) to Zendrop or Spocket (3–7 days). Faster shipping = fewer refund requests and better reviews.</div><a href="http://hdropshipping.com/go.php?slug=spocket" class="step-tool step-free">📦 Try Spocket Free</a>
                         </div>
                     </div>
                     <div class="step-card">
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Automate order fulfillment</div>
-                            <div class="step-desc">Use AutoDS to auto-fulfill orders the moment they come in. No more manual ordering — saves hours every day.</div><a href="http://localhost/dropshipping/go.php?slug=autods" class="step-tool">⚙️ Automate with AutoDS</a>
+                            <div class="step-desc">Use AutoDS to auto-fulfill orders the moment they come in. No more manual ordering — saves hours every day.</div><a href="http://hdropshipping.com/go.php?slug=autods" class="step-tool">⚙️ Automate with AutoDS</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -937,7 +937,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Fix your attribution before scaling</div>
-                            <div class="step-desc">At scale, Facebook pixel data is unreliable. Install Triple Whale or Northbeam for accurate ROAS across all channels before spending more.</div><a href="http://localhost/dropshipping/go.php?slug=northbeam" class="step-tool">📈 Get Northbeam Attribution</a>
+                            <div class="step-desc">At scale, Facebook pixel data is unreliable. Install Triple Whale or Northbeam for accurate ROAS across all channels before spending more.</div><a href="http://hdropshipping.com//go.php?slug=northbeam" class="step-tool">📈 Get Northbeam Attribution</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -951,7 +951,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Spy on competitors at scale</div>
-                            <div class="step-desc">Use AdSpy to monitor exactly which ads your competitors are running and how long they've been active. Long-running ads = profitable ads.</div><a href="http://localhost/dropshipping/go.php?slug=adspy" class="step-tool">🕵️ Spy with AdSpy</a>
+                            <div class="step-desc">Use AdSpy to monitor exactly which ads your competitors are running and how long they've been active. Long-running ads = profitable ads.</div><a href="http://hdropshipping.com/go.php?slug=adspy" class="step-tool">🕵️ Spy with AdSpy</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -965,7 +965,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Produce ads at scale with AI</div>
-                            <div class="step-desc">Use AdCreative.ai to generate 50+ ad variations fast. Test more creatives = find winners faster = scale faster.</div><a href="http://localhost/dropshipping/go.php?slug=adcreative-ai" class="step-tool">🤖 Scale Ads with AdCreative.ai</a>
+                            <div class="step-desc">Use AdCreative.ai to generate 50+ ad variations fast. Test more creatives = find winners faster = scale faster.</div><a href="http://hdropshipping.com/go.php?slug=adcreative-ai" class="step-tool">🤖 Scale Ads with AdCreative.ai</a>
                         </div>
                     </div>
                 </div>
@@ -986,7 +986,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Add private label packaging</div>
-                            <div class="step-desc">Get your logo on the packaging. Spocket offers branded invoicing. This reduces chargebacks and builds repeat customers.</div><a href="http://localhost/dropshipping/go.php?slug=spocket" class="step-tool">📦 Private Label with Spocket</a>
+                            <div class="step-desc">Get your logo on the packaging. Spocket offers branded invoicing. This reduces chargebacks and builds repeat customers.</div><a href="http://hdropshipping.com/go.php?slug=spocket" class="step-tool">📦 Private Label with Spocket</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -1007,7 +1007,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Collect and showcase video reviews</div>
-                            <div class="step-desc">Reach out to customers with a discount in exchange for a video testimonial. Video UGC is the most powerful social proof you can have.</div><a href="http://localhost/dropshipping/go.php?slug=loox" class="step-tool">⭐ Collect Video Reviews with Loox</a>
+                            <div class="step-desc">Reach out to customers with a discount in exchange for a video testimonial. Video UGC is the most powerful social proof you can have.</div><a href="http://hdropshipping.com/go.php?slug=loox" class="step-tool">⭐ Collect Video Reviews with Loox</a>
                         </div>
                     </div>
                 </div>
@@ -1028,7 +1028,7 @@
                         <div class="step-check" onclick="toggleStep(this)"></div>
                         <div class="step-body">
                             <div class="step-title">Hire a customer support VA</div>
-                            <div class="step-desc">At $50k+/month, support becomes a full-time job. Hire someone on Upwork for $5–10/hr and give them Gorgias access. Free your time for growth.</div><a href="http://localhost/dropshipping/go.php?slug=gorgias" class="step-tool">🎧 Set Up Gorgias for Your VA</a>
+                            <div class="step-desc">At $50k+/month, support becomes a full-time job. Hire someone on Upwork for $5–10/hr and give them Gorgias access. Free your time for growth.</div><a href="http://hdropshipping.com/go.php?slug=gorgias" class="step-tool">🎧 Set Up Gorgias for Your VA</a>
                         </div>
                     </div>
                     <div class="step-card">
@@ -1097,9 +1097,9 @@
             <h3>Ready to Start? Get the Right Tools</h3>
             <p>Use our free tools to find the perfect stack for your level and budget.</p>
             <div class="roadmap-cta-btns">
-                <a href="http://localhost/dropshipping/stack-builder.php" class="cta-btn-primary">🎯 Build My Stack</a>
-                <a href="http://localhost/dropshipping/calculator.php" class="cta-btn-secondary">💰 Calculate My Costs</a>
-                <a href="http://localhost/dropshipping/compare.php" class="cta-btn-secondary">⚖️ Compare Tools</a>
+                <a href="http://hdropshipping.com/stack-builder.php" class="cta-btn-primary">🎯 Build My Stack</a>
+                <a href="http://hdropshipping.com/calculator.php" class="cta-btn-secondary">💰 Calculate My Costs</a>
+                <a href="http://hdropshipping.com/compare.php" class="cta-btn-secondary">⚖️ Compare Tools</a>
             </div>
         </div>
 
@@ -1206,7 +1206,7 @@
             });
 
             await fetch(
-                '/dropshipping/save-roadmap.php', {
+                '/save-roadmap.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

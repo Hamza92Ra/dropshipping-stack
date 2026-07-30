@@ -56,7 +56,7 @@ include __DIR__ . '/header.php';
                 </form>
             <?php endif; ?>
 
-            <a href="/dropshipping/login.php" style="font-size:13px;color:#6c63ff;text-decoration:none">← Back to login</a>
+            <a href="/login.php" style="font-size:13px;color:#6c63ff;text-decoration:none">← Back to login</a>
         </div>
     </div>
 </div>

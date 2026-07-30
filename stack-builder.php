@@ -1242,7 +1242,7 @@ include __DIR__ . '/header.php';
             </div>
             <div class="stack-card-right">
                 <div class="stack-card-price">${t.price}</div>
-                <a href="http://localhost/dropshipping/go.php?slug=${t.slug}" class="stack-card-btn" target="_blank">Get it →</a>
+                <a href="http://hdropshipping.com//go.php?slug=${t.slug}" class="stack-card-btn" target="_blank">Get it →</a>
             </div>
         </div>
     `;
@@ -1293,7 +1293,7 @@ include __DIR__ . '/header.php';
         try {
 
             await fetch(
-                '/dropshipping/save-stack.php', {
+                '/save-stack.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

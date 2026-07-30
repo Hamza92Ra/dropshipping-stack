@@ -2,13 +2,24 @@ Options -Indexes
 
 RewriteEngine On
 
+# ✅ Safe HTTPS redirect (no loop)
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
-RewriteRule ^tool/([a-z0-9-]+)/?$ /dropshipping/tool/index.php?slug=$1 [L,QSA]
+RewriteRule ^tool/([a-z0-9-]+)/?$ /tool/index.php?slug=$1 [L,QSA]
 
-RewriteRule ^category/([a-z0-9-]+)/?$ /dropshipping/category/index.php?slug=$1 [L,QSA]
+RewriteRule ^category/([a-z0-9-]+)/?$ /category/index.php?slug=$1 [L,QSA]
 
-RewriteRule ^go/([a-z0-9-]+)/?$ /dropshipping/go.php?slug=$1 [L,QSA]
+RewriteRule ^go/([a-z0-9-]+)/?$ /go.php?slug=$1 [L,QSA]
 
 <Files "config.php">
     Require all denied

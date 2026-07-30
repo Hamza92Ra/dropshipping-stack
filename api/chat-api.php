@@ -23,7 +23,7 @@ header('Content-Type: application/json');
 // If the widget lives on the same domain as this script, delete the next
 // two lines entirely. If it's cross-origin, replace '*' with your exact
 // site origin (e.g. https://yourdomain.com) and keep the credentials header.
-header('Access-Control-Allow-Origin: https://yourdomain.com');
+header('Access-Control-Allow-Origin: https://hdropshipping.com');
 header('Access-Control-Allow-Credentials: true');
 
 require __DIR__ . '/db-config.php';

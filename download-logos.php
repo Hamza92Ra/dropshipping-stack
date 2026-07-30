@@ -11,7 +11,7 @@ foreach ($tools as $t) {
     $domain = parse_url($t['website_url'], PHP_URL_HOST);
     $filename = preg_replace('/[^a-z0-9-]/', '', strtolower($domain)) . '.png';
     $filepath = $logo_dir . $filename;
-    $local_url = '/dropshipping/assets/img/logos/' . $filename;
+    $local_url = '/assets/img/logos/' . $filename;
 
     // Skip if already downloaded
     if (file_exists($filepath)) {
@@ -40,4 +40,3 @@ foreach ($tools as $t) {
 }
 
 echo "<br>✅ Done!";
-?>

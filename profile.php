@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 
 // Must be logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /dropshipping/login.php?redirect=profile');
+    header('Location: /login.php?redirect=profile');
     exit;
 }
 
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
     $pdo->prepare("DELETE FROM user_stack    WHERE user_id = ?")->execute([$user_id]);
     $pdo->prepare("DELETE FROM users         WHERE id = ?")->execute([$user_id]);
     session_destroy();
-    header('Location: /dropshipping/index.php');
+    header('Location: /index.php');
     exit;
 }
 
@@ -126,235 +126,557 @@ include __DIR__ . '/header.php';
 ?>
 
 <style>
-.profile-wrap {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-}
+    .profile-wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
 
-/* ── Header banner ── */
-.profile-banner {
-    background: var(--dark);
-    border-radius: var(--radius);
-    padding: 32px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-bottom: 28px;
-    position: relative;
-    overflow: hidden;
-}
-.profile-banner::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(108,99,255,0.3) 0%, transparent 70%);
-    border-radius: 50%;
-}
-.profile-avatar {
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6c63ff, #5a52e0);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px; font-weight: 800; color: #fff;
-    flex-shrink: 0;
-    position: relative; z-index: 1;
-    border: 3px solid rgba(255,255,255,0.15);
-}
-.profile-banner-info { position: relative; z-index: 1; flex: 1; }
-.profile-banner-name { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
-.profile-banner-meta { font-size: 13px; color: rgba(255,255,255,0.5); }
-.profile-banner-stats { display: flex; gap: 28px; position: relative; z-index: 1; }
-.banner-stat { text-align: center; }
-.banner-stat-val {
-    display: block;
-    font-size: 22px; font-weight: 800; color: #a5b4fc; line-height: 1;
-}
-.banner-stat-label {
-    font-size: 11px; color: rgba(255,255,255,0.4);
-    text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;
-}
+    /* ── Header banner ── */
+    .profile-banner {
+        background: var(--dark);
+        border-radius: var(--radius);
+        padding: 32px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
 
-/* ── Tabs ── */
-.profile-tabs {
-    display: flex; gap: 4px;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 28px;
-    overflow-x: auto;
-}
-.profile-tab {
-    padding: 10px 20px;
-    font-size: 14px; font-weight: 600; color: var(--muted);
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    white-space: nowrap;
-    transition: all 0.15s;
-    background: none; border-top: none; border-left: none; border-right: none;
-    font-family: var(--font);
-}
-.profile-tab:hover { color: var(--accent); }
-.profile-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .profile-banner::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 240px;
+        height: 240px;
+        background: radial-gradient(circle, rgba(108, 99, 255, 0.3) 0%, transparent 70%);
+        border-radius: 50%;
+    }
 
-/* ── Tab panels ── */
-.profile-panel { display: none; }
-.profile-panel.active { display: block; }
+    .profile-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6c63ff, #5a52e0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        font-weight: 800;
+        color: #fff;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        border: 3px solid rgba(255, 255, 255, 0.15);
+    }
 
-/* ── Section card ── */
-.section-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 20px;
-}
-.section-card-title {
-    font-size: 15px; font-weight: 800; color: var(--ink);
-    margin-bottom: 18px;
-    display: flex; align-items: center; gap: 8px;
-}
+    .profile-banner-info {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+    }
 
-/* ── Form elements ── */
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { margin-bottom: 16px; }
-.form-group label {
-    display: block;
-    font-size: 12px; font-weight: 700; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;
-}
-.form-input {
-    width: 100%; padding: 11px 14px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--ink);
-    font-size: 14px; font-family: var(--font);
-    box-sizing: border-box; outline: none; transition: border-color 0.15s;
-}
-.form-input:focus { border-color: var(--accent); }
-.btn-primary {
-    padding: 11px 24px;
-    background: linear-gradient(135deg, #6c63ff, #5a52e0);
-    border: none; border-radius: var(--radius-sm);
-    color: #fff; font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: var(--font);
-    box-shadow: 0 4px 12px rgba(108,99,255,0.25); transition: opacity 0.15s;
-}
-.btn-primary:hover { opacity: 0.9; }
+    .profile-banner-name {
+        font-size: 22px;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 4px;
+    }
 
-/* ── Alert ── */
-.alert { padding: 11px 16px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; }
-.alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-.alert-error   { background: #fff0f0; border: 1px solid #fca5a5; color: #b91c1c; }
+    .profile-banner-meta {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
+    }
 
-/* ── Calculator preset ── */
-.preset-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 14px; margin-bottom: 20px;
-}
-.preset-stat {
-    background: var(--dark); border-radius: var(--radius-sm);
-    padding: 16px; text-align: center;
-}
-.preset-stat-val {
-    font-size: 22px; font-weight: 800; color: var(--cyan);
-    display: block; line-height: 1; margin-bottom: 4px;
-}
-.preset-stat-label {
-    font-size: 11px; color: rgba(255,255,255,0.4);
-    text-transform: uppercase; letter-spacing: 0.05em;
-}
-.tool-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.tool-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px;
-    background: var(--accent-light); color: var(--accent);
-    border-radius: 99px; font-size: 12px; font-weight: 600;
-}
-.tool-pill img { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; }
-.btn-edit-link {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 16px; padding: 9px 18px;
-    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-    color: var(--muted); font-size: 13px; font-weight: 600;
-    text-decoration: none; transition: all 0.15s;
-}
-.btn-edit-link:hover { border-color: var(--accent); color: var(--accent); }
+    .profile-banner-stats {
+        display: flex;
+        gap: 28px;
+        position: relative;
+        z-index: 1;
+    }
 
-/* ── Roadmap progress bars ── */
-.roadmap-rows { display: flex; flex-direction: column; gap: 16px; }
-.roadmap-row-label {
-    display: flex; justify-content: space-between;
-    font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px;
-}
-.roadmap-row-pct { color: var(--accent); }
-.progress-track { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
-.fill-beginner     { background: linear-gradient(90deg, #10b981, #34d399); }
-.fill-intermediate { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
-.fill-advanced     { background: linear-gradient(90deg, #6366f1, #a5b4fc); }
+    .banner-stat {
+        text-align: center;
+    }
 
-/* ── Upvoted tools list ── */
-.upvote-list { display: flex; flex-direction: column; gap: 10px; }
-.upvote-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 16px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); transition: border-color 0.15s;
-}
-.upvote-item:hover { border-color: #c7d2fe; }
-.upvote-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.upvote-icon img { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; }
-.upvote-info { flex: 1; }
-.upvote-name { font-size: 14px; font-weight: 700; color: var(--ink); }
-.upvote-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.upvote-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px;
-    background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c;
-    border-radius: 99px; font-size: 12px; font-weight: 700;
-}
+    .banner-stat-val {
+        display: block;
+        font-size: 22px;
+        font-weight: 800;
+        color: #a5b4fc;
+        line-height: 1;
+    }
 
-/* ── Stack builder ── */
-.stack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-.stack-item {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px;
-    text-align: center; transition: border-color 0.15s;
-}
-.stack-item:hover { border-color: #c7d2fe; }
-.stack-item-icon { height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-.stack-item-icon img { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; }
-.stack-item-name { font-size: 12px; font-weight: 700; color: var(--ink); }
-.stack-item-cat  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .banner-stat-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 3px;
+    }
 
-/* ── Empty states ── */
-.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
-.empty-state-icon { font-size: 40px; margin-bottom: 12px; }
-.empty-state-text { font-size: 14px; line-height: 1.6; }
-.empty-state-link {
-    display: inline-block; margin-top: 14px; padding: 9px 20px;
-    background: var(--accent-light); color: var(--accent);
-    border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; text-decoration: none;
-}
+    /* ── Tabs ── */
+    .profile-tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 2px solid var(--border);
+        margin-bottom: 28px;
+        overflow-x: auto;
+    }
 
-/* ── Danger zone ── */
-.danger-zone { border: 1px solid #fca5a5; border-radius: var(--radius); padding: 20px 24px; }
-.danger-title { font-size: 14px; font-weight: 800; color: #b91c1c; margin-bottom: 6px; }
-.danger-desc  { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
-.btn-danger {
-    padding: 9px 20px; background: #fef2f2;
-    border: 1.5px solid #fca5a5; border-radius: var(--radius-sm);
-    color: #b91c1c; font-size: 13px; font-weight: 700;
-    cursor: pointer; font-family: var(--font);
-}
-.btn-danger:hover { background: #fff0f0; }
+    .profile-tab {
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        white-space: nowrap;
+        transition: all 0.15s;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        font-family: var(--font);
+    }
 
-@media (max-width: 640px) {
-    .profile-banner { flex-direction: column; text-align: center; }
-    .profile-banner-stats { justify-content: center; }
-    .form-row { grid-template-columns: 1fr; }
-    .preset-grid { grid-template-columns: 1fr 1fr; }
-}
+    .profile-tab:hover {
+        color: var(--accent);
+    }
+
+    .profile-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+    }
+
+    /* ── Tab panels ── */
+    .profile-panel {
+        display: none;
+    }
+
+    .profile-panel.active {
+        display: block;
+    }
+
+    /* ── Section card ── */
+    .section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .section-card-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--ink);
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── Form elements ── */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 11px 14px;
+        background: var(--bg);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--ink);
+        font-size: 14px;
+        font-family: var(--font);
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .form-input:focus {
+        border-color: var(--accent);
+    }
+
+    .btn-primary {
+        padding: 11px 24px;
+        background: linear-gradient(135deg, #6c63ff, #5a52e0);
+        border: none;
+        border-radius: var(--radius-sm);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font);
+        box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25);
+        transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+
+    /* ── Alert ── */
+    .alert {
+        padding: 11px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+    }
+
+    .alert-error {
+        background: #fff0f0;
+        border: 1px solid #fca5a5;
+        color: #b91c1c;
+    }
+
+    /* ── Calculator preset ── */
+    .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .preset-stat {
+        background: var(--dark);
+        border-radius: var(--radius-sm);
+        padding: 16px;
+        text-align: center;
+    }
+
+    .preset-stat-val {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--cyan);
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .preset-stat-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .tool-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .tool-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: var(--accent-light);
+        color: var(--accent);
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .tool-pill img {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+        border-radius: 3px;
+    }
+
+    .btn-edit-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 16px;
+        padding: 9px 18px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .btn-edit-link:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    /* ── Roadmap progress bars ── */
+    .roadmap-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .roadmap-row-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .roadmap-row-pct {
+        color: var(--accent);
+    }
+
+    .progress-track {
+        height: 8px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 0.5s ease;
+    }
+
+    .fill-beginner {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .fill-intermediate {
+        background: linear-gradient(90deg, #f59e0b, #fcd34d);
+    }
+
+    .fill-advanced {
+        background: linear-gradient(90deg, #6366f1, #a5b4fc);
+    }
+
+    /* ── Upvoted tools list ── */
+    .upvote-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .upvote-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        transition: border-color 0.15s;
+    }
+
+    .upvote-item:hover {
+        border-color: #c7d2fe;
+    }
+
+    .upvote-icon {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .upvote-icon img {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        border-radius: 6px;
+    }
+
+    .upvote-info {
+        flex: 1;
+    }
+
+    .upvote-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .upvote-date {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    .upvote-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #c2410c;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* ── Stack builder ── */
+    .stack-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+    }
+
+    .stack-item {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 14px;
+        text-align: center;
+        transition: border-color 0.15s;
+    }
+
+    .stack-item:hover {
+        border-color: #c7d2fe;
+    }
+
+    .stack-item-icon {
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+
+    .stack-item-icon img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        border-radius: 6px;
+    }
+
+    .stack-item-name {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .stack-item-cat {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    /* ── Empty states ── */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted);
+    }
+
+    .empty-state-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state-text {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .empty-state-link {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 9px 20px;
+        background: var(--accent-light);
+        color: var(--accent);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    /* ── Danger zone ── */
+    .danger-zone {
+        border: 1px solid #fca5a5;
+        border-radius: var(--radius);
+        padding: 20px 24px;
+    }
+
+    .danger-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: #b91c1c;
+        margin-bottom: 6px;
+    }
+
+    .danger-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
+    }
+
+    .btn-danger {
+        padding: 9px 20px;
+        background: #fef2f2;
+        border: 1.5px solid #fca5a5;
+        border-radius: var(--radius-sm);
+        color: #b91c1c;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font);
+    }
+
+    .btn-danger:hover {
+        background: #fff0f0;
+    }
+
+    @media (max-width: 640px) {
+        .profile-banner {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-banner-stats {
+            justify-content: center;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .preset-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
 </style>
 
 <div class="profile-wrap">
@@ -419,7 +741,7 @@ include __DIR__ . '/header.php';
                     </div>
                 <?php endforeach; ?>
             </div>
-            <a href="/dropshipping/roadmap.php" class="btn-edit-link">🗺 Continue Roadmap →</a>
+            <a href="/roadmap.php" class="btn-edit-link">🗺 Continue Roadmap →</a>
         </div>
 
         <!-- Calculator snapshot -->
@@ -458,12 +780,12 @@ include __DIR__ . '/header.php';
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <a href="/dropshipping/calculator.php" class="btn-edit-link">💰 Edit in Calculator →</a>
+                <a href="/calculator.php" class="btn-edit-link">💰 Edit in Calculator →</a>
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state-icon">💰</div>
                     <div class="empty-state-text">No saved calculator settings yet.</div>
-                    <a href="/dropshipping/calculator.php" class="empty-state-link">Open Calculator →</a>
+                    <a href="/calculator.php" class="empty-state-link">Open Calculator →</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -495,7 +817,7 @@ include __DIR__ . '/header.php';
                 <div class="empty-state">
                     <div class="empty-state-icon">👍</div>
                     <div class="empty-state-text">You haven't upvoted any tools yet.</div>
-                    <a href="/dropshipping/index.php" class="empty-state-link">Browse Tools →</a>
+                    <a href="/index.php" class="empty-state-link">Browse Tools →</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -573,12 +895,12 @@ include __DIR__ . '/header.php';
                 <div style="font-size:12px;color:var(--muted);margin-top:14px;">
                     Last updated: <?= date('M d, Y \a\t H:i', strtotime($calc['updated_at'] ?? $calc['created_at'] ?? 'now')) ?>
                 </div>
-                <a href="/dropshipping/calculator.php" class="btn-edit-link">✏️ Edit in Calculator →</a>
+                <a href="/calculator.php" class="btn-edit-link">✏️ Edit in Calculator →</a>
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state-icon">💰</div>
                     <div class="empty-state-text">Open the calculator, enter your numbers, and hit <strong>Save My Settings</strong>.</div>
-                    <a href="/dropshipping/calculator.php" class="empty-state-link">Open Calculator →</a>
+                    <a href="/calculator.php" class="empty-state-link">Open Calculator →</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -602,24 +924,24 @@ include __DIR__ . '/header.php';
                 $total = $roadmap[$key . '_total'] ?? 0;
                 $done  = count(array_filter($steps ?? []));
             ?>
-            <div style="margin-bottom:24px;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                    <div style="font-size:15px;font-weight:800;color:var(--ink);"><?= $label ?></div>
-                    <div style="font-size:13px;font-weight:700;color:<?= $color ?>;"><?= $done ?>/<?= $total ?> steps · <?= $pct ?>%</div>
+                <div style="margin-bottom:24px;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div style="font-size:15px;font-weight:800;color:var(--ink);"><?= $label ?></div>
+                        <div style="font-size:13px;font-weight:700;color:<?= $color ?>;"><?= $done ?>/<?= $total ?> steps · <?= $pct ?>%</div>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill <?= $cls ?>" style="width:<?= $pct ?>%"></div>
+                    </div>
+                    <?php if ($pct === 100): ?>
+                        <div style="margin-top:10px;font-size:12px;color:#15803d;font-weight:600;">🎉 Level complete!</div>
+                    <?php elseif ($pct > 0): ?>
+                        <div style="margin-top:10px;font-size:12px;color:var(--muted);">Keep going — <?= $total - $done ?> steps remaining.</div>
+                    <?php else: ?>
+                        <div style="margin-top:10px;font-size:12px;color:var(--muted);">Not started yet.</div>
+                    <?php endif; ?>
                 </div>
-                <div class="progress-track">
-                    <div class="progress-fill <?= $cls ?>" style="width:<?= $pct ?>%"></div>
-                </div>
-                <?php if ($pct === 100): ?>
-                    <div style="margin-top:10px;font-size:12px;color:#15803d;font-weight:600;">🎉 Level complete!</div>
-                <?php elseif ($pct > 0): ?>
-                    <div style="margin-top:10px;font-size:12px;color:var(--muted);">Keep going — <?= $total - $done ?> steps remaining.</div>
-                <?php else: ?>
-                    <div style="margin-top:10px;font-size:12px;color:var(--muted);">Not started yet.</div>
-                <?php endif; ?>
-            </div>
             <?php endforeach; ?>
-            <a href="/dropshipping/roadmap.php" class="btn-edit-link">🗺 Continue on Roadmap →</a>
+            <a href="/roadmap.php" class="btn-edit-link">🗺 Continue on Roadmap →</a>
         </div>
 
         <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:16px 20px;font-size:13px;color:#92400e;">
@@ -645,7 +967,7 @@ include __DIR__ . '/header.php';
                 </div>
                 <div class="stack-grid">
                     <?php foreach ($stack_rows as $t): ?>
-                        <a href="/dropshipping/tool/<?= e($t['slug']) ?>" style="text-decoration:none;">
+                        <a href="/tool/<?= e($t['slug']) ?>" style="text-decoration:none;">
                             <div class="stack-item">
                                 <div class="stack-item-icon">
                                     <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
@@ -656,12 +978,12 @@ include __DIR__ . '/header.php';
                         </a>
                     <?php endforeach; ?>
                 </div>
-                <a href="/dropshipping/stack-builder.php" class="btn-edit-link" style="margin-top:16px;">✏️ Edit Stack →</a>
+                <a href="/stack-builder.php" class="btn-edit-link" style="margin-top:16px;">✏️ Edit Stack →</a>
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state-icon">🧱</div>
                     <div class="empty-state-text">You haven't saved a stack yet.<br>Use the Stack Builder to pick your tools and save them here.</div>
-                    <a href="/dropshipping/stack-builder.php" class="empty-state-link">Build My Stack →</a>
+                    <a href="/stack-builder.php" class="empty-state-link">Build My Stack →</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -676,7 +998,7 @@ include __DIR__ . '/header.php';
             <?php if ($upvoted_tools): ?>
                 <div class="upvote-list">
                     <?php foreach ($upvoted_tools as $t): ?>
-                        <a href="/dropshipping/tool/<?= e($t['slug']) ?>" style="text-decoration:none;">
+                        <a href="/tool/<?= e($t['slug']) ?>" style="text-decoration:none;">
                             <div class="upvote-item">
                                 <div class="upvote-icon">
                                     <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
@@ -691,10 +1013,10 @@ include __DIR__ . '/header.php';
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
-                <div class="empty-state">   
+                <div class="empty-state">
                     <div class="empty-state-icon">👍</div>
                     <div class="empty-state-text">You haven't upvoted any tools yet.<br>Upvoting helps the community find the best tools.</div>
-                    <a href="/dropshipping/index.php" class="empty-state-link">Browse Tools →</a>
+                    <a href="/index.php" class="empty-state-link">Browse Tools →</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -770,21 +1092,25 @@ include __DIR__ . '/header.php';
 </div>
 <script>
     function switchTab(name, el) {
-    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + name).classList.add('active');
-    if (el) el.classList.add('active');
-}
-
-function confirmDelete() {
-    if (confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {
-        fetch('/dropshipping/profile.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'delete_account=1&csrf_token=<?= csrf_token() ?>'
-        }).then(() => { window.location = '/dropshipping/index.php'; });
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        if (el) el.classList.add('active');
     }
-}
+
+    function confirmDelete() {
+        if (confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {
+            fetch('/profile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'delete_account=1&csrf_token=<?= csrf_token() ?>'
+            }).then(() => {
+                window.location = '/index.php';
+            });
+        }
+    }
 </script>
 
 <?php include __DIR__ . '/footer.php'; ?>

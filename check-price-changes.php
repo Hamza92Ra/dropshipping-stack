@@ -55,7 +55,7 @@ function notifySubscribers($conn, $tool_id, $tool_name, $old_price, $new_price) 
     $direction = $new_price < $old_price ? 'dropped' : 'increased';
     $subject = "Price {$direction}: {$tool_name}";
     $body = "Heads up — {$tool_name}'s price just {$direction} from \${$old_price} to \${$new_price}.\n\n"
-          . "Check it out: http://localhost/dropshipping/tool.php?id={$tool_id}\n\n"
+          . "Check it out: http://hdropshipping.com/tool.php?id={$tool_id}\n\n"
           . "You're getting this because you turned on price alerts for this tool.";
 
     foreach ($subscribers as $sub) {

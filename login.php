@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $_SESSION['user_id']  = $user['id'];
             $_SESSION['username'] = $user['username'];
-            header('Location: /dropshipping/index.php');
+            header('Location: /index.php');
             exit;
         }
 
@@ -107,7 +107,7 @@ include __DIR__ . '/header.php';
                     ⚠️ <?= htmlspecialchars($error) ?>
                     <?php if (str_contains($error, 'verify your email')): ?>
                         <br><br>
-                        <a href="/dropshipping/resend-verification.php?email=<?= urlencode($_POST['email'] ?? '') ?>"
+                        <a href="/resend-verification.php?email=<?= urlencode($_POST['email'] ?? '') ?>"
                             class="auth-link"
                             style="color:var(--accent-h);font-weight:600;text-decoration:underline">
                             Resend verification email →
@@ -137,7 +137,7 @@ include __DIR__ . '/header.php';
 
                 <!-- Forgot password -->
                 <div style="text-align:right;margin-bottom:24px">
-                    <a href="/dropshipping/forgot-password.php" class="auth-link" style="font-size:12px;color:var(--accent-h);text-decoration:none">Forgot password?</a>
+                    <a href="/forgot-password.php" class="auth-link" style="font-size:12px;color:var(--accent-h);text-decoration:none">Forgot password?</a>
                 </div>
 
                 <!-- Submit -->
@@ -155,7 +155,7 @@ include __DIR__ . '/header.php';
             </div>
 
             <!-- Register link -->
-            <a href="/dropshipping/register.php" class="auth-btn-secondary"
+            <a href="/register.php" class="auth-btn-secondary"
                 style="display:block;text-align:center;padding:13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--body-c);font-size:14px;font-weight:600;text-decoration:none">
                 Create an account
             </a>

@@ -1,4 +1,4 @@
-    <?php
+<?php
     @define('APP', true);
     require_once __DIR__ . '/config.php';
 
@@ -229,7 +229,7 @@
             <div class="popular-title">Popular Comparisons</div>
             <div class="popular-grid">
                 <?php foreach ($popular as $p): ?>
-                    <a href="http://localhost/dropshipping/compare.php?a=<?= $p[1] ?>&b=<?= $p[2] ?>" class="popular-link"><?= $p[0] ?></a>
+                    <a href="http://hdropshipping.com/compare.php?a=<?= $p[1] ?>&b=<?= $p[2] ?>" class="popular-link"><?= $p[0] ?></a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -337,13 +337,13 @@
             <div class="cta-tool">
                 <div class="cta-tool-name"><?= e($tool1['name']) ?></div>
                 <div class="cta-tool-price"><?= e($price1) ?></div>
-                <a href="http://localhost/dropshipping/go.php?slug=<?= e($tool1['slug']) ?>" class="cta-tool-btn" target="_blank">Try <?= e($tool1['name']) ?> →</a>
+                <a href="http://hdropshipping.com/go.php?slug=<?= e($tool1['slug']) ?>" class="cta-tool-btn" target="_blank">Try <?= e($tool1['name']) ?> →</a>
                 <button class="bookmark-btn" data-tool-id="<?= $tool1['id'] ?>">🤍 Save</button>
             </div>
             <div class="cta-tool">
                 <div class="cta-tool-name"><?= e($tool2['name']) ?></div>
                 <div class="cta-tool-price"><?= e($price2) ?></div>
-                <a href="http://localhost/dropshipping/go.php?slug=<?= e($tool2['slug']) ?>" class="cta-tool-btn" target="_blank">Try <?= e($tool2['name']) ?> →</a>
+                <a href="http://hdropshipping.com/go.php?slug=<?= e($tool2['slug']) ?>" class="cta-tool-btn" target="_blank">Try <?= e($tool2['name']) ?> →</a>
                 <button class="bookmark-btn" data-tool-id="<?= $tool2['id'] ?>">🤍 Save</button>
             </div>
         </div>

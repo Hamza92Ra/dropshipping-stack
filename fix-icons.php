@@ -17,5 +17,5 @@ foreach ($icons as $slug => $icon) {
     echo "✅ Updated: $slug → $icon <br>";
 }
 
-echo "<br>Done! <a href='/dropshipping/index.php'>Go back home</a>";
+echo "<br>Done! <a href='/index.php'>Go back home</a>";
 ?>

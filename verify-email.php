@@ -37,7 +37,7 @@ include __DIR__ . '/header.php';
             <div style="font-size:48px;margin-bottom:16px">✅</div>
             <h1 style="font-size:22px;font-weight:800;margin-bottom:12px">Email Verified!</h1>
             <p style="color:#888;margin-bottom:24px"><?= htmlspecialchars($message) ?></p>
-            <a href="/dropshipping/login.php"
+            <a href="/login.php"
                 style="display:inline-block;padding:12px 32px;background:var(--accent);color:#fff;border-radius:8px;font-weight:700;text-decoration:none">
                 Login Now
             </a>

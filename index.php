@@ -5,7 +5,7 @@ require_once __DIR__ . '/config.php';
 
 if (empty($_COOKIE['seen_intro'])) {
     setcookie('seen_intro', '1', time() + 60 * 60 * 24 * 365, '/'); // 1 year
-    header('Location: /dropshipping/intro.php');
+    header('Location: /intro.php');
     exit;
 }
 
@@ -64,14 +64,14 @@ include __DIR__ . '/header.php';
 
     <!-- FEATURED -->
     <?php if ($featured): ?>
-    <div class="section-head">
-        <h2 class="section-title">⭐ Featured Tools</h2>
-    </div>
-    <div class="tools-grid">
-        <?php foreach ($featured as $t): ?>
-            <?php include __DIR__ . '/partials/tool-card.php'; ?>
-        <?php endforeach; ?>
-    </div>
+        <div class="section-head">
+            <h2 class="section-title">⭐ Featured Tools</h2>
+        </div>
+        <div class="tools-grid">
+            <?php foreach ($featured as $t): ?>
+                <?php include __DIR__ . '/partials/tool-card.php'; ?>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
 
     <!-- ALL TOOLS WITH FILTERS -->
@@ -96,41 +96,40 @@ include __DIR__ . '/header.php';
     <div style="height:40px"></div>
 </div>
 <script>
-document.querySelectorAll('.upvote-btn').forEach(btn=>{
+    document.querySelectorAll('.upvote-btn').forEach(btn => {
 
-    btn.addEventListener('click',async function(){
+        btn.addEventListener('click', async function() {
 
-        const toolId=this.dataset.toolId;
+            const toolId = this.dataset.toolId;
 
-        const res=await fetch(
-            '/dropshipping/upvote.php',
-            {
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/x-www-form-urlencoded'
-                },
-                body:'tool_id='+toolId
+            const res = await fetch(
+                '/upvote.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'tool_id=' + toolId
+                }
+            );
+
+            const data = await res.json();
+
+            if (data.error === "login_required") {
+                window.location = "/login.php";
+                return;
             }
-        );
 
-        const data=await res.json();
+            this.querySelector(
+                '.upvote-count'
+            ).textContent = data.count;
 
-        if(data.error==="login_required"){
-            window.location="/dropshipping/login.php";
-            return;
-        }
+            this.classList.toggle(
+                'upvoted',
+                data.action === 'added'
+            );
 
-        this.querySelector(
-            '.upvote-count'
-        ).textContent=data.count;
-
-        this.classList.toggle(
-            'upvoted',
-            data.action==='added'
-        );
+        });
 
     });
-
-});
 </script>
 <?php include __DIR__ . '/footer.php'; ?>

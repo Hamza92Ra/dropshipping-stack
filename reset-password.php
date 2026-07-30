@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?")
             ->execute([$hash, $user['id']]);
-        header("Location: /dropshipping/login.php?reset=1");
+        header("Location: /login.php?reset=1");
         exit;
     }
 }

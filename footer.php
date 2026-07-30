@@ -4,7 +4,7 @@
     <div class="footer-inner">
 
         <div class="footer-brand">
-            <a href="/dropshipping/" class="logo">
+            <a href="/" class="logo">
                 <span class="logo-icon">⚡</span>
                 <span class="logo-text"><?= SITE_NAME ?></span>
             </a>
@@ -20,17 +20,17 @@
                 <?php
                 $fcats = $pdo->query("SELECT name, slug FROM categories ORDER BY sort_order")->fetchAll();
                 foreach ($fcats as $c): ?>
-                    <a href="/dropshipping/category/index.php?slug=<?= e($c['slug']) ?>"><?= e($c['name']) ?></a>
+                    <a href="/category/index.php?slug=<?= e($c['slug']) ?>"><?= e($c['name']) ?></a>
                 <?php endforeach; ?>
             </div>
 
             <div class="footer-col">
                 <h4>Site</h4>
-                <a href="/dropshipping/">Home</a>
-                <a href="/dropshipping/submit.php">Submit a Tool</a>
-                <a href="/dropshipping/about.php">About</a>
-                <a href="/dropshipping/privacy.php">Privacy Policy</a>
-                <a href="/dropshipping/affiliate-disclosure.php">Affiliate Disclosure</a>
+                <a href="/">Home</a>
+                <a href="/submit.php">Submit a Tool</a>
+                <a href="/about.php">About</a>
+                <a href="/privacy.php">Privacy Policy</a>
+                <a href="/affiliate-disclosure.php">Affiliate Disclosure</a>
             </div>
 
             <div class="footer-col">
@@ -38,7 +38,7 @@
                 <?php
                 $top = $pdo->query("SELECT name, slug FROM tools WHERE is_active=1 ORDER BY clicks DESC LIMIT 5")->fetchAll();
                 foreach ($top as $t): ?>
-                    <a href="/dropshipping/tool/index.php?slug=<?= e($t['slug']) ?>"><?= e($t['name']) ?></a>
+                    <a href="/tool/index.php?slug=<?= e($t['slug']) ?>"><?= e($t['name']) ?></a>
                 <?php endforeach; ?>
             </div>
             <div class="footer-col">
@@ -61,7 +61,7 @@
     <div style="background:#fff;border-radius:16px;padding:40px;max-width:440px;width:90%;text-align:center;position:relative">
         <button onclick="closePopup()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999">✕</button>
         <div style="font-size:48px;margin-bottom:12px">🎁</div>
-        <h2 style="font-size:22px;font-weight:800;color:#0d0d1a;margin-bottom:8px">Get the Free Dropshipping Starter Kit</h2>
+        <h2 style="font-size:22px;font-weight:800;color:#0d0d1a;margin-bottom:8px">Get the Free Starter Kit</h2>
         <p style="font-size:14px;color:#9898b8;margin-bottom:24px;line-height:1.6">Join 2,000+ dropshippers getting weekly tool reviews, exclusive deals and the best affiliate programs straight to their inbox.</p>
         <input type="email" id="popupEmail" placeholder="your@email.com" style="width:100%;border:1.5px solid #e2e2eb;border-radius:8px;padding:11px 14px;font-size:14px;margin-bottom:10px;outline:none;font-family:inherit">
         <button onclick="submitEmail()" style="width:100%;background:#6366f1;color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Get Free Access →</button>
@@ -95,11 +95,11 @@
 <script>
     function handleUpvote(btn) {
         if (btn.classList.contains('needs-login')) {
-            window.location.href = '/dropshipping/login.php';
+            window.location.href = '/login.php';
             return;
         }
         const toolId = btn.dataset.id;
-        fetch('/dropshipping/upvote.php', {
+        fetch('/upvote.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -109,7 +109,7 @@
             .then(r => r.json())
             .then(data => {
                 if (data.error === 'login_required') {
-                    window.location.href = '/dropshipping/login.php';
+                    window.location.href = '/login.php';
                     return;
                 }
                 btn.querySelector('.upvote-count').textContent = data.count;
@@ -118,8 +118,8 @@
             });
     }
 </script>
-<script src="/dropshipping/assets/js/main.js"></script>
-<script src="/dropshipping/assets/js/chat-widget.js" data-api="/dropshipping/api/chat-api.php"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/chat-widget.js" data-api="/api/chat-api.php"></script>
 </body>
 
 </html>

@@ -13,21 +13,21 @@
     </div>
 
     <nav class="admin-nav">
-        <a href="/dropshipping/admin/" class="admin-nav-link <?= ($page??'')==='dashboard'?'active':'' ?>">
+        <a href="/admin/" class="admin-nav-link <?= ($page??'')==='dashboard'?'active':'' ?>">
             <span class="admin-nav-icon">📊</span> Dashboard
         </a>
-        <a href="/dropshipping/admin/tools/" class="admin-nav-link <?= ($page??'')==='tools'?'active':'' ?>">
+        <a href="/admin/tools/" class="admin-nav-link <?= ($page??'')==='tools'?'active':'' ?>">
             <span class="admin-nav-icon">🔧</span> Tools
         </a>
-        <a href="/dropshipping/admin/reviews/" class="admin-nav-link <?= ($page??'')==='reviews'?'active':'' ?>">
+        <a href="/admin/reviews/" class="admin-nav-link <?= ($page??'')==='reviews'?'active':'' ?>">
             <span class="admin-nav-icon">💬</span> Reviews
         </a>
-        <a href="/dropshipping/admin/submissions/" class="admin-nav-link <?= ($page??'')==='submissions'?'active':'' ?>">
+        <a href="/admin/submissions/" class="admin-nav-link <?= ($page??'')==='submissions'?'active':'' ?>">
             <span class="admin-nav-icon">📥</span> Submissions
         </a>
     </nav>
 
-    <a href="/dropshipping/logout.php" class="admin-nav-link admin-logout">
+    <a href="/logout.php" class="admin-nav-link admin-logout">
         <span class="admin-nav-icon">🚪</span> Log Out
     </a>
 </aside>
