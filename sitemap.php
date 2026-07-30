@@ -49,10 +49,10 @@ foreach ($staticPages as $page) {
 // ---------------------------------------------------------
 // 2. Category pages: /category/{slug}
 // ---------------------------------------------------------
-$catResult = $conn->query("SELECT slug, created_at FROM categories ORDER BY sort_order ASC");
+$catStmt = $pdo->query("SELECT slug, created_at FROM categories ORDER BY sort_order ASC");
 
-if ($catResult) {
-    while ($row = $catResult->fetch_assoc()) {
+if ($catStmt) {
+    foreach ($catStmt as $row) {
         outputUrl(
             $baseUrl,
             '/category/' . $row['slug'],
@@ -66,10 +66,10 @@ if ($catResult) {
 // ---------------------------------------------------------
 // 3. Tool pages: /tool/{slug}  (only active tools)
 // ---------------------------------------------------------
-$toolResult = $conn->query("SELECT slug, created_at, is_featured FROM tools WHERE is_active = 1 ORDER BY id ASC");
+$toolStmt = $pdo->query("SELECT slug, created_at, is_featured FROM tools WHERE is_active = 1 ORDER BY id ASC");
 
-if ($toolResult) {
-    while ($row = $toolResult->fetch_assoc()) {
+if ($toolStmt) {
+    foreach ($toolStmt as $row) {
         $priority = $row['is_featured'] ? '0.9' : '0.7';
         outputUrl(
             $baseUrl,
