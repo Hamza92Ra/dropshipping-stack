@@ -1,4 +1,4 @@
-    <?php
+<?php
             // Expects $t = tool row with cat_name, cat_slug
             $stars = str_repeat('★', round($t['rating'])) . str_repeat('☆', 5 - round($t['rating']));
             $price_label = $t['price_type'] === 'freemium' ? 'Freemium' : ($t['price_type'] === 'free' ? 'Free' : 'From $' . number_format($t['price_from'], 0) . '/mo');
@@ -40,12 +40,6 @@
                     </div>
                     <span class="price-badge price-<?= e($t['price_type']) ?>"><?= e($price_label) ?></span>
                 </div>
-
-                <?php if ($t['commission']): ?>
-                    <div class="commission-line">
-                        💰 Commission: <?= e($t['commission']) ?>
-                    </div>
-                <?php endif; ?>
 
                 <div class="tool-card-actions">
                     <?php
