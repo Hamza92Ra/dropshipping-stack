@@ -185,19 +185,54 @@ img { max-width: 100%; display: block; }
 .mobile-menu-btn:hover { background: rgba(246,244,238,0.16); }
 
 .mobile-nav {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 82vw;
+    display: flex;
     flex-direction: column;
-    padding: 12px 24px 16px;
-    border-top: 1px solid var(--dark-border);
+    padding: 20px 20px 24px;
     background: var(--dark);
+    border-top: none;
+    border-right: 1px solid var(--dark-border);
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform var(--dur) var(--ease);
 }
 .mobile-nav.open {
-    display: flex;
-    animation: slideDown var(--dur) var(--ease);
+    transform: translateX(0);
 }
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+.mobile-nav-close {
+    align-self: flex-end;
+    background: rgba(246,244,238,0.08);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: background var(--dur-fast) var(--ease);
+}
+.mobile-nav-close:hover { background: rgba(246,244,238,0.16); }
+
+.mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 280;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
+}
+.mobile-nav-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
 }
 .mobile-nav-link {
     padding: 10px 0;
@@ -284,6 +319,91 @@ img { max-width: 100%; display: block; }
     transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 .search-suggestions.show { display: block; opacity: 1; transform: translateY(0); }
+
+/* ── BROWSE PILLS ───────────────────────── */
+.browse-pills-outer {
+    position: relative;
+    background: var(--dark);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.browse-pills-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+}
+.browse-pills-wrap::-webkit-scrollbar { display: none; }
+
+/* Fade hint on the edges so it's obvious the row scrolls */
+.browse-pills-outer::before,
+.browse-pills-outer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 28px;
+    pointer-events: none;
+    z-index: 2;
+}
+.browse-pills-outer::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--dark), transparent);
+}
+.browse-pills-outer::after {
+    right: 0;
+    background: linear-gradient(270deg, var(--dark), transparent);
+}
+
+.browse-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(246,244,238,0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+}
+
+.cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(246,244,238,0.6);
+    border: 1px solid rgba(246,244,238,0.1);
+    background: rgba(246,244,238,0.05);
+    text-decoration: none;
+    flex-shrink: 0;
+    white-space: nowrap;
+    scroll-snap-align: start;
+    transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.cat-pill:hover {
+    color: #fff;
+    background: rgba(246,244,238,0.09);
+    border-color: rgba(246,244,238,0.2);
+}
+.cat-pill.active-pill {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+@media (max-width: 680px) {
+    .browse-pills-wrap { padding: 10px 16px; gap: 6px; }
+    .browse-pills-outer::before,
+    .browse-pills-outer::after { width: 20px; }
+}
 
 .suggestion-item {
     padding: 10px 16px;
@@ -1275,6 +1395,20 @@ img { max-width: 100%; display: block; }
        get the hamburger menu too, not just narrow portrait phones */
     .main-nav { display: none; }
     .mobile-menu-btn { display: block; }
+
+    /* Reflow header: hamburger far-left, logo centered, actions far-right */
+    .header-inner {
+        grid-template-columns: auto 1fr auto;
+    }
+    .mobile-menu-btn { order: 1; }
+    .logo {
+        order: 2;
+        justify-self: center;
+    }
+    .header-actions {
+        order: 3;
+        justify-self: end;
+    }
 }
 
 @media (max-width: 680px) {
@@ -1295,11 +1429,12 @@ img { max-width: 100%; display: block; }
 @media (max-width: 480px) {
     .theme-toggle .tt-label { display: none; }
     .theme-toggle { padding: 6px 8px; }
-    .logo-text { font-size: 18px; }
+    .logo-text { font-size: 16px; }
 
-    .header-actions > a {
-        display: none;
-    }
+    /* Keep login/register/logout visible top-right, just tighten spacing */
+    .header-actions { gap: 8px; }
+    .header-actions a { font-size: 12px !important; }
+    .header-actions .btn-submit { padding: 6px 10px; font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1338,6 +1473,5 @@ html, body {
     overflow-x: hidden;
 }
 .mobile-nav {
-    width: 100%;
     box-sizing: border-box;
 }

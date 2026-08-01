@@ -12,7 +12,7 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($page_title ?? SITE_NAME) ?> — <?= e(SITE_NAME) ?></title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/assets/css/style.css') ?>">
     <meta name="description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
     <meta property="og:title" content="<?= e($page_title ?? SITE_NAME) ?>">
     <meta property="og:description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
@@ -29,6 +29,9 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
 
     <header class="site-header">
         <div class="header-inner">
+
+            <!-- Mobile menu toggle (repositioned to far left on mobile) -->
+            <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Menu">☰</button>
 
             <!-- Logo -->
             <a href="http://hdropshipping.com/index.php" class="logo">
@@ -57,24 +60,20 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
                 <?php if (is_admin()): ?>
                     <a href="http://hdropshipping.com/submit.php" class="btn-submit">+ Submit Tool</a>
                 <?php endif; ?>
-                <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Menu">☰</button>
             </div>
 
         </div>
 
         <!-- Mobile nav -->
+        <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="toggleMenu()"></div>
         <div class="mobile-nav" id="mobileNav">
+            <button class="mobile-nav-close" onclick="toggleMenu()" aria-label="Close menu">✕</button>
             <a href="http://hdropshipping.com/index.php" class="mobile-nav-link">🏠 Home</a>
             <a href="http://hdropshipping.com/roadmap.php" class="mobile-nav-link">🗺️ Roadmap</a>
             <a href="http://hdropshipping.com/stack-builder.php" class="mobile-nav-link">🎯 Stack Builder</a>
             <a href="http://hdropshipping.com/compare.php" class="mobile-nav-link">⚖️ Compare</a>
             <a href="http://hdropshipping.com/calculator.php" class="mobile-nav-link">💰 Calculator</a>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <a href="/logout.php" class="mobile-nav-link">🚪 Logout</a>
-                <a href="/profile.php" class="mobile-nav-link">👤 My Profile</a>
-                <a href="/logout.php" class="mobile-nav-link">🚪 Logout</a>
-            <?php else: ?>
-
+            <?php if (!isset($_SESSION['user_id'])): ?>
                 <a href="/login.php" class="mobile-nav-link">🔑 Login</a>
                 <a href="/register.php" class="mobile-nav-link">📝 Register</a>
             <?php endif; ?>
@@ -83,6 +82,15 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
             <?php endif; ?>
         </div>
     </header>
+
+    <script>
+        function toggleMenu() {
+            var nav = document.getElementById('mobileNav');
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (nav) nav.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+        }
+    </script>
 
     <!-- Search bar -->
     <div class="search-bar-wrap" id="searchWrap">
@@ -100,21 +108,20 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
         </div>
     </div>
     <?php if (!empty($show_browse_pills)): ?>
-        <div style="background:var(--dark);border-bottom:1px solid rgba(255,255,255,0.08);padding:12px 24px;overflow-x:auto;white-space:nowrap;text-align:center">
-            <div style="max-width:1200px;margin:0 auto;display:flex;gap:8px;align-items:center;justify-content:center">
-                <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;flex-shrink:0">Browse:</span>
+        <div class="browse-pills-outer">
+            <div class="browse-pills-wrap">
+                <span class="browse-label">Browse:</span>
 
                 <!-- All Tools pill — active only when no category is selected -->
-                <a href="http://localhost/dropshipping/index.php" class="cat-pill <?= empty($active_cat) ? 'active-pill' : '' ?>"
-                    style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;color:#fff;border:1px solid <?= empty($active_cat) ? 'var(--accent)' : 'rgba(255,255,255,0.1)' ?>;background:<?= empty($active_cat) ? 'var(--accent)' : 'rgba(255,255,255,0.05)' ?>;text-decoration:none;flex-shrink:0">
+                <a href="http://localhost/dropshipping/index.php"
+                    class="cat-pill <?= empty($active_cat) ? 'active-pill' : '' ?>">
                     All Tools
                 </a>
 
                 <!-- Category pills — active when slug matches current page -->
                 <?php foreach ($cats as $nav_cat): ?>
                     <a href="/category/index.php?slug=<?= e($nav_cat['slug']) ?>"
-                        class="cat-pill <?= (isset($active_cat) && $active_cat === $nav_cat['slug']) ? 'active-pill' : '' ?>"
-                        style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;color:<?= (isset($active_cat) && $active_cat === $nav_cat['slug']) ? '#fff' : 'rgba(255,255,255,0.6)' ?>;border:1px solid <?= (isset($active_cat) && $active_cat === $nav_cat['slug']) ? 'var(--accent)' : 'rgba(255,255,255,0.1)' ?>;background:<?= (isset($active_cat) && $active_cat === $nav_cat['slug']) ? 'var(--accent)' : 'rgba(255,255,255,0.05)' ?>;text-decoration:none;flex-shrink:0;transition:all 0.15s">
+                        class="cat-pill <?= (isset($active_cat) && $active_cat === $nav_cat['slug']) ? 'active-pill' : '' ?>">
                         <?= e($nav_cat['name']) ?>
                     </a>
                 <?php endforeach; ?>
