@@ -706,12 +706,12 @@ include __DIR__ . '/header.php';
 
     <!-- ── Tabs ── -->
     <div class="profile-tabs">
-        <button class="profile-tab active" onclick="switchTab('overview', this)">📊 Overview</button>
-        <button class="profile-tab" onclick="switchTab('calculator', this)">💰 Calculator</button>
-        <button class="profile-tab" onclick="switchTab('roadmap', this)">🗺 Roadmap</button>
-        <button class="profile-tab" onclick="switchTab('stack', this)">🧱 Stack</button>
-        <button class="profile-tab" onclick="switchTab('upvotes', this)">👍 Upvotes</button>
-        <button class="profile-tab" onclick="switchTab('settings', this)">⚙️ Settings</button>
+        <button class="profile-tab active" data-tab="overview">📊 Overview</button>
+        <button class="profile-tab" data-tab="calculator">💰 Calculator</button>
+        <button class="profile-tab" data-tab="roadmap">🗺 Roadmap</button>
+        <button class="profile-tab" data-tab="stack">🧱 Stack</button>
+        <button class="profile-tab" data-tab="upvotes">👍 Upvotes</button>
+        <button class="profile-tab" data-tab="settings">⚙️ Settings</button>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
@@ -809,7 +809,7 @@ include __DIR__ . '/header.php';
                     <?php endforeach; ?>
                 </div>
                 <?php if (count($upvoted_tools) > 4): ?>
-                    <button class="btn-edit-link" onclick="switchTab('upvotes', this)" style="border:none;cursor:pointer;margin-top:12px;">
+                    <button class="btn-edit-link" data-tab="upvotes" style="border:none;cursor:pointer;margin-top:12px;">
                         See all <?= count($upvoted_tools) ?> upvotes →
                     </button>
                 <?php endif; ?>
@@ -850,7 +850,7 @@ include __DIR__ . '/header.php';
                 $rev        = $calc['calculator_revenue'];
                 $gp         = $rev * ($calc['calculator_margin'] / 100);
                 $ads        = $calc['calculator_adspend'];
-                $tool_slugs = array_filter(explode(',', $calc['calculator_tools'] ?? ''));
+                $tool_slugs = array_values(array_filter(explode(',', $calc['calculator_tools'] ?? '')));
                 $tool_cost  = 0;
                 $tool_names = [];
                 if ($tool_slugs) {
@@ -957,10 +957,18 @@ include __DIR__ . '/header.php';
             <div class="section-card-title">🧱 Saved Tool Stack</div>
             <?php if ($stack && !empty($stack_tools)): ?>
                 <?php
-                $ph = implode(',', array_fill(0, count($stack_tools), '?'));
-                $stack_rows = $pdo->prepare("SELECT name, logo_url AS icon, slug, category_id AS category FROM tools WHERE slug IN ($ph)");
-                $stack_rows->execute($stack_tools);
-                $stack_rows = $stack_rows->fetchAll();
+                // Re-index into a clean, sequential 0-based array and drop any
+                // empty/falsy entries. PDO's positional (?) placeholders require
+                // sequential numeric keys — a non-sequential or associative array
+                // decoded from JSON throws "Invalid parameter number" here.
+                $stack_tools = array_values(array_filter($stack_tools));
+                $stack_rows = [];
+                if ($stack_tools) {
+                    $ph = implode(',', array_fill(0, count($stack_tools), '?'));
+                    $stack_rows = $pdo->prepare("SELECT name, logo_url AS icon, slug, category_id AS category FROM tools WHERE slug IN ($ph)");
+                    $stack_rows->execute($stack_tools);
+                    $stack_rows = $stack_rows->fetchAll();
+                }
                 ?>
                 <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">
                     <?= count($stack_rows) ?> tools in your stack · Last saved <?= date('M d, Y', strtotime($stack['updated_at'] ?? $stack['created_at'] ?? 'now')) ?>
@@ -1084,19 +1092,29 @@ include __DIR__ . '/header.php';
         <div class="danger-zone">
             <div class="danger-title">⚠️ Danger Zone</div>
             <div class="danger-desc">Deleting your account is permanent. All your saved settings, upvotes, and progress will be removed.</div>
-            <button class="btn-danger" onclick="confirmDelete()">Delete My Account</button>
+            <button class="btn-danger" id="deleteAccountBtn">Delete My Account</button>
         </div>
 
     </div>
 
 </div>
 <script>
-    function switchTab(name, el) {
+    function switchTab(name) {
         document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('panel-' + name).classList.add('active');
-        if (el) el.classList.add('active');
+        const panel = document.getElementById('panel-' + name);
+        if (panel) panel.classList.add('active');
+        const tabBtn = document.querySelector('.profile-tab[data-tab="' + name + '"]');
+        if (tabBtn) tabBtn.classList.add('active');
     }
+
+    // Attach listeners to every element with a data-tab attribute
+    // (the top tab bar, plus any shortcut buttons/links elsewhere on the page)
+    document.querySelectorAll('[data-tab]').forEach(function (el) {
+        el.addEventListener('click', function () {
+            switchTab(el.dataset.tab);
+        });
+    });
 
     function confirmDelete() {
         if (confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {
@@ -1111,6 +1129,8 @@ include __DIR__ . '/header.php';
             });
         }
     }
+
+    document.getElementById('deleteAccountBtn')?.addEventListener('click', confirmDelete);
 </script>
 
 <?php include __DIR__ . '/footer.php'; ?>

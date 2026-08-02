@@ -1472,6 +1472,9 @@ img { max-width: 100%; display: block; }
         order: 3;
         justify-self: end;
     }
+    .desktop-logout-link {
+        display: none;
+    }
 }
 
 @media (max-width: 680px) {

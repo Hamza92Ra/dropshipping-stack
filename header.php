@@ -55,6 +55,7 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
             <div class="header-actions">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <a href="/profile.php" style="color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none">👤 <?= e($_SESSION['username']) ?></a>
+                    <a href="/logout.php" class="desktop-logout-link" style="color:rgba(255,255,255,0.4);font-size:13px;text-decoration:none">Logout</a>
                 <?php else: ?>
                     <a href="/login.php" style="color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none">Login</a>
                     <a href="/register.php" class="btn-submit">Register</a>
