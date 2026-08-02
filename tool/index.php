@@ -161,6 +161,7 @@
                             <?php if ($domain): ?>
                                 <img src="https://img.logo.dev/<?= e($domain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=128"
                                     alt="<?= e($t['name']) ?>"
+                                    class="skeleton-img"
                                     style="width:100%;height:100%;object-fit:contain;border-radius:8px;padding:4px"
                                     onerror="this.style.display='none';this.nextSibling.style.display='block'">
                                 <span style="display:none;font-size:32px;text-align:center;width:100%"><?= e($t['cat_icon'] ?? '🔧') ?></span>

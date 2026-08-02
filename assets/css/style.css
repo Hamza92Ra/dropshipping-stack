@@ -346,6 +346,43 @@ img { max-width: 100%; display: block; }
 }
 .search-suggestions.show { display: block; opacity: 1; transform: translateY(0); }
 
+/* ── PAGE LOADER (top progress bar) ─────── */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #e8c98a);
+    box-shadow: 0 0 8px var(--accent);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── SKELETON SHIMMER (images that load slowly) ── */
+.skeleton-img {
+    background: linear-gradient(
+        100deg,
+        rgba(48,59,51,0.05) 30%,
+        rgba(48,59,51,0.14) 50%,
+        rgba(48,59,51,0.05) 70%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.skeleton-img.loaded {
+    animation: none;
+    background: none;
+    opacity: 1;
+}
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 /* ── BROWSE PILLS ───────────────────────── */
 .browse-pills-outer {
     position: relative;

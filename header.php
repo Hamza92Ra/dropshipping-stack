@@ -27,6 +27,9 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
 
 <body data-page="<?= e($current_page) ?>">
 
+    <!-- Top loading bar — shows on navigation, helps on slow connections/CPUs -->
+    <div class="page-loader" id="pageLoader"></div>
+
     <header class="site-header">
         <div class="header-inner">
 
@@ -92,6 +95,77 @@ $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
             if (nav) nav.classList.toggle('open');
             if (overlay) overlay.classList.toggle('open');
         }
+
+        // ── Top page-load progress bar ──────────────────────────
+        (function () {
+            var bar = document.getElementById('pageLoader');
+            if (!bar) return;
+
+            function start() {
+                bar.style.transition = 'none';
+                bar.style.width = '0%';
+                bar.style.opacity = '1';
+                // force reflow so the transition below actually animates
+                void bar.offsetWidth;
+                bar.style.transition = 'width 8s cubic-bezier(0.1, 0.6, 0.2, 1), opacity 0.2s ease';
+                bar.style.width = '90%';
+            }
+
+            function finish() {
+                bar.style.transition = 'width 0.25s ease, opacity 0.3s ease 0.15s';
+                bar.style.width = '100%';
+                setTimeout(function () {
+                    bar.style.opacity = '0';
+                }, 150);
+            }
+
+            // Show immediately on same-tab, same-origin link clicks
+            document.addEventListener('click', function (e) {
+                var link = e.target.closest('a');
+                if (!link) return;
+                if (link.target === '_blank' || link.hasAttribute('download')) return;
+                if (link.origin !== window.location.origin) return;
+                if (link.getAttribute('href') && link.getAttribute('href').startsWith('#')) return;
+                start();
+            });
+
+            // Show on form submits (search, review form, etc.)
+            document.addEventListener('submit', function () {
+                start();
+            });
+
+            // Hide once the page has actually finished loading
+            window.addEventListener('load', finish);
+
+            // Handle back/forward-cache restores (bar could be stuck mid-way)
+            window.addEventListener('pageshow', function (e) {
+                if (e.persisted) {
+                    bar.style.transition = 'none';
+                    bar.style.width = '0%';
+                    bar.style.opacity = '0';
+                }
+            });
+        })();
+
+        // ── Image skeleton reveal ────────────────────────────────
+        // Any <img class="skeleton-img"> fades in once loaded, hiding
+        // the shimmer placeholder behind it (helps on slow connections
+        // where external logos take a moment to arrive).
+        // Runs on DOMContentLoaded since this script sits in the header,
+        // before the tool cards it needs to find even exist yet.
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('img.skeleton-img').forEach(function (img) {
+                function reveal() {
+                    img.classList.add('loaded');
+                }
+                if (img.complete && img.naturalWidth > 0) {
+                    reveal();
+                } else {
+                    img.addEventListener('load', reveal);
+                    img.addEventListener('error', reveal);
+                }
+            });
+        });
     </script>
 
     <!-- Search bar -->
