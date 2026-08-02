@@ -157,10 +157,15 @@
                     <!-- Tool Header -->
                     <div class="tool-detail-header">
                         <div class="tool-logo-lg">
-                            <?php if ($t['logo_url']): ?>
-                                <img src="<?= e($t['logo_url']) ?>" alt="<?= e($t['name']) ?>">
+                            <?php $domain = $t['website_url'] ? parse_url($t['website_url'], PHP_URL_HOST) : ''; ?>
+                            <?php if ($domain): ?>
+                                <img src="https://img.logo.dev/<?= e($domain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=128"
+                                    alt="<?= e($t['name']) ?>"
+                                    style="width:100%;height:100%;object-fit:contain;border-radius:8px;padding:4px"
+                                    onerror="this.style.display='none';this.nextSibling.style.display='block'">
+                                <span style="display:none;font-size:32px;text-align:center;width:100%"><?= e($t['cat_icon'] ?? '🔧') ?></span>
                             <?php else: ?>
-                                <?= e($t['cat_icon'] ?? '🔧') ?>
+                                <span style="font-size:32px"><?= e($t['cat_icon'] ?? '🔧') ?></span>
                             <?php endif; ?>
                         </div>
                         <div>
