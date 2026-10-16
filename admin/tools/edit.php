@@ -25,8 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
         'is_featured'    => isset($_POST['is_featured']) ? 1 : 0,
         'is_active'      => isset($_POST['is_active']) ? 1 : 0,
         'category_id'    => (int)($_POST['category_id'] ?? 0),
-        'pros'           => $_POST['pros'] ?? '[]',
-        'cons'           => $_POST['cons'] ?? '[]',
+        // FIXED: encode one-per-line text as JSON, same as add.php
+        // (before, raw text was saved, which broke json_decode on the tool page)
+        'pros'           => json_encode(array_values(array_filter(array_map('trim', explode("\n", $_POST['pros'] ?? ''))))),
+        'cons'           => json_encode(array_values(array_filter(array_map('trim', explode("\n", $_POST['cons'] ?? ''))))),
     ];
 
     $pdo->prepare("UPDATE tools SET name=?,tagline=?,description=?,affiliate_link=?,website_url=?,commission=?,price_type=?,price_from=?,is_featured=?,is_active=?,category_id=?,pros=?,cons=? WHERE id=?")
