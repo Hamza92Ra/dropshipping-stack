@@ -120,6 +120,14 @@
 </script>
 <script src="/assets/js/main.js"></script>
 <script src="/assets/js/chat-widget.js" data-api="/api/chat-api.php"></script>
+<script>
+    document.getElementById('themeToggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
 </body>
 
 </html>
