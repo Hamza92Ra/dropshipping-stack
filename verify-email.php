@@ -31,21 +31,27 @@ $page_title = 'Verify Email';
 include __DIR__ . '/header.php';
 ?>
 
-<div style="max-width:420px;margin:80px auto;padding:0 20px;text-align:center">
-    <div style="background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px">
-        <?php if ($success): ?>
-            <div style="font-size:48px;margin-bottom:16px">✅</div>
-            <h1 style="font-size:22px;font-weight:800;margin-bottom:12px">Email Verified!</h1>
-            <p style="color:#888;margin-bottom:24px"><?= htmlspecialchars($message) ?></p>
-            <a href="/login.php"
-                style="display:inline-block;padding:12px 32px;background:var(--accent);color:#fff;border-radius:8px;font-weight:700;text-decoration:none">
-                Login Now
-            </a>
-        <?php else: ?>
-            <div style="font-size:48px;margin-bottom:16px">❌</div>
-            <h1 style="font-size:22px;font-weight:800;margin-bottom:12px">Verification Failed</h1>
-            <p style="color:#888"><?= htmlspecialchars($message) ?></p>
-        <?php endif; ?>
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:var(--bg);font-family:var(--font)">
+    <div style="width:100%;max-width:420px;text-align:center">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-2xl);padding:40px;box-shadow:var(--shadow-sm)">
+            <?php if ($success): ?>
+                <div style="color:var(--positive);margin-bottom:16px;display:flex;justify-content:center;"><?= icon('check-circle', '', 48) ?></div>
+                <h1 style="font-size:24px;font-weight:700;color:var(--text);margin:0 0 12px">Email Verified!</h1>
+                <p style="color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 24px"><?= htmlspecialchars($message) ?></p>
+                <a href="/login.php" class="btn-primary"
+                    style="display:inline-flex;align-items:center;justify-content:center;padding:12px 32px;font-size:14px;font-weight:700;text-decoration:none">
+                    Login Now →
+                </a>
+            <?php else: ?>
+                <div style="color:var(--negative);margin-bottom:16px;display:flex;justify-content:center;"><?= icon('x-circle', '', 48) ?></div>
+                <h1 style="font-size:24px;font-weight:700;color:var(--text);margin:0 0 12px">Verification Failed</h1>
+                <p style="color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 24px"><?= htmlspecialchars($message) ?></p>
+                <a href="/resend-verification.php" class="btn-primary"
+                    style="display:inline-flex;align-items:center;justify-content:center;padding:12px 32px;font-size:14px;font-weight:700;text-decoration:none">
+                    Resend Verification →
+                </a>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 

@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
             ->execute(array_values($fields));
 
         $_SESSION['flash'] = "\"$name\" was added successfully.";
-        redirect('/dropshipping/admin/tools/');
+        redirect('/admin/tools/');
     }
 }
 
@@ -68,7 +68,7 @@ include __DIR__ . '/../partials/head.php';
     <main class="admin-main">
         <div class="admin-header">
             <h1>Add Tool</h1>
-            <a href="/dropshipping/admin/tools/" style="font-size:13px;color:var(--accent)">← Back to Tools</a>
+            <a href="/admin/tools/" style="font-size:13px;color:var(--accent)">← Back to Tools</a>
         </div>
 
         <?php if ($error): ?><div class="flash flash-error"><?= e($error) ?></div><?php endif; ?>

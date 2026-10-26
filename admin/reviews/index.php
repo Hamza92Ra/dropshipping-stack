@@ -46,7 +46,7 @@ include __DIR__ . '/../partials/head.php';
             <h1>Reviews (<?= count($reviews) ?>)</h1>
         </div>
 
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-2xl);box-shadow:var(--shadow-sm);overflow:hidden">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -64,7 +64,11 @@ include __DIR__ . '/../partials/head.php';
                         <tr>
                             <td><strong><?= e($r['user_name']) ?></strong><br><span style="font-size:11px;color:var(--muted)"><?= e($r['user_email']) ?></span></td>
                             <td><?= e($r['tool_name']) ?></td>
-                            <td><?= str_repeat('★', $r['rating']) ?></td>
+                            <td>
+                                <span style="display:inline-flex;align-items:center;gap:3px;color:var(--amber)">
+                                    <?= icon('star', '', 12) ?> <?= number_format($r['rating'], 1) ?>
+                                </span>
+                            </td>
                             <td style="max-width:280px;font-size:12px"><?= e(substr($r['comment'] ?? '', 0, 120)) ?>...</td>
                             <td style="font-size:12px"><?= date('M j, Y', strtotime($r['created_at'])) ?></td>
                             <td><span style="font-size:11px;font-weight:600;color:<?= $r['approved'] ? 'var(--green)' : 'var(--amber)' ?>"><?= $r['approved'] ? 'Approved' : 'Pending' ?></span></td>
@@ -88,13 +92,15 @@ include __DIR__ . '/../partials/head.php';
 
 
 <div id="deleteModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:360px;width:90%;text-align:center">
-        <div style="font-size:32px;margin-bottom:12px">🗑️</div>
-        <h3 style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px">Delete this review?</h3>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-2xl);padding:28px;max-width:360px;width:90%;text-align:center;box-shadow:var(--shadow-lg)">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--negative-bg);color:var(--negative-text);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+            <?= icon('trash', '', 22) ?>
+        </div>
+        <h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">Delete this review?</h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:20px">This action can't be undone.</p>
         <div style="display:flex;gap:10px;justify-content:center">
-            <button onclick="closeDeleteModal()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--ink);font-weight:600;font-size:13px;cursor:pointer">Cancel</button>
-            <button onclick="proceedDelete()" style="padding:8px 18px;border-radius:8px;border:none;background:var(--red);color:#fff;font-weight:600;font-size:13px;cursor:pointer">Delete</button>
+            <button onclick="closeDeleteModal()" style="padding:9px 18px;border-radius:var(--radius-full);border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;font-size:13px;cursor:pointer">Cancel</button>
+            <button onclick="proceedDelete()" style="padding:9px 18px;border-radius:var(--radius-full);border:none;background:var(--negative);color:#fff;font-weight:600;font-size:13px;cursor:pointer">Delete</button>
         </div>
     </div>
 </div>

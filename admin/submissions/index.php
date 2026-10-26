@@ -21,7 +21,7 @@ include __DIR__ . '/../partials/head.php';
     <main class="admin-main">
         <div class="admin-header"><h1>Submissions (<?= count($subs) ?>)</h1></div>
 
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-2xl);box-shadow:var(--shadow-sm);overflow:hidden">
             <table class="admin-table">
                 <thead>
                     <tr><th>Tool</th><th>URL</th><th>Plan</th><th>Contact</th><th>Date</th><th>Status</th><th>Actions</th></tr>

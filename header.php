@@ -2,258 +2,355 @@
 if (!defined('APP')) die('Direct access not allowed');
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
-// Fetch all categories for nav
+// Fetch all categories
 $cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
 
 $logged_in   = isset($_SESSION['user_id']);
 $username    = $logged_in ? ($_SESSION['username'] ?? '') : '';
 $user_letter = $username !== '' ? strtoupper(mb_substr($username, 0, 1)) : '?';
 $more_pages  = ['calculator', 'submit', 'profile', 'login', 'register'];
+
+// Dynamic title and subtitle for top header
+$heading_title = $page_heading ?? ($page_title ?? 'Overview & Tools');
+$heading_sub   = $page_subheading ?? ($page_desc ?? 'Find, compare and optimize your dropshipping workflow');
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= e($page_title ?? SITE_NAME) ?> — <?= e(SITE_NAME) ?></title>
-    <script>
-        (function() {
-            var saved = localStorage.getItem('theme');
-            var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.documentElement.setAttribute('data-theme', saved || (systemDark ? 'dark' : 'light'));
-        })();
-    </script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/assets/css/style.css') ?>">
-    <link rel="stylesheet" href="/assets/css/mobile.css?v=<?= filemtime(__DIR__ . '/assets/css/mobile.css') ?>">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#F4F6F4">
     <meta name="description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
     <meta property="og:title" content="<?= e($page_title ?? SITE_NAME) ?>">
     <meta property="og:description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="<?= SITE_URL . $_SERVER['REQUEST_URI'] ?>">
+
+    <!-- Anti-flash theme script -->
+    <script>
+        (function() {
+            var t = null;
+            try {
+                var urlParam = new URLSearchParams(window.location.search).get('theme');
+                if (urlParam === 'dark' || urlParam === 'light') {
+                    t = urlParam;
+                } else {
+                    t = localStorage.getItem('theme');
+                }
+            } catch (e) {}
+            if (t !== 'dark' && t !== 'light') {
+                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+
+    <!-- Google Fonts: Modern Sans (Plus Jakarta Sans & Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <?php if ($current_page === 'profile'): ?>
-        <link href="/assets/css/darkmode.css" rel="stylesheet">
-    <?php endif; ?>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/css/theme.css?v=<?= filemtime(__DIR__ . '/assets/css/theme.css') ?>">
+    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/assets/css/style.css') ?>">
+    <link rel="stylesheet" href="/assets/css/mobile.css?v=<?= filemtime(__DIR__ . '/assets/css/mobile.css') ?>">
+
+    <!-- Scripts -->
+    <script src="/assets/js/theme.js?v=<?= filemtime(__DIR__ . '/assets/js/theme.js') ?>" defer></script>
+    <script src="/assets/js/main.js?v=<?= filemtime(__DIR__ . '/assets/js/main.js') ?>" defer></script>
 </head>
 
-<body data-page="<?= e($current_page) ?>">
+<body data-page="<?= e($current_page) ?>" data-logged-in="<?= $logged_in ? '1' : '0' ?>">
 
-    <!-- Top loading bar — shows on navigation, helps on slow connections/CPUs -->
+    <!-- Page Loading Progress Bar -->
     <div class="page-loader" id="pageLoader"></div>
 
-    <header class="site-header">
-        <div class="header-inner">
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIM LEFT ICON SIDEBAR (Desktop)
+         Clean navigation only: Home, Roadmap, Stack Builder, Compare, Calculator.
+         Settings, theme toggle, and auth controls are removed (single location in header).
+         ═══════════════════════════════════════════════════════════ -->
+    <aside class="app-sidebar" aria-label="Sidebar Navigation">
+        <!-- Logo / Brand Icon -->
+        <a href="/index.php" class="sidebar-brand" data-tooltip="<?= e(SITE_NAME) ?>" aria-label="<?= e(SITE_NAME) ?>">
+            <?= icon('sparkles', '', 24) ?>
+        </a>
 
-            <!-- Logo -->
-            <a href="/index.php" class="logo">
-                <span class="logo-icon">⚡</span>
-                <span class="logo-text"><?= SITE_NAME ?></span>
+        <!-- Main Navigation Links -->
+        <nav class="sidebar-nav">
+            <a href="/index.php"
+               class="sidebar-item <?= $current_page === 'index' ? 'active' : '' ?>"
+               data-tooltip="Home"
+               aria-label="Home">
+                <?= icon('layout-grid', '', 20) ?>
             </a>
 
-            <!-- Main Nav — desktop only (phones use the bottom tab bar) -->
-            <nav class="main-nav">
-                <a href="/index.php" class="nav-link <?= $current_page === 'index' ? 'active' : '' ?>"><span class="nav-ico">🏠</span> Home</a>
-                <a href="/roadmap.php" class="nav-link <?= $current_page === 'roadmap' ? 'active' : '' ?>"><span class="nav-ico">🗺️</span> Roadmap</a>
-                <a href="/stack-builder.php" class="nav-link <?= $current_page === 'stack-builder' ? 'active' : '' ?>"><span class="nav-ico">🎯</span> Stack Builder</a>
-                <a href="/compare.php" class="nav-link <?= $current_page === 'compare' ? 'active' : '' ?>"><span class="nav-ico">⚖️</span> Compare</a>
-                <a href="/calculator.php" class="nav-link <?= $current_page === 'calculator' ? 'active' : '' ?>"><span class="nav-ico">💰</span> Calculator</a>
-            </nav>
+            <a href="/roadmap.php"
+               class="sidebar-item <?= $current_page === 'roadmap' ? 'active' : '' ?>"
+               data-tooltip="Roadmap"
+               aria-label="Roadmap">
+                <?= icon('compass', '', 20) ?>
+            </a>
 
-            <!-- Right side actions -->
-            <div class="header-actions">
-                <?php if ($logged_in): ?>
-                    <a href="/profile.php" style="color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none">👤 <?= e($username) ?></a>
-                    <a href="/logout.php" class="desktop-logout-link" style="color:rgba(255,255,255,0.4);font-size:13px;text-decoration:none">Logout</a>
-                <?php else: ?>
-                    <a href="/login.php" style="color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none">Login</a>
-                    <a href="/register.php" class="btn-submit">Register</a>
-                <?php endif; ?>
-                <?php if (is_admin()): ?>
-                    <a href="/submit.php" class="btn-submit">+ Submit Tool</a>
-                <?php endif; ?>
-                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
-                    <span class="icon">🌙</span><span class="tt-label">Theme</span>
-                </button>
-            </div>
+            <a href="/stack-builder.php"
+               class="sidebar-item <?= $current_page === 'stack-builder' ? 'active' : '' ?>"
+               data-tooltip="Stack Builder"
+               aria-label="Stack Builder">
+                <?= icon('layers', '', 20) ?>
+            </a>
 
-        </div>
-    </header>
+            <a href="/compare.php"
+               class="sidebar-item <?= $current_page === 'compare' ? 'active' : '' ?>"
+               data-tooltip="Compare"
+               aria-label="Compare">
+                <?= icon('scale', '', 20) ?>
+            </a>
 
-    <!-- ═══ Bottom tab bar (phones/tablets) — Instagram style ═══ -->
-    <nav class="bottom-nav" aria-label="Main">
-        <a href="/index.php" class="bottom-tab <?= $current_page === 'index' ? 'active' : '' ?>" aria-label="Home" title="Home">
-            <svg viewBox="0 0 24 24"><path class="fill-on-active" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg>
+            <a href="/calculator.php"
+               class="sidebar-item <?= $current_page === 'calculator' ? 'active' : '' ?>"
+               data-tooltip="Calculator"
+               aria-label="Calculator">
+                <?= icon('calculator', '', 20) ?>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FLOATING BOTTOM TAB BAR (Mobile — 5 Icons with Active Dark Pill)
+         Home, Stack Builder, Compare, Calculator, Menu
+         ═══════════════════════════════════════════════════════════ -->
+    <nav class="bottom-nav" aria-label="Main Mobile Navigation">
+        <a href="/index.php" class="bottom-tab <?= $current_page === 'index' ? 'active' : '' ?>" aria-label="Home">
+            <span class="bottom-tab-icon"><?= icon('layout-grid', '', 19) ?></span>
+            <span class="bottom-tab-label">Home</span>
         </a>
-        <a href="/roadmap.php" class="bottom-tab <?= $current_page === 'roadmap' ? 'active' : '' ?>" aria-label="Roadmap" title="Roadmap">
-            <svg viewBox="0 0 24 24"><path class="fill-on-active" d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5z" /><path d="M9 4v13.5M15 6.5V20" stroke="currentColor" /></svg>
+        <a href="/stack-builder.php" class="bottom-tab <?= $current_page === 'stack-builder' ? 'active' : '' ?>" aria-label="Stack Builder">
+            <span class="bottom-tab-icon"><?= icon('layers', '', 19) ?></span>
+            <span class="bottom-tab-label">Stack</span>
         </a>
-        <a href="/stack-builder.php" class="bottom-tab <?= $current_page === 'stack-builder' ? 'active' : '' ?>" aria-label="Stack Builder" title="Stack Builder">
-            <svg viewBox="0 0 24 24"><path class="fill-on-active" d="m12 3 9 5-9 5-9-5z" /><path d="m3 13 9 5 9-5" /></svg>
+        <a href="/compare.php" class="bottom-tab <?= $current_page === 'compare' ? 'active' : '' ?>" aria-label="Compare">
+            <span class="bottom-tab-icon"><?= icon('scale', '', 19) ?></span>
+            <span class="bottom-tab-label">Compare</span>
         </a>
-        <a href="/compare.php" class="bottom-tab <?= $current_page === 'compare' ? 'active' : '' ?>" aria-label="Compare" title="Compare">
-            <svg viewBox="0 0 24 24"><path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5" /></svg>
+        <a href="/calculator.php" class="bottom-tab <?= $current_page === 'calculator' ? 'active' : '' ?>" aria-label="Calculator">
+            <span class="bottom-tab-icon"><?= icon('calculator', '', 19) ?></span>
+            <span class="bottom-tab-label">Calc</span>
         </a>
-        <button type="button" class="bottom-tab <?= in_array($current_page, $more_pages, true) ? 'active' : '' ?>" id="moreTab" onclick="toggleSheet()" aria-label="Profile and more" aria-expanded="false" aria-controls="moreSheet">
-            <?php if ($logged_in): ?>
-                <span class="tab-avatar"><?= e($user_letter) ?></span>
-            <?php else: ?>
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
-            <?php endif; ?>
+        <button type="button" class="bottom-tab" id="mobileMenuTabBtn" onclick="openMobileMenu()" aria-label="Open Menu">
+            <span class="bottom-tab-icon"><?= icon('menu', '', 19) ?></span>
+            <span class="bottom-tab-label">Menu</span>
         </button>
     </nav>
 
-    <!-- "More" sheet -->
-    <div class="sheet-overlay" id="sheetOverlay" onclick="toggleSheet(false)"></div>
-    <div class="more-sheet" id="moreSheet" role="dialog" aria-label="More">
-        <div class="sheet-handle"></div>
+    <!-- ═══════════════════════════════════════════════════════════
+         MOBILE MENU BOTTOM SHEET
+         Roadmap, Settings, How It Works, Submit, Account
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="mobile-sheet-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+    <div class="mobile-menu-sheet" id="mobileMenuSheet" role="dialog" aria-modal="true" aria-label="Mobile Navigation Menu">
+        <div class="mobile-sheet-drag-handle" onclick="closeMobileMenu()"></div>
 
-        <?php if ($logged_in): ?>
-            <a href="/profile.php" class="sheet-user">
-                <span class="tab-avatar"><?= e($user_letter) ?></span>
-                <span>
-                    <div class="sheet-user-name"><?= e($username) ?></div>
-                    <div class="sheet-user-sub">View your profile</div>
-                </span>
-            </a>
-        <?php endif; ?>
-
-        <a href="/calculator.php" class="sheet-link"><span class="sheet-ico">💰</span> Calculator</a>
-        <?php if (is_admin()): ?>
-            <a href="/submit.php" class="sheet-link"><span class="sheet-ico">➕</span> Submit a Tool</a>
-        <?php endif; ?>
-        <?php if ($logged_in): ?>
-            <a href="/logout.php" class="sheet-link danger"><span class="sheet-ico">🚪</span> Logout</a>
-        <?php else: ?>
-            <a href="/login.php" class="sheet-link"><span class="sheet-ico">🔑</span> Login</a>
-            <a href="/register.php" class="sheet-link"><span class="sheet-ico">📝</span> Register</a>
-        <?php endif; ?>
-    </div>
-
-    <script>
-        function toggleSheet(force) {
-            var sheet = document.getElementById('moreSheet');
-            var overlay = document.getElementById('sheetOverlay');
-            var tab = document.getElementById('moreTab');
-            if (!sheet || !overlay) return;
-            var open = (typeof force === 'boolean') ? force : !sheet.classList.contains('open');
-            sheet.classList.toggle('open', open);
-            overlay.classList.toggle('open', open);
-            if (tab) tab.setAttribute('aria-expanded', open ? 'true' : 'false');
-        }
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') toggleSheet(false);
-        });
-
-        // ── Top page-load progress bar ──────────────────────────
-        (function() {
-            var bar = document.getElementById('pageLoader');
-            if (!bar) return;
-
-            function start() {
-                bar.style.transition = 'none';
-                bar.style.width = '0%';
-                bar.style.opacity = '1';
-                // force reflow so the transition below actually animates
-                void bar.offsetWidth;
-                bar.style.transition = 'width 8s cubic-bezier(0.1, 0.6, 0.2, 1), opacity 0.2s ease';
-                bar.style.width = '90%';
-            }
-
-            function finish() {
-                bar.style.transition = 'width 0.25s ease, opacity 0.3s ease 0.15s';
-                bar.style.width = '100%';
-                setTimeout(function() {
-                    bar.style.opacity = '0';
-                }, 150);
-            }
-
-            // Show immediately on same-tab, same-origin link clicks
-            document.addEventListener('click', function(e) {
-                var link = e.target.closest('a');
-                if (!link) return;
-                if (link.target === '_blank' || link.hasAttribute('download')) return;
-                if (link.origin !== window.location.origin) return;
-                if (link.getAttribute('href') && link.getAttribute('href').startsWith('#')) return;
-                start();
-            });
-
-            // Show on form submits (search, review form, etc.)
-            document.addEventListener('submit', function() {
-                start();
-            });
-
-            // Hide once the page has actually finished loading
-            window.addEventListener('load', finish);
-
-            // Handle back/forward-cache restores (bar could be stuck mid-way)
-            window.addEventListener('pageshow', function(e) {
-                if (e.persisted) {
-                    bar.style.transition = 'none';
-                    bar.style.width = '0%';
-                    bar.style.opacity = '0';
-                }
-            });
-        })();
-
-        // ── Image skeleton reveal ────────────────────────────────
-        // Any <img class="skeleton-img"> fades in once loaded, hiding
-        // the shimmer placeholder behind it (helps on slow connections
-        // where external logos take a moment to arrive).
-        // Runs on DOMContentLoaded since this script sits in the header,
-        // before the tool cards it needs to find even exist yet.
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('img.skeleton-img').forEach(function(img) {
-                function reveal() {
-                    img.classList.add('loaded');
-                }
-                if (img.complete && img.naturalWidth > 0) {
-                    reveal();
-                } else {
-                    img.addEventListener('load', reveal);
-                    img.addEventListener('error', reveal);
-                }
-            });
-        });
-    </script>
-
-    <!-- Search bar -->
-    <div class="search-bar-wrap" id="searchWrap">
-        <div class="search-inner">
-            <form action="/search.php" method="GET" role="search">
-                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="search" name="q" placeholder="Search 20+ dropshipping tools..."
-                        value="<?= e($_GET['q'] ?? '') ?>" autocomplete="off" id="searchInput">
-                    <button type="submit" class="search-btn">Search</button>
+        <div class="mobile-sheet-profile-card">
+            <?php if ($logged_in): ?>
+                <div class="mobile-sheet-user">
+                    <span class="mobile-sheet-avatar"><?= e($user_letter) ?></span>
+                    <div class="mobile-sheet-user-meta">
+                        <strong class="mobile-sheet-username"><?= e($username) ?></strong>
+                        <span class="mobile-sheet-usersub">Active workspace &bull; Logged in</span>
+                    </div>
                 </div>
-            </form>
-            <div class="search-suggestions" id="searchSuggestions"></div>
+            <?php else: ?>
+                <div class="mobile-sheet-guest">
+                    <div class="mobile-sheet-guest-info">
+                        <strong><?= SITE_NAME ?></strong>
+                        <p>Join to save custom stacks, calculate net profit, and track tools.</p>
+                    </div>
+                    <div class="mobile-sheet-guest-actions">
+                        <a href="/login.php" class="mobile-sheet-btn-login">Login</a>
+                        <a href="/register.php" class="mobile-sheet-btn-register">Register</a>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="mobile-sheet-links-list">
+            <a href="/roadmap.php" class="mobile-sheet-link <?= $current_page === 'roadmap' ? 'active' : '' ?>">
+                <?= icon('compass', '', 18) ?>
+                <span>Roadmap Guide</span>
+            </a>
+            <?php if ($logged_in): ?>
+                <a href="/profile.php" class="mobile-sheet-link <?= $current_page === 'profile' ? 'active' : '' ?>">
+                    <?= icon('user', '', 18) ?>
+                    <span>Profile & Saved Stacks</span>
+                </a>
+                <a href="/profile.php#settings" class="mobile-sheet-link">
+                    <?= icon('settings', '', 18) ?>
+                    <span>Settings & Preferences</span>
+                </a>
+            <?php endif; ?>
+            <button type="button" class="mobile-sheet-link" onclick="openIntroModal(); closeMobileMenu();">
+                <?= icon('info', '', 18) ?>
+                <span>How It Works (Tour)</span>
+            </button>
+            <a href="/submit.php" class="mobile-sheet-link <?= $current_page === 'submit' ? 'active' : '' ?>">
+                <?= icon('plus', '', 18) ?>
+                <span>Submit a Tool</span>
+            </a>
+            <?php if ($logged_in): ?>
+                <a href="/logout.php" class="mobile-sheet-link mobile-sheet-link-danger">
+                    <?= icon('log-out', '', 18) ?>
+                    <span>Log Out</span>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
-    <?php if (!empty($show_browse_pills)): ?>
-        <div class="browse-pills-outer">
-            <div class="browse-pills-wrap">
-                <span class="browse-label">Browse:</span>
+    <?php if (!empty($_GET['open_menu'])): ?>
+        <script>window.addEventListener('DOMContentLoaded', () => setTimeout(openMobileMenu, 100));</script>
+    <?php endif; ?>
+    <?php if (!empty($_GET['open_search'])): ?>
+        <script>window.addEventListener('DOMContentLoaded', () => setTimeout(openMobileSearch, 100));</script>
+    <?php endif; ?>
 
-                <!-- All Tools pill — active only when no category is selected -->
-                <a href="/index.php"
-                    class="cat-pill <?= empty($active_cat) ? 'active-pill' : '' ?>">
-                    All Tools
-                </a>
-
-                <!-- Category pills — active when slug matches current page -->
-                <?php foreach ($cats as $nav_cat): ?>
-                    <a href="/category/index.php?slug=<?= e($nav_cat['slug']) ?>"
-                        class="cat-pill <?= (isset($active_cat) && $active_cat === $nav_cat['slug']) ? 'active-pill' : '' ?>">
-                        <?= e($nav_cat['name']) ?>
-                    </a>
-                <?php endforeach; ?>
-            </div>
+    <!-- ═══════════════════════════════════════════════════════════
+         MOBILE FULL-WIDTH SEARCH SHEET
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="mobile-search-overlay" id="mobileSearchOverlay" onclick="closeMobileSearch()"></div>
+    <div class="mobile-search-sheet" id="mobileSearchSheet" role="search" aria-label="Mobile Search">
+        <div class="mobile-search-bar">
+            <form action="/search.php" method="GET" class="mobile-search-form" id="mobileSearchForm">
+                <span class="mobile-search-icon"><?= icon('search', '', 18) ?></span>
+                <input type="search"
+                       name="q"
+                       id="mobileSearchInput"
+                       class="mobile-search-input"
+                       placeholder="Search 20+ vetted tools or categories..."
+                       autocomplete="off"
+                       spellcheck="false"
+                       aria-label="Search or ask AI">
+                <button type="button" class="mobile-search-clear" id="mobileSearchClear" onclick="clearMobileSearch()" aria-label="Clear">
+                    <?= icon('x', '', 16) ?>
+                </button>
+            </form>
+            <button type="button" class="mobile-search-cancel" onclick="closeMobileSearch()">Cancel</button>
         </div>
-    <?php endif; ?>
-    <?php if ($current_page === 'profile'): ?>
-        <script src="/assets/js/darkmode.js"></script>
-    <?php endif; ?>
+        <div class="mobile-search-results" id="mobileSearchResults"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         APP SHELL & TOP HEADER
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="app-shell">
+        <header class="app-topbar">
+            <!-- Mobile Brand Bar (Visible on mobile only) -->
+            <div class="topbar-mobile-header">
+                <a href="/index.php" class="mobile-topbar-logo" aria-label="<?= e(SITE_NAME) ?>">
+                    <span class="mobile-logo-icon"><?= icon('sparkles', '', 18) ?></span>
+                    <span class="mobile-logo-text"><?= SITE_NAME ?></span>
+                </a>
+                <div class="mobile-topbar-actions">
+                    <button type="button" class="topbar-icon-btn" id="mobileSearchTrigger" onclick="openMobileSearch()" aria-label="Search tools">
+                        <?= icon('search', '', 18) ?>
+                    </button>
+                    <button type="button" class="topbar-icon-btn" id="themeToggleMobile" onclick="toggleTheme()" aria-label="Switch theme">
+                        <?= icon('moon', '', 18) ?>
+                    </button>
+                    <?php if ($logged_in): ?>
+                        <button type="button" class="topbar-avatar-btn" onclick="openMobileMenu()" aria-label="Account menu">
+                            <span class="topbar-avatar"><?= e($user_letter) ?></span>
+                        </button>
+                    <?php else: ?>
+                        <a href="/login.php" class="mobile-header-login-btn">Login</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Left: Desktop Page Title + Muted Subtitle -->
+            <div class="topbar-titles">
+                <h1 class="topbar-title"><?= e($heading_title) ?></h1>
+                <p class="topbar-sub"><?= e($heading_sub) ?></p>
+            </div>
+
+            <!-- Right: Pill Search Bar + Theme Toggle + Account Control (Desktop) -->
+            <div class="topbar-right">
+                <!-- Search or ask AI pill -->
+                <form action="/search.php" method="GET" class="topbar-search" id="searchForm" role="search">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                    <div class="search-pill-box" id="searchBoxContainer">
+                        <input type="search"
+                               name="q"
+                               id="searchInput"
+                               placeholder="Search or ask AI..."
+                               value="<?= e($_GET['q'] ?? '') ?>"
+                               autocomplete="off"
+                               spellcheck="false"
+                               aria-label="Search or ask AI">
+                        <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="Clear search" title="Clear">
+                            <?= icon('x', '', 14) ?>
+                        </button>
+                        <button type="submit" class="search-pill-btn" id="searchSubmitBtn" aria-label="Search" title="Search">
+                            <?= icon('search', '', 16) ?>
+                        </button>
+                    </div>
+                    <div class="search-suggestions" id="searchSuggestions" role="listbox" aria-label="Search Suggestions"></div>
+                </form>
+
+                <!-- Single Theme Toggle (Header ONLY) -->
+                <button class="topbar-icon-btn" id="themeToggle" type="button" aria-label="Switch theme">
+                    <?= icon('moon', '', 18) ?>
+                </button>
+
+                <!-- Single Account Control (Top Right) -->
+                <?php if ($logged_in): ?>
+                    <div class="account-dropdown-wrap" id="accountDropdownWrap">
+                        <button type="button" class="topbar-avatar-btn" id="accountDropdownBtn" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                            <span class="topbar-avatar"><?= e($user_letter) ?></span>
+                        </button>
+                        <div class="account-dropdown-menu" id="accountDropdownMenu" role="menu">
+                            <div class="dropdown-user-info">
+                                <span class="dropdown-username"><?= e($username) ?></span>
+                                <span class="dropdown-subtext">Active workspace</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="/profile.php" class="dropdown-item" role="menuitem">
+                                <?= icon('user', '', 16) ?>
+                                <span>Profile</span>
+                            </a>
+                            <a href="/index.php#my-stack" class="dropdown-item" role="menuitem">
+                                <?= icon('layers', '', 16) ?>
+                                <span>My Stack</span>
+                            </a>
+                            <a href="/profile.php#settings" class="dropdown-item" role="menuitem">
+                                <?= icon('settings', '', 16) ?>
+                                <span>Settings</span>
+                            </a>
+                            <button type="button" class="dropdown-item" role="menuitem" onclick="openIntroModal()">
+                                <?= icon('info', '', 16) ?>
+                                <span>How It Works</span>
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <a href="/logout.php" class="dropdown-item dropdown-logout" role="menuitem">
+                                <?= icon('log-out', '', 16) ?>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="topbar-auth-btns">
+                        <a href="/login.php" class="topbar-btn-login">Login</a>
+                        <a href="/register.php" class="topbar-btn-register">Register</a>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (is_admin()): ?>
+                    <a href="/submit.php" class="topbar-cta-btn">
+                        <?= icon('plus', '', 14) ?>
+                        <span>Add Tool</span>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </header>
+
+        <!-- Main Content Starts Here -->
+        <main class="app-content">

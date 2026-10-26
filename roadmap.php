@@ -1,1252 +1,900 @@
 <?php
-    @define('APP', true);
-    require_once __DIR__ . '/config.php';
-    // Load saved roadmap if logged in
-    $roadmap = null;
-
-    if (isset($_SESSION['user_id'])) {
-
-        $stmt = $pdo->prepare(
-            "SELECT * FROM user_roadmap WHERE user_id=?"
-        );
-
-        $stmt->execute([
-            $_SESSION['user_id']
-        ]);
-
-        $roadmap = $stmt->fetch();
-    }
-
-    $page_title = 'Dropshipping Roadmap 2026 — Step by Step Guide';
-    $page_desc  = 'The complete dropshipping roadmap for beginners, intermediate and advanced sellers. Follow the exact steps to build a profitable store.';
-
-    include __DIR__ . '/header.php';
-    ?>
-
-    <style>
-        .roadmap-wrap {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 48px 24px 80px;
-        }
-
-        /* Hero */
-        .roadmap-hero {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-
-        .roadmap-hero .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--accent-light);
-            color: var(--accent);
-            font-size: 12px;
-            font-weight: 700;
-            padding: 5px 14px;
-            border-radius: 20px;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .roadmap-hero h1 {
-            font-size: clamp(28px, 4vw, 46px);
-            font-weight: 800;
-            color: var(--ink);
-            letter-spacing: -0.025em;
-            margin-bottom: 12px;
-            line-height: 1.15;
-        }
-
-        .roadmap-hero h1 span {
-            color: var(--accent);
-        }
-
-        .roadmap-hero p {
-            font-size: 16px;
-            color: var(--muted);
-            max-width: 520px;
-            margin: 0 auto;
-            line-height: 1.7;
-        }
-
-        /* Level Tabs */
-        .level-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 40px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .level-tab {
-            padding: 10px 24px;
-            border-radius: 99px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            border: 2px solid var(--border);
-            background: var(--surface);
-            color: var(--muted);
-            transition: all 0.2s;
-            font-family: var(--font);
-        }
-
-        .level-tab:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .level-tab.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
-        }
-
-        .level-tab.active.beginner {
-            background: #10b981;
-            border-color: #10b981;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-        }
-
-        .level-tab.active.intermediate {
-            background: #f59e0b;
-            border-color: #f59e0b;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
-        }
-
-        .level-tab.active.advanced {
-            background: #6366f1;
-            border-color: #6366f1;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
-        }
-
-        /* Roadmap Content */
-        .roadmap-level {
-            display: none;
-        }
-
-        .roadmap-level.active {
-            display: block;
-        }
-
-        /* Level Header */
-        .level-header {
-            background: var(--dark);
-            border-radius: var(--radius);
-            padding: 28px 32px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .level-header::before {
-            content: '';
-            position: absolute;
-            top: -30px;
-            right: -30px;
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            opacity: 0.1;
-        }
-
-        .beginner .level-header::before {
-            background: #10b981;
-        }
-
-        .intermediate .level-header::before {
-            background: #f59e0b;
-        }
-
-        .advanced .level-header::before {
-            background: #6366f1;
-        }
-
-        .level-icon {
-            font-size: 48px;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .level-header-info {
-            position: relative;
-            z-index: 1;
-        }
-
-        .level-header-title {
-            font-size: 22px;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-
-        .level-header-sub {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-            line-height: 1.6;
-        }
-
-        .level-header-badge {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 20px;
-            margin-top: 8px;
-        }
-
-        .beginner .level-header-badge {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        .intermediate .level-header-badge {
-            background: rgba(245, 158, 11, 0.2);
-            color: #fcd34d;
-        }
-
-        .advanced .level-header-badge {
-            background: rgba(99, 102, 241, 0.2);
-            color: #a5b4fc;
-        }
-
-        /* Phase */
-        .phase {
-            margin-bottom: 36px;
-        }
-
-        .phase-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-
-        .phase-number {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 800;
-            color: #fff;
-            flex-shrink: 0;
-        }
-
-        .beginner .phase-number {
-            background: #10b981;
-        }
-
-        .intermediate .phase-number {
-            background: #f59e0b;
-        }
-
-        .advanced .phase-number {
-            background: #6366f1;
-        }
-
-        .phase-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--ink);
-        }
-
-        .phase-time {
-            font-size: 12px;
-            color: var(--muted);
-            font-weight: 500;
-            margin-top: 2px;
-        }
-
-        /* Steps */
-        .steps-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding-left: 50px;
-        }
-
-        .step-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-            transition: all 0.15s;
-            position: relative;
-        }
-
-        .step-card:hover {
-            border-color: #c7d2fe;
-            box-shadow: var(--shadow-sm);
-            transform: translateX(4px);
-        }
-
-        .step-check {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            border: 2px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.15s;
-            margin-top: 1px;
-        }
-
-        .step-check.done {
-            border-color: var(--green);
-            background: var(--green);
-            color: #fff;
-        }
-
-        .step-check.done::after {
-            content: '✓';
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .step-body {
-            flex: 1;
-        }
-
-        .step-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 4px;
-        }
-
-        .step-desc {
-            font-size: 13px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .step-tool {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--accent-light);
-            color: var(--accent);
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 5px;
-            margin-top: 8px;
-            text-decoration: none;
-            transition: background 0.15s;
-        }
-
-        .step-tool:hover {
-            background: #c7d2fe;
-        }
-
-        .step-free {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        /* Connector line */
-        .phase-connector {
-            width: 2px;
-            height: 24px;
-            margin-left: 67px;
-            background: var(--border);
-            border-radius: 2px;
-            margin-bottom: 4px;
-        }
-
-        /* Progress */
-        .progress-section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .progress-info {
-            flex: 1;
-        }
-
-        .progress-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 8px;
-        }
-
-        .progress-bar-wrap {
-            background: var(--border);
-            border-radius: 99px;
-            height: 8px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 99px;
-            transition: width 0.3s ease;
-        }
-
-        .beginner .progress-bar-fill {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-
-        .intermediate .progress-bar-fill {
-            background: linear-gradient(90deg, #f59e0b, #fcd34d);
-        }
-
-        .advanced .progress-bar-fill {
-            background: linear-gradient(90deg, #6366f1, #8b5cf6);
-        }
-
-        .progress-pct {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--ink);
-            flex-shrink: 0;
-        }
-
-        /* CTA Box */
-        .roadmap-cta {
-            background: var(--dark);
-            border-radius: var(--radius);
-            padding: 32px;
-            text-align: center;
-            margin-top: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .roadmap-cta::before {
-            content: '';
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 200px;
-            background: radial-gradient(ellipse, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
-        }
-
-        .roadmap-cta h3 {
-            font-size: 22px;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .roadmap-cta p {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .roadmap-cta-btns {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: relative;
-            z-index: 1;
-        }
-
-        .cta-btn-primary {
-            background: var(--accent);
-            color: #fff;
-            padding: 11px 24px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 700;
-            transition: background 0.15s;
-        }
-
-        .cta-btn-primary:hover {
-            background: var(--accent-h);
-        }
-
-        .cta-btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
-            padding: 11px 24px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: background 0.15s;
-        }
-
-        .cta-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-    </style>
-
-    <div class="roadmap-wrap">
-
-        <div class="roadmap-hero">
-            <div class="badge">🗺️ Free Roadmap</div>
-            <h1>The <span>Dropshipping Roadmap</span><br>That Actually Works</h1>
-            <p>Follow the exact steps based on your level — from zero to your first sale, or from existing store to scaling past $10k/month.</p>
+@define('APP', true);
+require_once __DIR__ . '/config.php';
+
+// Load saved roadmap if logged in
+$roadmap = null;
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM user_roadmap WHERE user_id=?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $roadmap = $stmt->fetch();
+}
+
+$page_title      = 'Dropshipping Roadmap 2026 — Step by Step Guide';
+$page_heading    = 'Growth Roadmap';
+$page_subheading = 'Structured step-by-step milestones to scale from zero to $50k+/month';
+$page_desc       = 'The complete dropshipping roadmap for beginners, intermediate and advanced sellers. Follow the exact steps to build a profitable store.';
+
+include __DIR__ . '/header.php';
+?>
+
+<style>
+.roadmap-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 10px 0 60px;
+}
+
+/* Hero Badge */
+.roadmap-hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.roadmap-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: var(--radius-full);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.roadmap-hero h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.025em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+}
+
+.roadmap-hero h1 span {
+    color: var(--accent);
+}
+
+.roadmap-hero p {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.65;
+}
+
+/* Level Tabs */
+.level-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.level-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: var(--radius-full);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: all var(--dur-fast) var(--ease);
+    box-shadow: var(--shadow-xs);
+}
+
+.level-tab:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.level-tab.active {
+    background: var(--btn-primary-bg);
+    border-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Roadmap Levels */
+.roadmap-level {
+    display: none;
+}
+
+.roadmap-level.active {
+    display: block;
+    animation: fadeRise 0.35s var(--ease) both;
+}
+
+/* Level Header Card */
+.level-header-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: 24px 28px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.level-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-xl);
+    background: var(--accent-light);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.level-header-info {
+    flex: 1;
+}
+
+.level-header-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.level-header-sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.level-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--positive-text);
+    background: var(--positive-bg);
+    border: 1px solid var(--positive-border);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    margin-top: 8px;
+}
+
+/* Progress Section */
+.progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: 22px 28px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.progress-info {
+    flex: 1;
+}
+
+.progress-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+}
+
+.progress-bar-wrap {
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    height: 8px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #16a34a);
+    border-radius: var(--radius-full);
+    transition: width 0.4s var(--ease);
+}
+
+.progress-pct {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+/* Phase Section */
+.phase-group {
+    margin-bottom: 32px;
+}
+
+.phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.phase-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.phase-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.015em;
+}
+
+.phase-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 1px;
+}
+
+/* Step Cards */
+.steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 18px 22px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.step-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(50, 99, 70, 0.25);
+}
+
+.step-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface-2);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--dur-fast) var(--ease);
+}
+
+.step-check:hover {
+    border-color: var(--accent);
+}
+
+.step-check.done {
+    background: var(--positive);
+    border-color: var(--positive);
+}
+
+.step-check.done::after {
+    content: '';
+    width: 6px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.step-body {
+    flex: 1;
+}
+
+.step-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.step-check.done + .step-body .step-title {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.step-desc {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 8px;
+}
+
+.step-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--accent-light);
+    color: var(--accent);
+    text-decoration: none;
+    transition: all var(--dur-fast) var(--ease);
+    border: 1px solid rgba(50, 99, 70, 0.15);
+}
+
+.step-tool:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.step-tool.step-free {
+    background: var(--positive-bg);
+    color: var(--positive-text);
+    border-color: var(--positive-border);
+}
+
+.step-tool.step-free:hover {
+    background: var(--positive);
+    color: #fff;
+}
+
+/* Roadmap CTA Card */
+.roadmap-cta-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: 36px 32px;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    margin-top: 48px;
+}
+
+.roadmap-cta-card h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.roadmap-cta-card p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+.roadmap-cta-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+</style>
+
+<div class="roadmap-wrap">
+
+    <div class="roadmap-hero">
+        <div class="roadmap-badge">
+            <?= icon('compass', '', 14) ?>
+            <span>Structured Growth Framework</span>
+        </div>
+        <h1>The <span>Dropshipping Roadmap</span><br>Built for Consistent Execution</h1>
+        <p>Follow vetted steps tailored to your exact milestone — from zero inventory to consistent, profitable $50,000+ months.</p>
+    </div>
+
+    <!-- Level Selector Tabs -->
+    <div class="level-tabs" role="tablist">
+        <button type="button" class="level-tab beginner active" onclick="showLevel('beginner')" role="tab" aria-selected="true">
+            <?= icon('package', '', 15) ?>
+            <span>Beginner (0 to First Sale)</span>
+        </button>
+        <button type="button" class="level-tab intermediate" onclick="showLevel('intermediate')" role="tab" aria-selected="false">
+            <?= icon('trending-up', '', 15) ?>
+            <span>Intermediate ($5k - $20k/mo)</span>
+        </button>
+        <button type="button" class="level-tab advanced" onclick="showLevel('advanced')" role="tab" aria-selected="false">
+            <?= icon('zap', '', 15) ?>
+            <span>Advanced ($50k+/mo Scale)</span>
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- LEVEL 1: BEGINNER -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="roadmap-level beginner active" id="level-beginner">
+
+        <div class="level-header-card">
+            <div class="level-icon-wrap">
+                <?= icon('package', '', 24) ?>
+            </div>
+            <div class="level-header-info">
+                <div class="level-header-title">Beginner Roadmap</div>
+                <div class="level-header-sub">Starting from scratch. Follow these foundations in sequence to validate products and capture your first customer sales within 30–60 days.</div>
+                <div class="level-header-badge">
+                    <?= icon('clock', '', 13) ?>
+                    <span>Estimated timeline: 30–60 days to first sales</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="level-tabs">
-            <button class="level-tab beginner active" onclick="showLevel('beginner')">🌱 Beginner</button>
-            <button class="level-tab intermediate" onclick="showLevel('intermediate')">📈 Intermediate</button>
-            <button class="level-tab advanced" onclick="showLevel('advanced')">🚀 Advanced</button>
+        <div class="progress-card">
+            <div class="progress-info">
+                <div class="progress-label">Milestone Progress — <span id="beginner-done">0</span> of <span id="beginner-total">0</span> steps completed</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="beginner-bar" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="progress-pct" id="beginner-pct">0%</div>
         </div>
 
-        <!-- ═══════════════════════════════════════ -->
-        <!-- BEGINNER -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="roadmap-level beginner active" id="level-beginner">
-
-            <div class="level-header">
-                <div class="level-icon">🌱</div>
-                <div class="level-header-info">
-                    <div class="level-header-title">Beginner Roadmap</div>
-                    <div class="level-header-sub">You're starting from zero. Follow these steps in order to make your first sale within 30–60 days.</div>
-                    <div class="level-header-badge">Estimated time to first sale: 30–60 days</div>
+        <!-- Phase 1 -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div>
+                    <div class="phase-title">Master the Fundamentals</div>
+                    <div class="phase-time">Week 1 — Strategy & Market Validation</div>
                 </div>
             </div>
-
-            <div class="progress-section beginner">
-                <div class="progress-info">
-                    <div class="progress-label">Your Progress — <span id="beginner-done">0</span> of <span id="beginner-total">0</span> steps completed</div>
-                    <div class="progress-bar-wrap">
-                        <div class="progress-bar-fill" id="beginner-bar" style="width:0%"></div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Understand the core economics of dropshipping</div>
+                        <div class="step-desc">Master the customer journey: store checkout, automated supplier dispatch, delivery window, and profit margin calculation.</div>
                     </div>
                 </div>
-                <div class="progress-pct" id="beginner-pct">0%</div>
-            </div>
-
-            <!-- Phase 1 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">1</div>
-                    <div>
-                        <div class="phase-title">🧠 Learn the Basics</div>
-                        <div class="phase-time">Week 1 — Foundation</div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Select a dedicated niche</div>
+                        <div class="step-desc">Avoid fragmented general catalogs. Choose a focused niche with passionate buyers (pet care, ergonomic work, specialty hobby gear).</div>
                     </div>
                 </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Understand how dropshipping works</div>
-                            <div class="step-desc">Learn the model: you sell, supplier ships. No inventory needed. Watch 2–3 YouTube videos to get the concept clear before spending any money.</div>
-                        </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Audit competitor ad creatives</div>
+                        <div class="step-desc">Analyze high-engagement ads on Meta Ad Library and TikTok Creative Center to discover winning angles and creative hooks.</div>
                     </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Choose your niche</div>
-                            <div class="step-desc">Pick a specific niche — not "general store". Think: pet accessories, home gym, baby products, outdoor gear. Niche stores convert better.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Research your competition</div>
-                            <div class="step-desc">Search your niche on Facebook and TikTok. Look at what ads are already running. If competitors exist, that means there's money in the niche.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Validate your niche with free tools</div>
-                            <div class="step-desc">Use Google Trends to check search interest. Check TikTok hashtags for your niche. Make sure people are actively searching for it.</div><a href="http://hdropshipping.com/go.php?slug=minea" class="step-tool step-free">🔍 Try Minea Free</a>
-                        </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Validate demand with product spy software</div>
+                        <div class="step-desc">Review viral ad metrics, engagement velocity, and trending order volume before committing funds.</div>
+                        <a href="/go.php?slug=minea" class="step-tool step-free" target="_blank" rel="noopener">
+                            <?= icon('search', '', 12) ?> <span>Try Minea Free</span>
+                        </a>
                     </div>
                 </div>
             </div>
-
-            <div class="phase-connector"></div>
-
-            <!-- Phase 2 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">2</div>
-                    <div>
-                        <div class="phase-title">🏪 Build Your Store</div>
-                        <div class="phase-time">Week 2 — Setup</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Choose your platform</div>
-                            <div class="step-desc">Shopify is the best for beginners — easy to use, great apps, and designed for dropshipping. WooCommerce is free if budget is tight.</div><a href="http://hdropshipping.com/go.php?slug=shopify" class="step-tool">🏪 Start Shopify Free Trial</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Pick a clean theme</div>
-                            <div class="step-desc">Use Shopify's free "Dawn" theme — it's fast and converts well. Don't spend money on themes at this stage.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Set up essential pages</div>
-                            <div class="step-desc">Create: Home, Product pages, About Us, Contact, Shipping Policy, Return Policy. Customers check these before buying.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Connect a payment provider</div>
-                            <div class="step-desc">Enable Shopify Payments or PayPal. Make sure you can actually receive money before driving traffic.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-connector"></div>
-
-            <!-- Phase 3 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">3</div>
-                    <div>
-                        <div class="phase-title">📦 Find Products & Suppliers</div>
-                        <div class="phase-time">Week 2–3 — Products</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Find your first winning product</div>
-                            <div class="step-desc">Look for: solving a problem, hard to find in stores, good margin (sell for 3x cost), visually demonstrable (good for video ads).</div><a href="http://hdropshipping.com/go.php?slug=sell-the-trend" class="step-tool">🔍 Find Products on Sell The Trend</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Connect a supplier</div>
-                            <div class="step-desc">DSers (free) for AliExpress products. Zendrop for US-based faster shipping. Start with DSers to keep costs low.</div><a href="http://hdropshipping.com/go.php?slug=zendrop" class="step-tool step-free">📦 Try Zendrop Free</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Order a sample first</div>
-                            <div class="step-desc">Order your product before selling it. Check quality, packaging, and shipping time. Don't sell what you haven't seen.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Write great product descriptions</div>
-                            <div class="step-desc">Focus on benefits, not features. Use ChatGPT to help. Add size charts, FAQs, and real photos. This directly affects conversion rate.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-connector"></div>
-
-            <!-- Phase 4 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">4</div>
-                    <div>
-                        <div class="phase-title">📢 Get Your First Sales</div>
-                        <div class="phase-time">Week 3–4 — Traffic</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Create a TikTok organic strategy (free)</div>
-                            <div class="step-desc">Post 3 videos per day showing your product. Film yourself unboxing it, showing results, solving the problem. TikTok can go viral with zero ad spend.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Set up Facebook/Instagram ads (paid)</div>
-                            <div class="step-desc">Start with $10–20/day. Test 3–5 different creatives. Use video ads — they outperform images for dropshipping.</div><a href="http://hdropshipping.comgo.php?slug=adcreative-ai" class="step-tool">🎨 Create Ads with AdCreative.ai</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Add live chat to recover visitors</div>
-                            <div class="step-desc">Install Tidio — free plan is enough. Answer questions in real time. Converts hesitant visitors into buyers.</div><a href="http://hdropshipping.com/go.php?slug=tidio" class="step-tool step-free">💬 Add Tidio Free</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">🎉 Celebrate your first sale!</div>
-                            <div class="step-desc">When it comes in, fulfill the order immediately. Message the customer. Ask for a review. Then scale what's working.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- ═══════════════════════════════════════ -->
-        <!-- INTERMEDIATE -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="roadmap-level intermediate" id="level-intermediate">
-
-            <div class="level-header">
-                <div class="level-icon">📈</div>
-                <div class="level-header-info">
-                    <div class="level-header-title">Intermediate Roadmap</div>
-                    <div class="level-header-sub">You've made some sales. Now it's time to build systems, optimize your store, and hit consistent $5k–$20k months.</div>
-                    <div class="level-header-badge">Target: $5,000–$20,000/month in 60–90 days</div>
+        <!-- Phase 2 -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div>
+                    <div class="phase-title">Store Architecture & Infrastructure</div>
+                    <div class="phase-time">Week 2 — Store Build & Compliance</div>
                 </div>
             </div>
-
-            <div class="progress-section intermediate">
-                <div class="progress-info">
-                    <div class="progress-label">Your Progress — <span id="intermediate-done">0</span> of <span id="intermediate-total">0</span> steps completed</div>
-                    <div class="progress-bar-wrap">
-                        <div class="progress-bar-fill" id="intermediate-bar" style="width:0%"></div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Deploy high-converting ecommerce storefront</div>
+                        <div class="step-desc">Set up Shopify with a fast, modern clean theme. Ensure lightning-fast checkout and mobile responsiveness.</div>
+                        <a href="/go.php?slug=shopify" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('shopping-bag', '', 12) ?> <span>Start Shopify Free Trial</span>
+                        </a>
                     </div>
                 </div>
-                <div class="progress-pct" id="intermediate-pct">0%</div>
-            </div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">1</div>
-                    <div>
-                        <div class="phase-title">📊 Understand Your Numbers</div>
-                        <div class="phase-time">Week 1 — Analytics</div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Configure legal & trust architecture</div>
+                        <div class="step-desc">Deploy compliant Shipping Policy, Refund Policy, Terms of Service, and clear tracking pages.</div>
                     </div>
                 </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Track your real profit (not just revenue)</div>
-                            <div class="step-desc">Revenue means nothing without knowing your COGS, ad spend, app costs, and refunds. Know your actual margin per order.</div><a href="http://hdropshipping.com/go.php?slug=triple-whale" class="step-tool">📊 Track Profit with Triple Whale</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Identify your best performing ads</div>
-                            <div class="step-desc">Look at which creatives have the best CTR and ROAS. Kill anything below 1.5x ROAS. Double budget on winners.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Find your best traffic source</div>
-                            <div class="step-desc">Facebook, TikTok, Google Shopping, or organic? Double down on what's already working instead of spreading thin.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Install Hotjar or Microsoft Clarity (free)</div>
-                            <div class="step-desc">Watch session recordings to see where visitors drop off. Fix those friction points and your conversion rate will improve.</div>
-                        </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Connect direct payment gateways</div>
+                        <div class="step-desc">Activate Stripe, Shopify Payments, and PayPal Express for multi-currency settlement.</div>
                     </div>
                 </div>
             </div>
-
-            <div class="phase-connector"></div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">2</div>
-                    <div>
-                        <div class="phase-title">🏪 Upgrade Your Store</div>
-                        <div class="phase-time">Week 2 — Conversion Optimization</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Add social proof — photo reviews</div>
-                            <div class="step-desc">Install Loox or Judge.me. Import reviews from AliExpress or collect real ones. Stores with reviews convert 15–40% better.</div><a href="http://hdropshipping.com/go.php?slug=loox" class="step-tool">⭐ Add Reviews with Loox</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Add upsells and cross-sells</div>
-                            <div class="step-desc">Use "Frequently Bought Together" or post-purchase upsells. Increasing AOV by 20% doubles your profitability without new customers.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Optimize your product page</div>
-                            <div class="step-desc">Add: video demo, trust badges, money-back guarantee, FAQ section, scarcity timer. Each element increases conversion rate.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Speed up your store</div>
-                            <div class="step-desc">Compress images with TinyPNG. Remove unused apps. Slow stores lose customers — aim for under 3 seconds load time.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-connector"></div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">3</div>
-                    <div>
-                        <div class="phase-title">📧 Build Your Email Engine</div>
-                        <div class="phase-time">Week 3 — Retention</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Set up Klaviyo email flows</div>
-                            <div class="step-desc">Build: Welcome series, Abandoned Cart (3 emails), Post-Purchase, Win-Back. These 4 flows alone can add 20–30% revenue.</div><a href="http://hdropshipping.com/go.php?slug=klaviyo" class="step-tool step-free">📧 Start Klaviyo Free</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Add a pop-up to capture emails</div>
-                            <div class="step-desc">Offer 10% off in exchange for an email. Use Klaviyo's built-in forms. Email list = money you own forever.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Send weekly campaigns</div>
-                            <div class="step-desc">Promote new products, sales, and content to your list. Email is the highest ROI marketing channel at $36 return per $1 spent.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Segment your list</div>
-                            <div class="step-desc">Separate buyers from non-buyers. Send different emails to VIP customers (spent $200+) vs new subscribers. Segmentation = higher open rates.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-connector"></div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">4</div>
-                    <div>
-                        <div class="phase-title">📦 Upgrade Your Supply Chain</div>
-                        <div class="phase-time">Week 3–4 — Operations</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Switch to faster suppliers</div>
-                            <div class="step-desc">Move from AliExpress (15–30 days) to Zendrop or Spocket (3–7 days). Faster shipping = fewer refund requests and better reviews.</div><a href="http://hdropshipping.com/go.php?slug=spocket" class="step-tool step-free">📦 Try Spocket Free</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Automate order fulfillment</div>
-                            <div class="step-desc">Use AutoDS to auto-fulfill orders the moment they come in. No more manual ordering — saves hours every day.</div><a href="http://hdropshipping.com/go.php?slug=autods" class="step-tool">⚙️ Automate with AutoDS</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Set up customer support properly</div>
-                            <div class="step-desc">Install Tidio or Gorgias. Create templated replies for common questions. Fast support = better reviews and fewer chargebacks.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- ═══════════════════════════════════════ -->
-        <!-- ADVANCED -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="roadmap-level advanced" id="level-advanced">
-
-            <div class="level-header">
-                <div class="level-icon">🚀</div>
-                <div class="level-header-info">
-                    <div class="level-header-title">Advanced Roadmap</div>
-                    <div class="level-header-sub">You're doing $10k+/month. Now it's about scaling profitably, building a real brand, and creating systems that run without you.</div>
-                    <div class="level-header-badge">Target: $50,000–$100,000+/month</div>
+        <!-- Phase 3 -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">3</div>
+                <div>
+                    <div class="phase-title">Sourcing & Supplier Integration</div>
+                    <div class="phase-time">Week 3 — Supplier Setup</div>
                 </div>
             </div>
-
-            <div class="progress-section advanced">
-                <div class="progress-info">
-                    <div class="progress-label">Your Progress — <span id="advanced-done">0</span> of <span id="advanced-total">0</span> steps completed</div>
-                    <div class="progress-bar-wrap">
-                        <div class="progress-bar-fill" id="advanced-bar" style="width:0%"></div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Filter products with 3x margin potential</div>
+                        <div class="step-desc">Calculate landed costs including shipping and ad spend to protect minimum 30% net margin.</div>
+                        <a href="/go.php?slug=sell-the-trend" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('search', '', 12) ?> <span>Browse Sell The Trend</span>
+                        </a>
                     </div>
                 </div>
-                <div class="progress-pct" id="advanced-pct">0%</div>
-            </div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">1</div>
-                    <div>
-                        <div class="phase-title">🎯 Master Paid Advertising</div>
-                        <div class="phase-time">Month 1 — Scale Ad Spend</div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Connect fast dispatch fulfillment supplier</div>
+                        <div class="step-desc">Integrate Zendrop or DSers for streamlined 1-click fulfillment and express delivery options.</div>
+                        <a href="/go.php?slug=zendrop" class="step-tool step-free" target="_blank" rel="noopener">
+                            <?= icon('package', '', 12) ?> <span>Test Zendrop Free</span>
+                        </a>
                     </div>
                 </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Fix your attribution before scaling</div>
-                            <div class="step-desc">At scale, Facebook pixel data is unreliable. Install Triple Whale or Northbeam for accurate ROAS across all channels before spending more.</div><a href="http://hdropshipping.com//go.php?slug=northbeam" class="step-tool">📈 Get Northbeam Attribution</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Scale winning ad sets systematically</div>
-                            <div class="step-desc">Increase budget by 20% every 48–72 hours on winning ad sets. Never double overnight — it resets the algorithm learning phase.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Spy on competitors at scale</div>
-                            <div class="step-desc">Use AdSpy to monitor exactly which ads your competitors are running and how long they've been active. Long-running ads = profitable ads.</div><a href="http://hdropshipping.com/go.php?slug=adspy" class="step-tool">🕵️ Spy with AdSpy</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Launch on Google Shopping</div>
-                            <div class="step-desc">Facebook + Google together captures the full buyer journey. Google Shopping converts people who are already ready to buy.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Produce ads at scale with AI</div>
-                            <div class="step-desc">Use AdCreative.ai to generate 50+ ad variations fast. Test more creatives = find winners faster = scale faster.</div><a href="http://hdropshipping.com/go.php?slug=adcreative-ai" class="step-tool">🤖 Scale Ads with AdCreative.ai</a>
-                        </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Verify physical product sample</div>
+                        <div class="step-desc">Order samples to inspect finish, packaging unboxing experience, and actual transit days.</div>
                     </div>
                 </div>
             </div>
-
-            <div class="phase-connector"></div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">2</div>
-                    <div>
-                        <div class="phase-title">🏷️ Build a Real Brand</div>
-                        <div class="phase-time">Month 1–2 — Brand Building</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Add private label packaging</div>
-                            <div class="step-desc">Get your logo on the packaging. Spocket offers branded invoicing. This reduces chargebacks and builds repeat customers.</div><a href="http://hdropshipping.com/go.php?slug=spocket" class="step-tool">📦 Private Label with Spocket</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Build a real social media presence</div>
-                            <div class="step-desc">Post consistently on TikTok and Instagram. User-generated content and influencer reposts are free traffic that compounds over time.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Start a loyalty/rewards program</div>
-                            <div class="step-desc">Install Smile.io or LoyaltyLion. Repeat customers cost 5x less to convert than new ones. Reward them to keep them coming back.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Collect and showcase video reviews</div>
-                            <div class="step-desc">Reach out to customers with a discount in exchange for a video testimonial. Video UGC is the most powerful social proof you can have.</div><a href="http://hdropshipping.com/go.php?slug=loox" class="step-tool">⭐ Collect Video Reviews with Loox</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-connector"></div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">3</div>
-                    <div>
-                        <div class="phase-title">⚙️ Build Systems & Hire</div>
-                        <div class="phase-time">Month 2–3 — Operations</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Hire a customer support VA</div>
-                            <div class="step-desc">At $50k+/month, support becomes a full-time job. Hire someone on Upwork for $5–10/hr and give them Gorgias access. Free your time for growth.</div><a href="http://hdropshipping.com/go.php?slug=gorgias" class="step-tool">🎧 Set Up Gorgias for Your VA</a>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Hire a media buyer</div>
-                            <div class="step-desc">A good media buyer pays for themselves 3–5x over. Find one with proven dropshipping experience on Upwork or Twitter/X.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Document all your SOPs</div>
-                            <div class="step-desc">Write down every process in your business. This makes hiring easier and lets the business run without you being there every day.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Set up proper accounting</div>
-                            <div class="step-desc">At this revenue, get a real accountant or use QuickBooks. Know your P&L monthly. Scaling without financial clarity is dangerous.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-connector"></div>
-
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">4</div>
-                    <div>
-                        <div class="phase-title">💎 Exit or Multiply</div>
-                        <div class="phase-time">Month 3+ — Long Term</div>
-                    </div>
-                </div>
-                <div class="steps-list">
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Launch a second store</div>
-                            <div class="step-desc">Apply what worked in your first store to a new niche. Your second store will grow faster because you already know what to do.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Transition to wholesale / private label</div>
-                            <div class="step-desc">Order larger quantities directly from manufacturers. Your COGS drops 40–60% and your margins explode.</div>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-check" onclick="toggleStep(this)"></div>
-                        <div class="step-body">
-                            <div class="step-title">Consider selling your store</div>
-                            <div class="step-desc">Profitable Shopify stores sell for 3–5x annual profit on Empire Flippers or Acquire.com. A $10k/month profit store is worth $360k–$600k.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- CTA -->
-        <div class="roadmap-cta">
-            <h3>Ready to Start? Get the Right Tools</h3>
-            <p>Use our free tools to find the perfect stack for your level and budget.</p>
-            <div class="roadmap-cta-btns">
-                <a href="http://hdropshipping.com/stack-builder.php" class="cta-btn-primary">🎯 Build My Stack</a>
-                <a href="http://hdropshipping.com/calculator.php" class="cta-btn-secondary">💰 Calculate My Costs</a>
-                <a href="http://hdropshipping.com/compare.php" class="cta-btn-secondary">⚖️ Compare Tools</a>
+        <!-- Phase 4 -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">4</div>
+                <div>
+                    <div class="phase-title">Acquisition & Initial Conversions</div>
+                    <div class="phase-time">Week 4 — First Traffic & Sales</div>
+                </div>
+            </div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Organic TikTok and Reels short-form videos</div>
+                        <div class="step-desc">Produce 2-3 daily demonstrations highlighting hook, problem solved, and immediate call to action.</div>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Launch controlled creative ad testing</div>
+                        <div class="step-desc">Deploy test budgets ($15-25/day) across 3 creative variations with AI-generated ad copy.</div>
+                        <a href="/go.php?slug=adcreative-ai" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('zap', '', 12) ?> <span>AdCreative.ai Tools</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Install real-time chat & objection handling</div>
+                        <div class="step-desc">Engage hesitant checkout visitors and answer sizing and shipping queries instantly.</div>
+                        <a href="/go.php?slug=tidio" class="step-tool step-free" target="_blank" rel="noopener">
+                            <?= icon('message-square', '', 12) ?> <span>Add Tidio Live Chat</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <script>
-        const savedRoadmap = <?= json_encode([
-                                    'beginner' => json_decode($roadmap['beginner_steps'] ?? '[]', true),
-                                    'intermediate' => json_decode($roadmap['intermediate_steps'] ?? '[]', true),
-                                    'advanced' => json_decode($roadmap['advanced_steps'] ?? '[]', true)
-                                ]) ?>;
+    <!-- ═══════════════════════════════════════ -->
+    <!-- LEVEL 2: INTERMEDIATE -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="roadmap-level intermediate" id="level-intermediate">
 
-        function showLevel(level) {
-            document.querySelectorAll('.roadmap-level')
-                .forEach(l => l.classList.remove('active'));
+        <div class="level-header-card">
+            <div class="level-icon-wrap">
+                <?= icon('trending-up', '', 24) ?>
+            </div>
+            <div class="level-header-info">
+                <div class="level-header-title">Intermediate Roadmap</div>
+                <div class="level-header-sub">Transitioning beyond initial sales into repeatable, predictable $5,000 to $20,000 monthly profit. Optimize conversion rates and retention.</div>
+                <div class="level-header-badge">
+                    <?= icon('trending-up', '', 13) ?>
+                    <span>Target: $5,000–$20,000/month recurring volume</span>
+                </div>
+            </div>
+        </div>
 
-            document.querySelectorAll('.level-tab')
-                .forEach(t => t.classList.remove('active'));
+        <div class="progress-card">
+            <div class="progress-info">
+                <div class="progress-label">Milestone Progress — <span id="intermediate-done">0</span> of <span id="intermediate-total">0</span> steps completed</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="intermediate-bar" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="progress-pct" id="intermediate-pct">0%</div>
+        </div>
 
-            document
-                .getElementById('level-' + level)
-                .classList.add('active');
+        <!-- Intermediate Phases -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div>
+                    <div class="phase-title">Attribution & Unit Economics</div>
+                    <div class="phase-time">Week 1 — Financial Clarity</div>
+                </div>
+            </div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Track net profit and multi-touch attribution</div>
+                        <div class="step-desc">Audit blended ROAS, payment fees, shipping costs, and customer acquisition cost across channels.</div>
+                        <a href="/go.php?slug=triple-whale" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('bar-chart-2', '', 12) ?> <span>Audit with Triple Whale</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Deploy photo social proof & video reviews</div>
+                        <div class="step-desc">Incorporate UGC reviews and verified buyer badges to lift conversion rates by 25-40%.</div>
+                        <a href="/go.php?slug=loox" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('star', '', 12) ?> <span>Integrate Loox Reviews</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            document
-                .querySelector('.level-tab.' + level)
-                .classList.add('active');
-        }
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div>
+                    <div class="phase-title">Automated Retention & Lifecycle Email</div>
+                    <div class="phase-time">Week 2 — Automated Revenue</div>
+                </div>
+            </div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Build core Klaviyo automated flows</div>
+                        <div class="step-desc">Launch high-converting Abandoned Cart sequence, Welcome series, and Post-Purchase cross-sell flows.</div>
+                        <a href="/go.php?slug=klaviyo" class="step-tool step-free" target="_blank" rel="noopener">
+                            <?= icon('mail', '', 12) ?> <span>Deploy Klaviyo Free</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Switch to automated fulfillment & fast domestic shipping</div>
+                        <div class="step-desc">Move off basic AliExpress to domestic warehouse fulfillment via AutoDS or Spocket to lower delivery times.</div>
+                        <a href="/go.php?slug=autods" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('settings', '', 12) ?> <span>Automate with AutoDS</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        function toggleStep(el) {
-            el.classList.toggle('done');
+    </div>
 
-            updateProgress();
+    <!-- ═══════════════════════════════════════ -->
+    <!-- LEVEL 3: ADVANCED -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="roadmap-level advanced" id="level-advanced">
 
-            saveRoadmap();
-        }
+        <div class="level-header-card">
+            <div class="level-icon-wrap">
+                <?= icon('zap', '', 24) ?>
+            </div>
+            <div class="level-header-info">
+                <div class="level-header-title">Advanced Scale Roadmap</div>
+                <div class="level-header-sub">Scaling beyond $50,000 monthly run-rate. Building enterprise-grade operations, private labeling, attribution models, and asset equity.</div>
+                <div class="level-header-badge">
+                    <?= icon('zap', '', 13) ?>
+                    <span>Scale Target: $50,000–$100,000+/month operating profit</span>
+                </div>
+            </div>
+        </div>
 
-        function updateProgress() {
+        <div class="progress-card">
+            <div class="progress-info">
+                <div class="progress-label">Milestone Progress — <span id="advanced-done">0</span> of <span id="advanced-total">0</span> steps completed</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="advanced-bar" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="progress-pct" id="advanced-pct">0%</div>
+        </div>
 
-            ['beginner', 'intermediate', 'advanced']
-            .forEach(level => {
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div>
+                    <div class="phase-title">Enterprise Attribution & Omnichannel Scale</div>
+                    <div class="phase-time">Month 1 — Scale Ad Budgets</div>
+                </div>
+            </div>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Enterprise Ad Attribution & Competitor Tracking</div>
+                        <div class="step-desc">Deploy Northbeam or Triple Whale pixel server-side events, and uncover competitor creative trends with AdSpy.</div>
+                        <a href="/go.php?slug=adspy" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('search', '', 12) ?> <span>Spy with AdSpy</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Private Label Packaging & Bulk Logistics</div>
+                        <div class="step-desc">Migrate from dropshipping to private label inventory with custom packaging and 3-5 day regional delivery.</div>
+                        <a href="/go.php?slug=spocket" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('package', '', 12) ?> <span>Private Label on Spocket</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-check" onclick="toggleStep(this)"></div>
+                    <div class="step-body">
+                        <div class="step-title">Automate customer service desk with Gorgias</div>
+                        <div class="step-desc">Free up 15+ hours weekly by integrating multi-channel support tickets, order lookups, and auto-macros.</div>
+                        <a href="/go.php?slug=gorgias" class="step-tool" target="_blank" rel="noopener">
+                            <?= icon('message-square', '', 12) ?> <span>Configure Gorgias</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                const container =
-                    document.getElementById(
-                        'level-' + level
-                    );
+    </div>
 
-                const all =
-                    container.querySelectorAll(
-                        '.step-check'
-                    );
+    <!-- Roadmap Navigation CTA -->
+    <div class="roadmap-cta-card">
+        <h3>Ready to Configure Your Infrastructure?</h3>
+        <p>Use our interactive tools to assemble, price, and compare your custom store stack.</p>
+        <div class="roadmap-cta-btns">
+            <a href="/stack-builder.php" class="btn-primary" style="padding:11px 22px">
+                <?= icon('layers', '', 15) ?>
+                <span>Build My Custom Stack</span>
+            </a>
+            <a href="/calculator.php" class="btn-secondary" style="padding:11px 20px">
+                <?= icon('calculator', '', 15) ?>
+                <span>Profit Calculator</span>
+            </a>
+            <a href="/compare.php" class="btn-secondary" style="padding:11px 20px">
+                <?= icon('scale', '', 15) ?>
+                <span>Compare Tools</span>
+            </a>
+        </div>
+    </div>
 
-                const done =
-                    container.querySelectorAll(
-                        '.step-check.done'
-                    );
+</div>
 
-                const pct = all.length ?
-                    Math.round(
-                        (done.length / all.length) * 100
-                    ) :
-                    0;
+<script>
+const savedRoadmap = <?= json_encode([
+    'beginner'     => json_decode($roadmap['beginner_steps'] ?? '[]', true) ?: [],
+    'intermediate' => json_decode($roadmap['intermediate_steps'] ?? '[]', true) ?: [],
+    'advanced'     => json_decode($roadmap['advanced_steps'] ?? '[]', true) ?: []
+]) ?>;
 
-                document.getElementById(
-                    level + '-done'
-                ).textContent = done.length;
+function showLevel(level) {
+    document.querySelectorAll('.roadmap-level').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.level-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+    });
 
-                document.getElementById(
-                    level + '-total'
-                ).textContent = all.length;
+    const targetLevel = document.getElementById('level-' + level);
+    if (targetLevel) targetLevel.classList.add('active');
 
-                document.getElementById(
-                    level + '-pct'
-                ).textContent = pct + '%';
+    const targetTab = document.querySelector('.level-tab.' + level);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        targetTab.setAttribute('aria-selected', 'true');
+    }
+}
 
-                document.getElementById(
-                    level + '-bar'
-                ).style.width = pct + '%';
-            });
-        }
+function toggleStep(el) {
+    el.classList.toggle('done');
+    updateProgress();
+    saveRoadmap();
+}
 
-        async function saveRoadmap() {
+function updateProgress() {
+    ['beginner', 'intermediate', 'advanced'].forEach(level => {
+        const container = document.getElementById('level-' + level);
+        if (!container) return;
 
-            const data = {};
+        const all = container.querySelectorAll('.step-check');
+        const done = container.querySelectorAll('.step-check.done');
+        const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
 
-            ['beginner', 'intermediate', 'advanced']
-            .forEach(level => {
+        const doneEl = document.getElementById(level + '-done');
+        const totalEl = document.getElementById(level + '-total');
+        const pctEl = document.getElementById(level + '-pct');
+        const barEl = document.getElementById(level + '-bar');
 
-                data[level] = [];
+        if (doneEl) doneEl.textContent = done.length;
+        if (totalEl) totalEl.textContent = all.length;
+        if (pctEl) pctEl.textContent = pct + '%';
+        if (barEl) barEl.style.width = pct + '%';
+    });
+}
 
-                document
-                    .querySelectorAll(
-                        '#level-' + level + ' .step-check'
-                    )
-                    .forEach(step => {
+async function saveRoadmap() {
+    const data = {};
+    ['beginner', 'intermediate', 'advanced'].forEach(level => {
+        data[level] = [];
+        document.querySelectorAll('#level-' + level + ' .step-check').forEach(step => {
+            data[level].push(step.classList.contains('done'));
+        });
+    });
 
-                        data[level].push(
-                            step.classList.contains(
-                                'done'
-                            )
-                        );
+    try {
+        await fetch('/save-roadmap.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (err) {
+        console.error('Roadmap save error:', err);
+    }
+}
 
-                    });
+document.addEventListener('DOMContentLoaded', () => {
+    ['beginner', 'intermediate', 'advanced'].forEach(level => {
+        const checks = document.querySelectorAll('#level-' + level + ' .step-check');
+        (savedRoadmap[level] || []).forEach((done, index) => {
+            if (done && checks[index]) {
+                checks[index].classList.add('done');
+            }
+        });
+    });
+    updateProgress();
+});
+</script>
 
-            });
-
-            await fetch(
-                '/save-roadmap.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                }
-            );
-        }
-
-        document.addEventListener(
-            'DOMContentLoaded',
-            () => {
-
-                ['beginner', 'intermediate', 'advanced']
-                .forEach(level => {
-
-                    const checks =
-                        document.querySelectorAll(
-                            '#level-' + level +
-                            ' .step-check'
-                        );
-
-                    (savedRoadmap[level] || [])
-                    .forEach((done, index) => {
-
-                        if (done && checks[index]) {
-
-                            checks[index]
-                                .classList.add('done');
-
-                        }
-
-                    });
-
-                });
-
-                updateProgress();
-
-            });
-    </script>
-    <script src="/assets/js/darkmode.js"></script>
-    <div class="step-check" onclick="toggleStep(this)"></div>
-    <?php include __DIR__ . '/footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>

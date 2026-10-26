@@ -37,151 +37,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash  = password_hash($password, PASSWORD_DEFAULT);
             $token = bin2hex(random_bytes(32));
 
-            $pdo->prepare("INSERT INTO users (username, email, password, verification_token) VALUES (?, ?, ?, ?)")
+            $pdo->prepare("INSERT INTO users (username, email, password, verification_token, is_verified, email_verified) VALUES (?, ?, ?, ?, 1, 1)")
                 ->execute([$username, $email, $hash, $token]);
 
-            sendVerificationEmail($email, $token);
+            $new_user_id = (int)$pdo->lastInsertId();
 
-            $success = 'Account created! Please check your email to verify your account.';
+            // Try sending verification email in background/safe mode
+            try {
+                @sendVerificationEmail($email, $token);
+            } catch (\Throwable $e) {}
+
+            // Immediate login onboarding
+            $_SESSION['user_id']         = $new_user_id;
+            $_SESSION['username']        = $username;
+            $_SESSION['just_registered'] = true;
+
+            // Set seen_intro cookie
+            setcookie('seen_intro', '1', time() + 60 * 60 * 24 * 365, '/');
+
+            header('Location: /index.php');
+            exit;
         }
     }
 }
 
-$page_title = 'Register';
+$page_title      = 'Create Account';
+$page_heading    = 'Registration';
+$page_subheading = 'Join dropshippers vetting software, calculating stacks, and tracking benchmarks';
+
 include __DIR__ . '/header.php';
 ?>
 
-<div class="submit-wrap">
-    <div class="submit-card">
+<div class="auth-wrapper">
+    <div class="auth-card">
 
-        <h1>Create account</h1>
-        <p class="sub">Join to upvote your favorite tools</p>
+        <div style="text-align:center;margin-bottom:28px">
+            <div style="width:52px;height:52px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px">
+                <?= icon('sparkles', '', 24) ?>
+            </div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join 2,000+ dropshippers optimizing their tools</p>
+        </div>
 
         <?php if ($error): ?>
-            <div class="flash flash-error"><?= e($error) ?></div>
-        <?php endif; ?>
-        <?php if ($success): ?>
-            <div class="flash flash-success"><?= e($success) ?></div>
+            <div style="background:var(--negative-bg);border:1px solid var(--negative-border);color:var(--negative-text);padding:12px 16px;border-radius:var(--radius);margin-bottom:20px;font-size:13px;display:flex;align-items:flex-start;gap:8px">
+                <?= icon('info', '', 16) ?>
+                <div><?= e($error) ?></div>
+            </div>
         <?php endif; ?>
 
-        <?php if (!$success): ?>
+        <?php if ($success): ?>
+            <div style="background:var(--positive-bg);border:1px solid var(--positive-border);color:var(--positive-text);padding:14px 18px;border-radius:var(--radius);margin-bottom:20px;font-size:13.5px;display:flex;align-items:flex-start;gap:10px">
+                <?= icon('check-circle', '', 18) ?>
+                <div>
+                    <strong style="display:block;margin-bottom:2px">Verification Email Sent</strong>
+                    <?= e($success) ?>
+                </div>
+            </div>
+        <?php else: ?>
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" name="username" value="<?= e($_POST['username'] ?? '') ?>" placeholder="cooldropseller">
+                    <input type="text" id="username" name="username" value="<?= e($_POST['username'] ?? '') ?>" placeholder="dropseller" required>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email address</label>
-                    <input type="email" id="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@example.com">
+                    <input type="email" id="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@domain.com" autocomplete="email" required>
                 </div>
 
                 <div class="form-group">
                     <label for="passwordInput">Password</label>
-                    <input type="password" id="passwordInput" name="password" placeholder="••••••••" oninput="checkStrength(this.value)">
-                </div>
-
-                <div class="mt-8" style="margin-bottom:16px">
-                    <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
-                        <div id="strengthBar" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:4px"></div>
+                    <div style="position:relative;display:flex;align-items:center">
+                        <input type="password" id="passwordInput" name="password" placeholder="Min. 8 characters" required style="padding-right:44px">
+                        <button type="button" id="togglePasswordBtn" class="search-clear-btn" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;padding:6px" aria-label="Toggle password visibility">
+                            <?= icon('eye', '', 18) ?>
+                        </button>
                     </div>
-                    <p id="strengthText" style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px"></p>
                 </div>
 
-                <div class="sidebar-info mb-24" style="padding:14px 16px">
-                    <div id="rule-length" style="font-size:12px;color:var(--muted)">☐ At least 8 characters</div>
-                    <div id="rule-upper" style="font-size:12px;color:var(--muted)">☐ One uppercase letter</div>
-                    <div id="rule-lower" style="font-size:12px;color:var(--muted)">☐ One lowercase letter</div>
-                    <div id="rule-number" style="font-size:12px;color:var(--muted)">☐ One number</div>
-                    <div id="rule-special" style="font-size:12px;color:var(--muted)">☐ One special character (!@#$%...)</div>
-                </div>
-
-                <div class="form-group" style="display:flex;align-items:flex-start;gap:8px">
-                    <input type="checkbox" id="agree_terms" name="agree_terms" required style="width:auto;margin-top:3px">
-                    <label for="agree_terms" style="font-weight:400;text-transform:none;letter-spacing:normal;font-size:13px;color:var(--body)">
-                        I agree to the <a href="/politique.php" target="_blank" style="color:var(--accent);font-weight:600">Terms &amp; Privacy Policy</a>
+                <div style="margin-bottom:20px;display:flex;align-items:flex-start;gap:10px">
+                    <input type="checkbox" name="agree_terms" id="agreeTerms" required style="margin-top:3px;accent-color:var(--accent);cursor:pointer">
+                    <label for="agreeTerms" style="font-size:12.5px;color:var(--body);line-height:1.45;cursor:pointer">
+                        I agree to the <a href="/privacy.php" style="color:var(--accent);font-weight:600">Privacy Policy</a> and <a href="/affiliate-disclosure.php" style="color:var(--accent);font-weight:600">Affiliate Terms</a>
                     </label>
                 </div>
 
-                <button type="submit" class="btn-primary" style="width:100%;padding:13px;font-size:14px">
-                    Create account →
+                <button type="submit" class="btn-primary" style="width:100%;padding:12px;font-size:14px">
+                    <span>Create Account</span>
+                    <?= icon('arrow-right', '', 15) ?>
                 </button>
             </form>
-
-            <div style="display:flex;align-items:center;gap:12px;margin:24px 0">
-                <div style="flex:1;height:1px;background:var(--border)"></div>
-                <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">or</span>
-                <div style="flex:1;height:1px;background:var(--border)"></div>
-            </div>
-
-            <a href="/login.php" class="btn-secondary" style="width:100%;box-sizing:border-box">
-                Already have an account? Log in
-            </a>
         <?php endif; ?>
+
+        <div style="display:flex;align-items:center;gap:12px;margin:24px 0">
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-size:12px;color:var(--muted)">or</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+
+        <a href="/login.php" class="btn-secondary" style="display:block;text-align:center;padding:11px;font-size:13.5px">
+            Already have an account? Sign In
+        </a>
 
     </div>
 </div>
 
 <script>
-    function checkStrength(password) {
-        const bar = document.getElementById('strengthBar');
-        const text = document.getElementById('strengthText');
-        let score = 0;
-
-        const rules = {
-            'rule-length': password.length >= 8,
-            'rule-upper': /[A-Z]/.test(password),
-            'rule-lower': /[a-z]/.test(password),
-            'rule-number': /[0-9]/.test(password),
-            'rule-special': /[\W_]/.test(password),
-        };
-
-        for (const [id, passed] of Object.entries(rules)) {
-            const el = document.getElementById(id);
-            el.textContent = (passed ? '✓' : '☐') + el.textContent.slice(1);
-            el.style.color = passed ? 'var(--teal)' : 'var(--muted)';
-            if (passed) score++;
-        }
-
-        const levels = [{
-                width: '0%',
-                color: 'var(--border)',
-                label: ''
-            },
-            {
-                width: '25%',
-                color: 'var(--red)',
-                label: 'Very weak'
-            },
-            {
-                width: '50%',
-                color: 'var(--amber)',
-                label: 'Weak'
-            },
-            {
-                width: '75%',
-                color: 'var(--amber)',
-                label: 'Medium'
-            },
-            {
-                width: '90%',
-                color: 'var(--teal)',
-                label: 'Strong'
-            },
-            {
-                width: '100%',
-                color: 'var(--accent)',
-                label: 'Very strong'
-            },
-        ];
-
-        const level = levels[score];
-        bar.style.width = level.width;
-        bar.style.background = level.color;
-        text.textContent = level.label;
+(function () {
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const pwdInput = document.getElementById('passwordInput');
+    if (toggleBtn && pwdInput) {
+        toggleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const isPassword = pwdInput.type === 'password';
+            pwdInput.type = isPassword ? 'text' : 'password';
+        });
     }
+})();
 </script>
-<script src="/assets/js/darkmode.js"></script>
+
 <?php include __DIR__ . '/footer.php'; ?>

@@ -1,84 +1,284 @@
 /**
- * DropshippingStack Chat Widget
- * Drop this single script tag near the end of your <body> (e.g. in partials/footer.php):
- *   <script src="/assets/chat-widget.js" data-api="/api/chat.php"></script>
- *
- * It injects its own CSS + HTML, so nothing else needs to change on the page.
+ * DropshippingStack Chat Widget — Modern AI Assistant
  */
 (function () {
   const SCRIPT = document.currentScript;
-  const API_URL = (SCRIPT && SCRIPT.getAttribute('data-api')) || '/api/chat.php';
+  const API_URL = (SCRIPT && SCRIPT.getAttribute('data-api')) || '/api/chat-api.php';
 
   // ---------- styles ----------
   const css = `
-  :root{
-    --ds-purple:#6c5ce7;
-    --ds-purple-dark:#5848c2;
-    --ds-orange:#f5a623;
-    --ds-dark:#11121a;
-    --ds-dark-2:#1a1c28;
-    --ds-bg:#f3f4f6;
-    --ds-green:#16a34a;
-    --ds-text:#1f2230;
+  #ds-chat-bubble {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--btn-primary-bg, #121814);
+    color: var(--btn-primary-text, #ffffff);
+    box-shadow: 0 10px 28px -4px rgba(18, 24, 20, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 99998;
+    border: 1px solid var(--border, rgba(255,255,255,0.12));
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  #ds-chat-bubble{
-    position:fixed; bottom:22px; right:22px; width:58px; height:58px; border-radius:50%;
-    background:linear-gradient(135deg,var(--ds-purple),var(--ds-purple-dark));
-    box-shadow:0 8px 24px rgba(108,92,231,.45);
-    display:flex; align-items:center; justify-content:center; cursor:pointer;
-    z-index:99998; border:none; transition:transform .18s ease, box-shadow .18s ease;
+  #ds-chat-bubble:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 16px 36px -4px rgba(18, 24, 20, 0.38);
   }
-  #ds-chat-bubble:hover{ transform:translateY(-2px) scale(1.04); box-shadow:0 12px 28px rgba(108,92,231,.55); }
-  #ds-chat-bubble svg{ width:26px; height:26px; }
-  #ds-chat-panel{
-    position:fixed; bottom:92px; right:22px; width:370px; max-width:92vw; height:540px; max-height:75vh;
-    background:#fff; border-radius:18px; overflow:hidden; display:none; flex-direction:column;
-    box-shadow:0 20px 60px rgba(17,18,26,.35); z-index:99999; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  #ds-chat-bubble svg {
+    width: 24px;
+    height: 24px;
   }
-  #ds-chat-panel.open{ display:flex; animation:dsSlideUp .22s ease; }
-  @keyframes dsSlideUp{ from{ opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
-  #ds-chat-header{
-    background:linear-gradient(120deg,var(--ds-dark),var(--ds-dark-2));
-    padding:16px 18px; color:#fff; display:flex; align-items:center; gap:10px; flex-shrink:0;
+  #ds-chat-panel {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    height: 540px;
+    max-height: 75vh;
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, rgba(0,0,0,0.08));
+    border-radius: 20px;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg, 0 25px 50px -12px rgba(0,0,0,0.18));
+    z-index: 99999;
+    font-family: var(--font, 'Plus Jakarta Sans', system-ui, sans-serif);
   }
-  #ds-chat-header .ds-bolt{ color:var(--ds-orange); font-size:18px; }
-  #ds-chat-header-text{ flex:1; }
-  #ds-chat-header-text strong{ display:block; font-size:14.5px; }
-  #ds-chat-header-text span{ display:block; font-size:11.5px; color:#a9acc0; margin-top:1px; }
-  #ds-chat-close{ background:none; border:none; color:#a9acc0; cursor:pointer; font-size:18px; line-height:1; padding:4px; }
-  #ds-chat-close:hover{ color:#fff; }
-  #ds-chat-messages{ flex:1; overflow-y:auto; padding:16px; background:var(--ds-bg); display:flex; flex-direction:column; gap:10px; }
-  .ds-msg{ max-width:84%; padding:9px 13px; border-radius:14px; font-size:13.5px; line-height:1.45; }
-  .ds-msg.bot{ background:#fff; color:var(--ds-text); align-self:flex-start; border:1px solid #e7e8ee; border-bottom-left-radius:4px; }
-  .ds-msg.user{ background:var(--ds-purple); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
-  .ds-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
-  .ds-chip{
-    background:#fff; border:1px solid #ddd0ff; color:var(--ds-purple-dark); font-size:12px;
-    padding:6px 10px; border-radius:999px; cursor:pointer; transition:background .15s;
+  #ds-chat-panel.open {
+    display: flex;
+    animation: dsSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .ds-chip:hover{ background:#f1edff; }
-  #ds-chat-input-row{ display:flex; gap:8px; padding:12px; border-top:1px solid #ececf2; background:#fff; flex-shrink:0; }
-  #ds-chat-input{
-    flex:1; border:1px solid #e0e1e8; border-radius:999px; padding:10px 14px; font-size:13.5px;
-    outline:none; font-family:inherit;
+  @keyframes dsSlideUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  #ds-chat-input:focus{ border-color:var(--ds-purple); }
-  #ds-chat-send{
-    background:var(--ds-purple); border:none; color:#fff; width:38px; height:38px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:background .15s;
+  #ds-chat-header {
+    background: var(--surface, #ffffff);
+    padding: 16px 20px;
+    color: var(--text, #121814);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border, rgba(0,0,0,0.07));
   }
-  #ds-chat-send:hover{ background:var(--ds-purple-dark); }
-  #ds-chat-send:disabled{ opacity:.5; cursor:default; }
-  .ds-typing{ display:flex; gap:4px; padding:9px 13px; }
-  .ds-typing span{ width:6px; height:6px; border-radius:50%; background:#bfc1cc; animation:dsBlink 1.2s infinite; }
-  .ds-typing span:nth-child(2){ animation-delay:.2s; }
-  .ds-typing span:nth-child(3){ animation-delay:.4s; }
-  @keyframes dsBlink{ 0%,80%,100%{ opacity:.3; } 40%{ opacity:1; } }
-  @media (max-width:480px){
-    #ds-chat-panel{ right:10px; left:10px; width:auto; bottom:84px; }
-    #ds-chat-bubble{ right:16px; bottom:16px; }
+  .ds-header-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--accent-light, #e7efea);
+    color: var(--accent, #326346);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  #ds-chat-header-text {
+    flex: 1;
+  }
+  #ds-chat-header-text strong {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text, #121814);
+    letter-spacing: -0.01em;
+  }
+  #ds-chat-header-text span {
+    display: block;
+    font-size: 11.5px;
+    color: var(--muted, #7a897d);
+    margin-top: 1px;
+  }
+  #ds-chat-close {
+    background: transparent;
+    border: none;
+    color: var(--muted, #7a897d);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  #ds-chat-close:hover {
+    color: var(--text, #121814);
+    background: var(--surface-2, #edf2ee);
+  }
+  #ds-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    background: var(--bg, #f4f6f4);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ds-msg {
+    max-width: 86%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .ds-msg.bot {
+    background: var(--surface, #ffffff);
+    color: var(--text, #121814);
+    align-self: flex-start;
+    border: 1px solid var(--border, rgba(0,0,0,0.08));
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .ds-msg.user {
+    background: var(--btn-primary-bg, #121814);
+    color: var(--btn-primary-text, #ffffff);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .ds-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .ds-chip {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, rgba(0,0,0,0.09));
+    color: var(--accent, #326346);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ds-chip:hover {
+    background: var(--accent, #326346);
+    color: #ffffff;
+    border-color: var(--accent, #326346);
+  }
+  #ds-chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border, rgba(0,0,0,0.07));
+    background: var(--surface, #ffffff);
+    flex-shrink: 0;
+  }
+  #ds-chat-input {
+    flex: 1;
+    border: 1px solid var(--border, rgba(0,0,0,0.1));
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 13.5px;
+    outline: none;
+    font-family: inherit;
+    background: var(--bg, #f4f6f4);
+    color: var(--text, #121814);
+    transition: border-color 0.15s;
+  }
+  #ds-chat-input:focus {
+    border-color: var(--accent, #326346);
+    background: var(--surface, #ffffff);
+  }
+  #ds-chat-send {
+    background: var(--btn-primary-bg, #121814);
+    border: none;
+    color: var(--btn-primary-text, #ffffff);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  #ds-chat-send:hover {
+    transform: scale(1.05);
+  }
+  #ds-chat-send:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .ds-typing {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px;
+  }
+  .ds-typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted, #7a897d);
+    animation: dsBlink 1.2s infinite;
+  }
+  .ds-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .ds-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dsBlink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+  .ds-chat-drag-handle {
+    display: none;
+    width: 38px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border, rgba(0,0,0,0.18));
+    margin: 8px auto 2px;
+    cursor: pointer;
+  }
+  @media (max-width: 1024px) {
+    #ds-chat-bubble {
+      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+      right: 18px;
+    }
+    #ds-chat-panel {
+      bottom: calc(148px + env(safe-area-inset-bottom, 0px));
+      right: 18px;
+    }
+  }
+  @media (max-width: 640px) {
+    #ds-chat-bubble {
+      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+      right: 16px;
+      width: 48px;
+      height: 48px;
+    }
+    #ds-chat-bubble.ds-chat-hidden {
+      transform: translateY(140px) scale(0.7) !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    body:has(.mobile-sticky-action-bar) #ds-chat-bubble,
+    body.has-sticky-bar #ds-chat-bubble {
+      display: none !important;
+    }
+    #ds-chat-panel {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 100vw;
+      height: 80vh;
+      max-height: 85vh;
+      border-radius: 24px 24px 0 0;
+      border-bottom: none;
+      box-shadow: 0 -12px 40px rgba(0,0,0,0.22);
+    }
+    .ds-chat-drag-handle {
+      display: block;
+    }
   }
   `;
+
   const style = document.createElement('style');
   style.textContent = css;
   document.head.appendChild(style);
@@ -86,25 +286,31 @@
   // ---------- markup ----------
   const bubble = document.createElement('button');
   bubble.id = 'ds-chat-bubble';
-  bubble.setAttribute('aria-label', 'Open chat assistant');
-  bubble.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`;
+  bubble.setAttribute('aria-label', 'Open AI Assistant');
+  bubble.setAttribute('title', 'Ask AI Assistant');
+  bubble.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>`;
 
   const panel = document.createElement('div');
   panel.id = 'ds-chat-panel';
   panel.innerHTML = `
+    <div class="ds-chat-drag-handle" id="dsChatDragHandle" title="Swipe to dismiss"></div>
     <div id="ds-chat-header">
-      <span class="ds-bolt">⚡</span>
-      <div id="ds-chat-header-text">
-        <strong>DropshippingStack Assistant</strong>
-        <span>Tools, pricing &amp; comparisons</span>
+      <div class="ds-header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
       </div>
-      <button id="ds-chat-close" aria-label="Close chat">✕</button>
+      <div id="ds-chat-header-text">
+        <strong>DropshippingStack AI</strong>
+        <span>Software recommendations &amp; advice</span>
+      </div>
+      <button id="ds-chat-close" aria-label="Close chat">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
     </div>
     <div id="ds-chat-messages"></div>
     <div id="ds-chat-input-row">
-      <input id="ds-chat-input" type="text" placeholder="Ask about a tool, e.g. 'Shopify vs Zendrop'" />
+      <input id="ds-chat-input" type="text" placeholder="Ask anything about tools or pricing..." autocomplete="off" />
       <button id="ds-chat-send" aria-label="Send">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
       </button>
     </div>
   `;
@@ -118,13 +324,12 @@
   const closeBtn = panel.querySelector('#ds-chat-close');
 
   const STARTER_CHIPS = [
-    'Compare Shopify vs Zendrop',
-    'Best tools under $50/mo',
-    'What is a "stack"?'
+    'Compare Shopify vs WooCommerce',
+    'Best product research tools under $50',
+    'Recommend a beginner dropshipping stack'
   ];
 
-  let history = []; // {role, content}
-  let opened = false;
+  let history = [];
 
   function addMessage(role, text) {
     const div = document.createElement('div');
@@ -174,12 +379,12 @@
       });
       const data = await res.json();
       typingEl.remove();
-      const reply = data.reply || "Sorry, I couldn't get a response just now — try again in a moment.";
+      const reply = data.reply || "Sorry, I couldn't get a response right now. Please try again.";
       addMessage('bot', reply);
       history.push({ role: 'assistant', content: reply });
     } catch (err) {
       typingEl.remove();
-      addMessage('bot', "Hmm, I'm having trouble connecting. Please try again shortly.");
+      addMessage('bot', "Connection issue. Please verify your network and try again.");
     } finally {
       sendBtn.disabled = false;
     }
@@ -187,9 +392,8 @@
 
   function openPanel() {
     panel.classList.add('open');
-    opened = true;
     if (messagesEl.children.length === 0) {
-      addMessage('bot', "Hey! I'm the DropshippingStack assistant ⚡ I can help you find tools, compare options, or explain pricing. What are you working on?");
+      addMessage('bot', "Hello! I'm your DropshippingStack AI assistant. Ask me to compare software, calculate costs, or recommend the best setup for your store.");
       addChips();
     }
     inputEl.focus();
@@ -203,8 +407,32 @@
     }
   });
   closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+  const dragHandle = panel.querySelector('#dsChatDragHandle');
+  if (dragHandle) dragHandle.addEventListener('click', () => panel.classList.remove('open'));
   sendBtn.addEventListener('click', () => sendMessage());
   inputEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendMessage();
   });
+
+  // Hide chat bubble while scrolling down, show on scroll up
+  let lastScrollY = window.scrollY;
+  let scrollTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const diff = currentScrollY - lastScrollY;
+
+        if (diff > 8 && currentScrollY > 80 && !panel.classList.contains('open')) {
+          bubble.classList.add('ds-chat-hidden');
+        } else if (diff < -8) {
+          bubble.classList.remove('ds-chat-hidden');
+        }
+
+        lastScrollY = currentScrollY;
+        scrollTicking = false;
+      });
+      scrollTicking = true;
+    }
+  }, { passive: true });
 })();

@@ -13,10 +13,10 @@
     function applyTheme(theme) {
         if (theme === 'dark') {
             root.setAttribute('data-theme', 'dark');
-            if (btn) btn.textContent = '☀️ Light mode';
+            if (btn) btn.textContent = 'Light mode';
         } else {
             root.removeAttribute('data-theme');
-            if (btn) btn.textContent = '🌙 Dark mode';
+            if (btn) btn.textContent = 'Dark mode';
         }
     }
 

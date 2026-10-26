@@ -122,643 +122,691 @@ $stack_tools = $stack ? json_decode($stack['tools_json'] ?? '[]', true) : [];
 $page_title = 'My Profile — ' . e($user['username']);
 
 include __DIR__ . '/header.php';
-
 ?>
 
 <style>
     .profile-wrap {
-        max-width: 960px;
+        max-width: 1040px;
         margin: 0 auto;
-        padding: 40px 24px 80px;
+        padding: 8px 0 60px;
     }
 
-    /* ── Header banner ── */
-    .profile-banner {
-        background: var(--dark);
-        border-radius: var(--radius);
+    /* ── Header Banner Card ── */
+    .profile-banner-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-2xl);
         padding: 32px;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 24px;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
         position: relative;
         overflow: hidden;
     }
 
-    .profile-banner::before {
+    .profile-banner-card::before {
         content: '';
         position: absolute;
-        top: -60px;
-        right: -60px;
+        top: -80px;
+        right: -80px;
         width: 240px;
         height: 240px;
-        background: radial-gradient(circle, rgba(108, 99, 255, 0.3) 0%, transparent 70%);
+        background: radial-gradient(circle, var(--skeleton-b) 0%, transparent 70%);
         border-radius: 50%;
+        pointer-events: none;
     }
 
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
+    .profile-banner-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-avatar-large {
+        width: 68px;
+        height: 68px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #6c63ff, #5a52e0);
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-text);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 30px;
+        font-size: 26px;
         font-weight: 800;
-        color: #fff;
         flex-shrink: 0;
-        position: relative;
-        z-index: 1;
-        border: 3px solid rgba(255, 255, 255, 0.15);
+        box-shadow: var(--shadow-sm);
     }
 
-    .profile-banner-info {
-        position: relative;
-        z-index: 1;
-        flex: 1;
-    }
-
-    .profile-banner-name {
+    .profile-banner-title {
         font-size: 22px;
         font-weight: 800;
-        color: #fff;
-        margin-bottom: 4px;
+        color: var(--text);
+        margin: 0 0 6px;
+        letter-spacing: -0.02em;
     }
 
     .profile-banner-meta {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .profile-banner-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .profile-banner-stats {
         display: flex;
-        gap: 28px;
+        gap: 14px;
         position: relative;
         z-index: 1;
     }
 
-    .banner-stat {
+    .profile-mini-stat {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 12px 18px;
         text-align: center;
+        min-width: 90px;
     }
 
-    .banner-stat-val {
-        display: block;
-        font-size: 22px;
+    .profile-mini-stat-val {
+        font-size: 20px;
         font-weight: 800;
-        color: #a5b4fc;
-        line-height: 1;
+        color: var(--text);
+        line-height: 1.1;
     }
 
-    .banner-stat-label {
+    .profile-mini-stat-label {
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.4);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-top: 3px;
-    }
-
-    /* ── Tabs ── */
-    .profile-tabs {
-        display: flex;
-        gap: 4px;
-        border-bottom: 2px solid var(--border);
-        margin-bottom: 28px;
-        overflow-x: auto;
-    }
-
-    .profile-tab {
-        padding: 10px 20px;
-        font-size: 14px;
-        font-weight: 600;
         color: var(--muted);
+        font-weight: 600;
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* ── Navigation Tabs ── */
+    .profile-tabs-nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .profile-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: var(--radius-full);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--body);
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
         white-space: nowrap;
-        transition: all 0.15s;
-        background: none;
-        border-top: none;
-        border-left: none;
-        border-right: none;
+        transition: all var(--dur-fast) var(--ease);
         font-family: var(--font);
     }
 
-    .profile-tab:hover {
-        color: var(--accent);
+    .profile-nav-btn:hover {
+        background: var(--surface-hover);
+        color: var(--text);
+        border-color: var(--border-focus);
     }
 
-    .profile-tab.active {
-        color: var(--accent);
-        border-bottom-color: var(--accent);
+    .profile-nav-btn.active {
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-text);
+        border-color: var(--btn-primary-bg);
+        box-shadow: var(--shadow-xs);
     }
 
-    /* ── Tab panels ── */
+    /* ── Tab Panels ── */
     .profile-panel {
         display: none;
     }
 
     .profile-panel.active {
         display: block;
+        animation: fadeIn 0.25s var(--ease) both;
     }
 
-    /* ── Section card ── */
-    .section-card {
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Section Cards ── */
+    .profile-card {
         background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 24px;
+        border-radius: var(--radius-2xl);
+        padding: 28px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .profile-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: 20px;
     }
 
-    .section-card-title {
-        font-size: 15px;
-        font-weight: 800;
-        color: var(--ink);
-        margin-bottom: 18px;
+    .profile-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .profile-card-subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    /* ── Roadmap Progress Rows ── */
+    .profile-progress-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .profile-progress-item {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 16px 20px;
+    }
+
+    .profile-progress-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .profile-progress-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    /* ── Form elements ── */
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 6px;
-    }
-
-    .form-input {
-        width: 100%;
-        padding: 11px 14px;
-        background: var(--bg);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        color: var(--ink);
-        font-size: 14px;
-        font-family: var(--font);
-        box-sizing: border-box;
-        outline: none;
-        transition: border-color 0.15s;
-    }
-
-    .form-input:focus {
-        border-color: var(--accent);
-    }
-
-    .btn-primary {
-        padding: 11px 24px;
-        background: linear-gradient(135deg, #6c63ff, #5a52e0);
-        border: none;
-        border-radius: var(--radius-sm);
-        color: #fff;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: var(--font);
-        box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25);
-        transition: opacity 0.15s;
-    }
-
-    .btn-primary:hover {
-        opacity: 0.9;
-    }
-
-    /* ── Alert ── */
-    .alert {
-        padding: 11px 16px;
-        border-radius: var(--radius-sm);
+    .profile-progress-pct {
         font-size: 13px;
-        margin-bottom: 16px;
+        font-weight: 700;
+        color: var(--accent);
     }
 
-    .alert-success {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #15803d;
+    .profile-progress-track {
+        height: 8px;
+        background: var(--border);
+        border-radius: var(--radius-full);
+        overflow: hidden;
     }
 
-    .alert-error {
-        background: #fff0f0;
-        border: 1px solid #fca5a5;
-        color: #b91c1c;
+    .profile-progress-bar {
+        height: 100%;
+        background: var(--accent);
+        border-radius: var(--radius-full);
+        transition: width 0.4s var(--ease);
     }
 
-    /* ── Calculator preset ── */
-    .preset-grid {
+    /* ── Preset Cards ── */
+    .preset-stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 14px;
         margin-bottom: 20px;
     }
 
-    .preset-stat {
-        background: var(--dark);
-        border-radius: var(--radius-sm);
-        padding: 16px;
+    .preset-stat-item {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 18px;
         text-align: center;
     }
 
-    .preset-stat-val {
+    .preset-stat-num {
         font-size: 22px;
         font-weight: 800;
-        color: var(--cyan);
-        display: block;
-        line-height: 1;
+        color: var(--text);
+        line-height: 1.1;
         margin-bottom: 4px;
     }
 
     .preset-stat-label {
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.4);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.04em;
     }
 
-    .tool-pills {
+    .tool-pills-wrap {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 10px;
     }
 
-    .tool-pill {
+    .tool-pill-item {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
-        background: var(--accent-light);
-        color: var(--accent);
-        border-radius: 99px;
-        font-size: 12px;
+        gap: 8px;
+        padding: 6px 14px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 13px;
         font-weight: 600;
+        color: var(--text);
     }
 
-    .tool-pill img {
-        width: 16px;
-        height: 16px;
+    .tool-pill-item img {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
         object-fit: contain;
-        border-radius: 3px;
     }
 
-    .btn-edit-link {
+    .btn-action-link {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        margin-top: 16px;
-        padding: 9px 18px;
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        color: var(--muted);
+        gap: 8px;
+        margin-top: 18px;
+        padding: 10px 20px;
+        border-radius: var(--radius-full);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
         font-size: 13px;
         font-weight: 600;
         text-decoration: none;
-        transition: all 0.15s;
+        transition: all var(--dur-fast) var(--ease);
     }
 
-    .btn-edit-link:hover {
+    .btn-action-link:hover {
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-text);
+        border-color: var(--btn-primary-bg);
+    }
+
+    /* ── Stack Grid ── */
+    .stack-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 14px;
+    }
+
+    .stack-card-single {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 18px;
+        text-align: center;
+        text-decoration: none;
+        transition: all var(--dur-fast) var(--ease);
+        display: block;
+    }
+
+    .stack-card-single:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-sm);
         border-color: var(--accent);
-        color: var(--accent);
     }
 
-    /* ── Roadmap progress bars ── */
-    .roadmap-rows {
+    .stack-card-icon-box {
+        width: 44px;
+        height: 44px;
+        margin: 0 auto 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg, 12px);
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stack-card-icon-box img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        border-radius: 6px;
+    }
+
+    .stack-card-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 2px;
+    }
+
+    .stack-card-category {
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    /* ── Forms ── */
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 16px;
     }
 
-    .roadmap-row-label {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--ink);
+    .form-field-group {
+        margin-bottom: 16px;
+    }
+
+    .form-field-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         margin-bottom: 6px;
     }
 
-    .roadmap-row-pct {
-        color: var(--accent);
+    .form-input-styled {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        color: var(--text);
+        font-size: 14px;
+        font-family: var(--font);
+        box-sizing: border-box;
+        outline: none;
+        transition: all var(--dur-fast) var(--ease);
     }
 
-    .progress-track {
-        height: 8px;
-        background: var(--border);
-        border-radius: 99px;
-        overflow: hidden;
+    .form-input-styled:focus {
+        background: var(--surface);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--skeleton-b);
     }
 
-    .progress-fill {
-        height: 100%;
-        border-radius: 99px;
-        transition: width 0.5s ease;
+    .btn-submit-primary {
+        padding: 11px 24px;
+        background: var(--btn-primary-bg);
+        border: none;
+        border-radius: var(--radius-full);
+        color: var(--btn-primary-text);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: var(--font);
+        box-shadow: var(--shadow-xs);
+        transition: all var(--dur-fast) var(--ease);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .fill-beginner {
-        background: linear-gradient(90deg, #10b981, #34d399);
+    .btn-submit-primary:hover {
+        background: var(--btn-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
     }
 
-    .fill-intermediate {
-        background: linear-gradient(90deg, #f59e0b, #fcd34d);
-    }
-
-    .fill-advanced {
-        background: linear-gradient(90deg, #6366f1, #a5b4fc);
-    }
-
-    /* ── Upvoted tools list ── */
-    .upvote-list {
+    /* ── Alerts ── */
+    .profile-alert {
+        padding: 14px 18px;
+        border-radius: var(--radius-xl);
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 20px;
         display: flex;
-        flex-direction: column;
+        align-items: center;
         gap: 10px;
     }
 
-    .upvote-item {
+    .profile-alert-success {
+        background: var(--positive-bg);
+        border: 1px solid var(--positive-border);
+        color: var(--positive-text);
+    }
+
+    .profile-alert-error {
+        background: var(--negative-bg);
+        border: 1px solid var(--negative-border);
+        color: var(--negative-text);
+    }
+
+    /* ── Danger Zone ── */
+    .danger-zone-box {
+        border: 1px solid var(--negative-border);
+        background: var(--negative-bg);
+        border-radius: var(--radius-2xl);
+        padding: 24px;
+        margin-top: 24px;
+    }
+
+    .danger-zone-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--negative-text);
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 14px 16px;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        transition: border-color 0.15s;
-    }
-
-    .upvote-item:hover {
-        border-color: #c7d2fe;
-    }
-
-    .upvote-icon {
-        width: 36px;
-        height: 36px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .upvote-icon img {
-        width: 36px;
-        height: 36px;
-        object-fit: contain;
-        border-radius: 6px;
-    }
-
-    .upvote-info {
-        flex: 1;
-    }
-
-    .upvote-name {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--ink);
-    }
-
-    .upvote-date {
-        font-size: 11px;
-        color: var(--muted);
-        margin-top: 2px;
-    }
-
-    .upvote-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        background: #fff7ed;
-        border: 1px solid #fed7aa;
-        color: #c2410c;
-        border-radius: 99px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    /* ── Stack builder ── */
-    .stack-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 12px;
-    }
-
-    .stack-item {
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 14px;
-        text-align: center;
-        transition: border-color 0.15s;
-    }
-
-    .stack-item:hover {
-        border-color: #c7d2fe;
-    }
-
-    .stack-item-icon {
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 8px;
-    }
-
-    .stack-item-icon img {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-        border-radius: 6px;
-    }
-
-    .stack-item-name {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--ink);
-    }
-
-    .stack-item-cat {
-        font-size: 11px;
-        color: var(--muted);
-        margin-top: 2px;
-    }
-
-    /* ── Empty states ── */
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: var(--muted);
-    }
-
-    .empty-state-icon {
-        font-size: 40px;
-        margin-bottom: 12px;
-    }
-
-    .empty-state-text {
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .empty-state-link {
-        display: inline-block;
-        margin-top: 14px;
-        padding: 9px 20px;
-        background: var(--accent-light);
-        color: var(--accent);
-        border-radius: var(--radius-sm);
-        font-size: 13px;
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-    /* ── Danger zone ── */
-    .danger-zone {
-        border: 1px solid #fca5a5;
-        border-radius: var(--radius);
-        padding: 20px 24px;
-    }
-
-    .danger-title {
-        font-size: 14px;
-        font-weight: 800;
-        color: #b91c1c;
+        gap: 8px;
         margin-bottom: 6px;
     }
 
-    .danger-desc {
+    .danger-zone-desc {
         font-size: 13px;
-        color: var(--muted);
-        margin-bottom: 14px;
+        color: var(--body);
+        margin-bottom: 16px;
+        line-height: 1.5;
     }
 
-    .btn-danger {
-        padding: 9px 20px;
-        background: #fef2f2;
-        border: 1.5px solid #fca5a5;
-        border-radius: var(--radius-sm);
-        color: #b91c1c;
+    .btn-danger-action {
+        padding: 10px 20px;
+        background: var(--surface);
+        border: 1.5px solid var(--negative-border);
+        border-radius: var(--radius-full);
+        color: var(--negative-text);
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 600;
         cursor: pointer;
         font-family: var(--font);
+        transition: all var(--dur-fast) var(--ease);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    .btn-danger:hover {
-        background: #fff0f0;
+    .btn-danger-action:hover {
+        background: var(--negative);
+        color: #fff;
+        border-color: var(--negative);
     }
 
-    @media (max-width: 640px) {
-        .profile-banner {
+    /* ── Empty State ── */
+    .profile-empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--muted);
+    }
+
+    .profile-empty-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 12px;
+        color: var(--muted-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-empty-text {
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--body);
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+        .profile-banner-card {
             flex-direction: column;
-            text-align: center;
+            align-items: flex-start;
         }
 
         .profile-banner-stats {
-            justify-content: center;
+            width: 100%;
+            justify-content: space-between;
         }
 
-        .form-row {
+        .profile-mini-stat {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .form-grid-2 {
             grid-template-columns: 1fr;
         }
 
-        .preset-grid {
-            grid-template-columns: 1fr 1fr;
+        .preset-stats-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 
 <div class="profile-wrap">
 
-    <!-- ── Banner ── -->
-    <div class="profile-banner">
-        <div class="profile-avatar"><?= strtoupper(substr($user['username'], 0, 1)) ?></div>
-        <div class="profile-banner-info">
-            <div class="profile-banner-name"><?= e($user['username']) ?></div>
-            <div class="profile-banner-meta">📧 <?= e($user['email']) ?> &nbsp;·&nbsp; 🗓 Member since <?= $member_since ?></div>
+    <!-- ── Profile Header Banner ── -->
+    <div class="profile-banner-card">
+        <div class="profile-banner-left">
+            <div class="profile-avatar-large"><?= strtoupper(substr($user['username'], 0, 1)) ?></div>
+            <div>
+                <h1 class="profile-banner-title"><?= e($user['username']) ?></h1>
+                <div class="profile-banner-meta">
+                    <span><?= icon('mail', '', 14) ?> <?= e($user['email']) ?></span>
+                    <span><?= icon('calendar', '', 14) ?> Joined <?= $member_since ?></span>
+                </div>
+            </div>
         </div>
+
         <div class="profile-banner-stats">
-            <div class="banner-stat">
-                <span class="banner-stat-val"><?= $upvote_count ?></span>
-                <div class="banner-stat-label">Upvotes</div>
+            <div class="profile-mini-stat">
+                <div class="profile-mini-stat-val"><?= $upvote_count ?></div>
+                <div class="profile-mini-stat-label">Upvotes</div>
             </div>
-            <div class="banner-stat">
-                <span class="banner-stat-val"><?= count($stack_tools) ?></span>
-                <div class="banner-stat-label">Stack Tools</div>
+            <div class="profile-mini-stat">
+                <div class="profile-mini-stat-val"><?= count($stack_tools) ?></div>
+                <div class="profile-mini-stat-label">Stack Tools</div>
             </div>
-            <div class="banner-stat">
-                <span class="banner-stat-val"><?= max($roadmap_pct) ?>%</span>
-                <div class="banner-stat-label">Best Progress</div>
+            <div class="profile-mini-stat">
+                <div class="profile-mini-stat-val"><?= max($roadmap_pct) ?>%</div>
+                <div class="profile-mini-stat-label">Progress</div>
             </div>
         </div>
     </div>
 
-    <!-- ── Tabs ── -->
-    <div class="profile-tabs">
-        <button class="profile-tab active" data-tab="overview">📊 Overview</button>
-        <button class="profile-tab" data-tab="calculator">💰 Calculator</button>
-        <button class="profile-tab" data-tab="roadmap">🗺 Roadmap</button>
-        <button class="profile-tab" data-tab="stack">🧱 Stack</button>
-        <button class="profile-tab" data-tab="upvotes">👍 Upvotes</button>
-        <button class="profile-tab" data-tab="settings">⚙️ Settings</button>
+    <!-- ── Navigation Tabs ── -->
+    <div class="profile-tabs-nav" role="tablist">
+        <button class="profile-nav-btn active" data-tab="overview">
+            <?= icon('activity', '', 16) ?> Overview
+        </button>
+        <button class="profile-nav-btn" data-tab="calculator">
+            <?= icon('calculator', '', 16) ?> Calculator
+        </button>
+        <button class="profile-nav-btn" data-tab="roadmap">
+            <?= icon('map', '', 16) ?> Roadmap
+        </button>
+        <button class="profile-nav-btn" data-tab="stack">
+            <?= icon('layers', '', 16) ?> Stack
+        </button>
+        <button class="profile-nav-btn" data-tab="upvotes">
+            <?= icon('thumbs-up', '', 16) ?> Upvotes
+        </button>
+        <button class="profile-nav-btn" data-tab="settings">
+            <?= icon('settings', '', 16) ?> Settings
+        </button>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- OVERVIEW                                                           -->
+    <!-- OVERVIEW TAB                                                       -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="profile-panel active" id="panel-overview">
 
         <!-- Roadmap snapshot -->
-        <div class="section-card">
-            <div class="section-card-title">🗺 Roadmap Progress</div>
-            <div class="roadmap-rows">
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('map', '', 18) ?> Roadmap Progress</h2>
+                    <div class="profile-card-subtitle">Your step-by-step progress across dropshipping stages</div>
+                </div>
+            </div>
+            <div class="profile-progress-group">
                 <?php
                 $roadmap_meta = [
-                    'beginner'     => ['🌱 Beginner',    'fill-beginner'],
-                    'intermediate' => ['📈 Intermediate', 'fill-intermediate'],
-                    'advanced'     => ['🚀 Advanced',      'fill-advanced'],
+                    'beginner'     => ['Beginner Foundations', $roadmap_pct['beginner']],
+                    'intermediate' => ['Intermediate Scaling',   $roadmap_pct['intermediate']],
+                    'advanced'     => ['Advanced Automation',    $roadmap_pct['advanced']],
                 ];
-                foreach ($roadmap_meta as $key => [$label, $cls]): ?>
-                    <div>
-                        <div class="roadmap-row-label">
-                            <span><?= $label ?></span>
-                            <span class="roadmap-row-pct"><?= $roadmap_pct[$key] ?>%</span>
+                foreach ($roadmap_meta as $key => [$label, $pct]): ?>
+                    <div class="profile-progress-item">
+                        <div class="profile-progress-meta">
+                            <span class="profile-progress-name"><?= $label ?></span>
+                            <span class="profile-progress-pct"><?= $pct ?>%</span>
                         </div>
-                        <div class="progress-track">
-                            <div class="progress-fill <?= $cls ?>" style="width:<?= $roadmap_pct[$key] ?>%"></div>
+                        <div class="profile-progress-track">
+                            <div class="profile-progress-bar" style="width:<?= $pct ?>%"></div>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
-            <a href="/roadmap.php" class="btn-edit-link">🗺 Continue Roadmap →</a>
+            <a href="/roadmap.php" class="btn-action-link">
+                Continue Roadmap <?= icon('arrow-right', '', 14) ?>
+            </a>
         </div>
 
         <!-- Calculator snapshot -->
-        <div class="section-card">
-            <div class="section-card-title">💰 Calculator Preset</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('calculator', '', 18) ?> Saved Calculator Preset</h2>
+                    <div class="profile-card-subtitle">Saved monthly revenue, target margins, and ad budget</div>
+                </div>
+            </div>
             <?php if ($calc): ?>
-                <div class="preset-grid">
-                    <div class="preset-stat">
-                        <span class="preset-stat-val">$<?= number_format($calc['calculator_revenue']) ?></span>
+                <div class="preset-stats-grid">
+                    <div class="preset-stat-item">
+                        <div class="preset-stat-num">$<?= number_format($calc['calculator_revenue']) ?></div>
                         <div class="preset-stat-label">Monthly Revenue</div>
                     </div>
-                    <div class="preset-stat">
-                        <span class="preset-stat-val"><?= $calc['calculator_margin'] ?>%</span>
+                    <div class="preset-stat-item">
+                        <div class="preset-stat-num"><?= $calc['calculator_margin'] ?>%</div>
                         <div class="preset-stat-label">Profit Margin</div>
                     </div>
-                    <div class="preset-stat">
-                        <span class="preset-stat-val">$<?= number_format($calc['calculator_adspend']) ?></span>
+                    <div class="preset-stat-item">
+                        <div class="preset-stat-num">$<?= number_format($calc['calculator_adspend']) ?></div>
                         <div class="preset-stat-label">Ad Spend / mo</div>
                     </div>
                 </div>
@@ -770,54 +818,71 @@ include __DIR__ . '/header.php';
                     $tool_rows->execute($saved_tool_slugs);
                     $tool_rows = $tool_rows->fetchAll();
                 ?>
-                    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Selected Tools</div>
-                    <div class="tool-pills">
+                    <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-top:14px;margin-bottom:8px;">Included Tools</div>
+                    <div class="tool-pills-wrap">
                         <?php foreach ($tool_rows as $t): ?>
-                            <span class="tool-pill">
+                            <span class="tool-pill-item">
                                 <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
                                 <?= e($t['name']) ?>
                             </span>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <a href="/calculator.php" class="btn-edit-link">💰 Edit in Calculator →</a>
+                <a href="/calculator.php" class="btn-action-link">
+                    Open in Calculator <?= icon('arrow-right', '', 14) ?>
+                </a>
             <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">💰</div>
-                    <div class="empty-state-text">No saved calculator settings yet.</div>
-                    <a href="/calculator.php" class="empty-state-link">Open Calculator →</a>
+                <div class="profile-empty-state">
+                    <div class="profile-empty-icon"><?= icon('calculator', '', 36) ?></div>
+                    <div class="profile-empty-text">No saved calculator presets yet. Open the profit calculator to configure and save your metrics.</div>
+                    <a href="/calculator.php" class="btn-action-link" style="margin-top:14px">
+                        Open Calculator <?= icon('arrow-right', '', 14) ?>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
 
         <!-- Upvoted tools snapshot -->
-        <div class="section-card">
-            <div class="section-card-title">👍 Recently Upvoted</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('thumbs-up', '', 18) ?> Recently Upvoted Tools</h2>
+                    <div class="profile-card-subtitle">Tools you voted for to help the community</div>
+                </div>
+            </div>
             <?php if ($upvoted_tools): ?>
-                <div class="upvote-list">
+                <div class="list-panel" style="border:none;padding:0;background:transparent;box-shadow:none">
                     <?php foreach (array_slice($upvoted_tools, 0, 4) as $t): ?>
-                        <div class="upvote-item">
-                            <div class="upvote-icon">
-                                <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
+                        <a href="/tool/<?= e($t['slug']) ?>" class="list-row" style="text-decoration:none;border-radius:var(--radius-xl);background:var(--surface-2);margin-bottom:8px;border:1px solid var(--border)">
+                            <div class="list-row-left">
+                                <div class="list-row-icon" style="background:var(--surface)">
+                                    <img src="<?= e($t['icon']) ?>" alt="<?= e($t['name']) ?>" style="width:24px;height:24px;object-fit:contain" onerror="this.style.display='none'">
+                                </div>
+                                <div class="list-row-info">
+                                    <div class="list-row-title"><?= e($t['name']) ?></div>
+                                    <div class="list-row-subtitle">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
+                                </div>
                             </div>
-                            <div class="upvote-info">
-                                <div class="upvote-name"><?= e($t['name']) ?></div>
-                                <div class="upvote-date">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
+                            <div class="list-row-right">
+                                <span class="stat-delta positive" style="display:inline-flex;align-items:center;gap:4px">
+                                    <?= icon('thumbs-up', '', 12) ?> <?= number_format($t['total_votes']) ?>
+                                </span>
                             </div>
-                            <div class="upvote-badge">▲ <?= number_format($t['total_votes']) ?></div>
-                        </div>
+                        </a>
                     <?php endforeach; ?>
                 </div>
                 <?php if (count($upvoted_tools) > 4): ?>
-                    <button class="btn-edit-link" data-tab="upvotes" style="border:none;cursor:pointer;margin-top:12px;">
-                        See all <?= count($upvoted_tools) ?> upvotes →
+                    <button class="btn-action-link" data-tab="upvotes" style="border:none;cursor:pointer;background:var(--surface-2)">
+                        See all <?= count($upvoted_tools) ?> upvotes <?= icon('arrow-right', '', 14) ?>
                     </button>
                 <?php endif; ?>
             <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">👍</div>
-                    <div class="empty-state-text">You haven't upvoted any tools yet.</div>
-                    <a href="/index.php" class="empty-state-link">Browse Tools →</a>
+                <div class="profile-empty-state">
+                    <div class="profile-empty-icon"><?= icon('thumbs-up', '', 36) ?></div>
+                    <div class="profile-empty-text">You haven't upvoted any tools yet. Explore tools and upvote your favorites.</div>
+                    <a href="/index.php" class="btn-action-link" style="margin-top:14px">
+                        Explore Directory <?= icon('arrow-right', '', 14) ?>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
@@ -825,23 +890,28 @@ include __DIR__ . '/header.php';
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- CALCULATOR                                                         -->
+    <!-- CALCULATOR TAB                                                     -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="profile-panel" id="panel-calculator">
-        <div class="section-card">
-            <div class="section-card-title">💰 Saved Calculator Preset</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('calculator', '', 18) ?> Saved Profit Calculation</h2>
+                    <div class="profile-card-subtitle">Summary of your saved financial model</div>
+                </div>
+            </div>
             <?php if ($calc): ?>
-                <div class="preset-grid">
-                    <div class="preset-stat">
-                        <span class="preset-stat-val">$<?= number_format($calc['calculator_revenue']) ?></span>
+                <div class="preset-stats-grid">
+                    <div class="preset-stat-item">
+                        <div class="preset-stat-num">$<?= number_format($calc['calculator_revenue']) ?></div>
                         <div class="preset-stat-label">Monthly Revenue</div>
                     </div>
-                    <div class="preset-stat">
-                        <span class="preset-stat-val"><?= $calc['calculator_margin'] ?>%</span>
+                    <div class="preset-stat-item">
+                        <div class="preset-stat-num"><?= $calc['calculator_margin'] ?>%</div>
                         <div class="preset-stat-label">Profit Margin</div>
                     </div>
-                    <div class="preset-stat">
-                        <span class="preset-stat-val">$<?= number_format($calc['calculator_adspend']) ?></span>
+                    <div class="preset-stat-item">
+                        <div class="preset-stat-num">$<?= number_format($calc['calculator_adspend']) ?></div>
                         <div class="preset-stat-label">Ad Spend / mo</div>
                     </div>
                 </div>
@@ -866,101 +936,113 @@ include __DIR__ . '/header.php';
                 ?>
 
                 <div style="display:flex;gap:12px;margin:20px 0;flex-wrap:wrap;">
-                    <div style="flex:1;min-width:120px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:14px;text-align:center;">
-                        <div style="font-size:18px;font-weight:800;color:#15803d;">$<?= number_format($gp) ?></div>
-                        <div style="font-size:11px;color:#15803d;margin-top:2px;">Gross Profit</div>
+                    <div class="preset-stat-item" style="flex:1;min-width:140px">
+                        <div class="preset-stat-num" style="color:var(--text);">$<?= number_format($gp) ?></div>
+                        <div class="preset-stat-label">Gross Profit</div>
                     </div>
-                    <div style="flex:1;min-width:120px;background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius-sm);padding:14px;text-align:center;">
-                        <div style="font-size:18px;font-weight:800;color:#c2410c;">$<?= number_format($tool_cost) ?></div>
-                        <div style="font-size:11px;color:#c2410c;margin-top:2px;">Tool Costs</div>
+                    <div class="preset-stat-item" style="flex:1;min-width:140px">
+                        <div class="preset-stat-num" style="color:var(--amber);">$<?= number_format($tool_cost) ?></div>
+                        <div class="preset-stat-label">Tool Costs</div>
                     </div>
-                    <div style="flex:1;min-width:120px;background:<?= $net >= 0 ? '#f0fdf4' : '#fff0f0' ?>;border:1px solid <?= $net >= 0 ? '#bbf7d0' : '#fca5a5' ?>;border-radius:var(--radius-sm);padding:14px;text-align:center;">
-                        <div style="font-size:18px;font-weight:800;color:<?= $net >= 0 ? '#15803d' : '#b91c1c' ?>;">$<?= number_format($net) ?></div>
-                        <div style="font-size:11px;color:<?= $net >= 0 ? '#15803d' : '#b91c1c' ?>;margin-top:2px;">Net Profit</div>
+                    <div class="preset-stat-item" style="flex:1;min-width:140px">
+                        <div class="preset-stat-num" style="color:<?= $net >= 0 ? 'var(--positive-text)' : 'var(--negative-text)' ?>">
+                            $<?= number_format($net) ?>
+                        </div>
+                        <div class="preset-stat-label">Net Profit</div>
                     </div>
                 </div>
 
                 <?php if ($tool_names): ?>
-                    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Your Tools</div>
-                    <div class="tool-pills">
+                    <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">Selected Tools & Subscriptions</div>
+                    <div class="tool-pills-wrap">
                         <?php foreach ($tool_names as $t): ?>
-                            <span class="tool-pill">
+                            <span class="tool-pill-item">
                                 <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
-                                <?= e($t['name']) ?> <span style="opacity:.6">·</span> $<?= number_format($t['price']) ?>/mo
+                                <?= e($t['name']) ?> <span style="opacity:.5">·</span> $<?= number_format($t['price']) ?>/mo
                             </span>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
 
-                <div style="font-size:12px;color:var(--muted);margin-top:14px;">
+                <div style="font-size:12px;color:var(--muted);margin-top:16px;">
                     Last updated: <?= date('M d, Y \a\t H:i', strtotime($calc['updated_at'] ?? $calc['created_at'] ?? 'now')) ?>
                 </div>
-                <a href="/calculator.php" class="btn-edit-link">✏️ Edit in Calculator →</a>
+                <a href="/calculator.php" class="btn-action-link">
+                    Edit in Calculator <?= icon('arrow-right', '', 14) ?>
+                </a>
             <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">💰</div>
-                    <div class="empty-state-text">Open the calculator, enter your numbers, and hit <strong>Save My Settings</strong>.</div>
-                    <a href="/calculator.php" class="empty-state-link">Open Calculator →</a>
+                <div class="profile-empty-state">
+                    <div class="profile-empty-icon"><?= icon('calculator', '', 36) ?></div>
+                    <div class="profile-empty-text">Open the calculator, enter your revenue and margin targets, and hit <strong>Save My Settings</strong>.</div>
+                    <a href="/calculator.php" class="btn-action-link" style="margin-top:14px">
+                        Open Calculator <?= icon('arrow-right', '', 14) ?>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- ROADMAP                                                            -->
+    <!-- ROADMAP TAB                                                        -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="profile-panel" id="panel-roadmap">
-        <div class="section-card">
-            <div class="section-card-title">🗺 Your Roadmap Progress</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('map', '', 18) ?> Roadmap Milestones</h2>
+                    <div class="profile-card-subtitle">Your dropshipping journey broken down by difficulty tier</div>
+                </div>
+            </div>
             <?php
             $roadmap_details = [
-                'beginner'     => ['🌱 Beginner',    'fill-beginner',     '#10b981'],
-                'intermediate' => ['📈 Intermediate', 'fill-intermediate', '#f59e0b'],
-                'advanced'     => ['🚀 Advanced',      'fill-advanced',     '#6366f1'],
+                'beginner'     => ['Beginner Foundations', 'fill-beginner'],
+                'intermediate' => ['Intermediate Scaling',   'fill-intermediate'],
+                'advanced'     => ['Advanced Automation',    'fill-advanced'],
             ];
-            foreach ($roadmap_details as $key => [$label, $cls, $color]):
+            foreach ($roadmap_details as $key => [$label, $cls]):
                 $pct   = $roadmap_pct[$key];
                 $steps = $roadmap ? json_decode($roadmap[$key . '_steps'] ?? '[]', true) : [];
                 $total = $roadmap[$key . '_total'] ?? 0;
                 $done  = count(array_filter($steps ?? []));
             ?>
-                <div style="margin-bottom:24px;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <div style="font-size:15px;font-weight:800;color:var(--ink);"><?= $label ?></div>
-                        <div style="font-size:13px;font-weight:700;color:<?= $color ?>;"><?= $done ?>/<?= $total ?> steps · <?= $pct ?>%</div>
+                <div class="profile-progress-item" style="margin-bottom:16px;">
+                    <div class="profile-progress-meta">
+                        <div class="profile-progress-name"><?= $label ?></div>
+                        <div class="profile-progress-pct"><?= $done ?>/<?= $total ?> steps (<?= $pct ?>%)</div>
                     </div>
-                    <div class="progress-track">
-                        <div class="progress-fill <?= $cls ?>" style="width:<?= $pct ?>%"></div>
+                    <div class="profile-progress-track">
+                        <div class="profile-progress-bar" style="width:<?= $pct ?>%"></div>
                     </div>
                     <?php if ($pct === 100): ?>
-                        <div style="margin-top:10px;font-size:12px;color:#15803d;font-weight:600;">🎉 Level complete!</div>
+                        <div style="margin-top:8px;font-size:12px;color:var(--positive-text);font-weight:600;display:flex;align-items:center;gap:4px">
+                            <?= icon('check-circle', '', 14) ?> Level complete!
+                        </div>
                     <?php elseif ($pct > 0): ?>
-                        <div style="margin-top:10px;font-size:12px;color:var(--muted);">Keep going — <?= $total - $done ?> steps remaining.</div>
+                        <div style="margin-top:8px;font-size:12px;color:var(--muted);"><?= $total - $done ?> steps remaining.</div>
                     <?php else: ?>
-                        <div style="margin-top:10px;font-size:12px;color:var(--muted);">Not started yet.</div>
+                        <div style="margin-top:8px;font-size:12px;color:var(--muted);">Not started yet.</div>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
-            <a href="/roadmap.php" class="btn-edit-link">🗺 Continue on Roadmap →</a>
-        </div>
-
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:16px 20px;font-size:13px;color:#92400e;">
-            💡 Your roadmap progress is saved automatically when you check steps. Make sure you are logged in to keep it synced.
+            <a href="/roadmap.php" class="btn-action-link">
+                Continue on Roadmap <?= icon('arrow-right', '', 14) ?>
+            </a>
         </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- STACK BUILDER                                                      -->
+    <!-- STACK BUILDER TAB                                                  -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="profile-panel" id="panel-stack">
-        <div class="section-card">
-            <div class="section-card-title">🧱 Saved Tool Stack</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('layers', '', 18) ?> Saved Tool Stack</h2>
+                    <div class="profile-card-subtitle">Tools curated through the Stack Builder</div>
+                </div>
+            </div>
             <?php if ($stack && !empty($stack_tools)): ?>
                 <?php
-                // Re-index into a clean, sequential 0-based array and drop any
-                // empty/falsy entries. PDO's positional (?) placeholders require
-                // sequential numeric keys — a non-sequential or associative array
-                // decoded from JSON throws "Invalid parameter number" here.
                 $stack_tools = array_values(array_filter($stack_tools));
                 $stack_rows = [];
                 if ($stack_tools) {
@@ -973,148 +1055,196 @@ include __DIR__ . '/header.php';
                 <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">
                     <?= count($stack_rows) ?> tools in your stack · Last saved <?= date('M d, Y', strtotime($stack['updated_at'] ?? $stack['created_at'] ?? 'now')) ?>
                 </div>
-                <div class="stack-grid">
+                <div class="stack-cards-grid">
                     <?php foreach ($stack_rows as $t): ?>
-                        <a href="/tool/<?= e($t['slug']) ?>" style="text-decoration:none;">
-                            <div class="stack-item">
-                                <div class="stack-item-icon">
-                                    <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
-                                </div>
-                                <div class="stack-item-name"><?= e($t['name']) ?></div>
-                                <div class="stack-item-cat">Category #<?= e($t['category']) ?></div>
+                        <a href="/tool/<?= e($t['slug']) ?>" class="stack-card-single">
+                            <div class="stack-card-icon-box">
+                                <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
                             </div>
+                            <div class="stack-card-name"><?= e($t['name']) ?></div>
+                            <div class="stack-card-category">Category #<?= e($t['category']) ?></div>
                         </a>
                     <?php endforeach; ?>
                 </div>
-                <a href="/stack-builder.php" class="btn-edit-link" style="margin-top:16px;">✏️ Edit Stack →</a>
+                <a href="/stack-builder.php" class="btn-action-link" style="margin-top:20px;">
+                    Edit Stack <?= icon('arrow-right', '', 14) ?>
+                </a>
             <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">🧱</div>
-                    <div class="empty-state-text">You haven't saved a stack yet.<br>Use the Stack Builder to pick your tools and save them here.</div>
-                    <a href="/stack-builder.php" class="empty-state-link">Build My Stack →</a>
+                <div class="profile-empty-state">
+                    <div class="profile-empty-icon"><?= icon('layers', '', 36) ?></div>
+                    <div class="profile-empty-text">You haven't saved a stack yet. Use the Stack Builder quiz to generate a tailored toolkit.</div>
+                    <a href="/stack-builder.php" class="btn-action-link" style="margin-top:14px">
+                        Build My Stack <?= icon('arrow-right', '', 14) ?>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- UPVOTES                                                            -->
+    <!-- UPVOTES TAB                                                        -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="profile-panel" id="panel-upvotes">
-        <div class="section-card">
-            <div class="section-card-title">👍 Tools You've Upvoted <span style="font-size:13px;font-weight:400;color:var(--muted);">(<?= $upvote_count ?>)</span></div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('thumbs-up', '', 18) ?> All Upvoted Tools (<?= $upvote_count ?>)</h2>
+                    <div class="profile-card-subtitle">Tools you've recommended to other dropshippers</div>
+                </div>
+            </div>
             <?php if ($upvoted_tools): ?>
-                <div class="upvote-list">
+                <div class="list-panel" style="border:none;padding:0;background:transparent;box-shadow:none">
                     <?php foreach ($upvoted_tools as $t): ?>
-                        <a href="/tool/<?= e($t['slug']) ?>" style="text-decoration:none;">
-                            <div class="upvote-item">
-                                <div class="upvote-icon">
-                                    <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
+                        <a href="/tool/<?= e($t['slug']) ?>" class="list-row" style="text-decoration:none;border-radius:var(--radius-xl);background:var(--surface-2);margin-bottom:8px;border:1px solid var(--border)">
+                            <div class="list-row-left">
+                                <div class="list-row-icon" style="background:var(--surface)">
+                                    <img src="<?= e($t['icon']) ?>" alt="<?= e($t['name']) ?>" style="width:24px;height:24px;object-fit:contain" onerror="this.style.display='none'">
                                 </div>
-                                <div class="upvote-info">
-                                    <div class="upvote-name"><?= e($t['name']) ?></div>
-                                    <div class="upvote-date">Voted on <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
+                                <div class="list-row-info">
+                                    <div class="list-row-title"><?= e($t['name']) ?></div>
+                                    <div class="list-row-subtitle">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
                                 </div>
-                                <div class="upvote-badge">▲ <?= number_format($t['total_votes']) ?> votes</div>
+                            </div>
+                            <div class="list-row-right">
+                                <span class="stat-delta positive" style="display:inline-flex;align-items:center;gap:4px">
+                                    <?= icon('thumbs-up', '', 12) ?> <?= number_format($t['total_votes']) ?> votes
+                                </span>
                             </div>
                         </a>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">👍</div>
-                    <div class="empty-state-text">You haven't upvoted any tools yet.<br>Upvoting helps the community find the best tools.</div>
-                    <a href="/index.php" class="empty-state-link">Browse Tools →</a>
+                <div class="profile-empty-state">
+                    <div class="profile-empty-icon"><?= icon('thumbs-up', '', 36) ?></div>
+                    <div class="profile-empty-text">You haven't upvoted any tools yet. Upvoting helps the community find the best dropshipping tools.</div>
+                    <a href="/index.php" class="btn-action-link" style="margin-top:14px">
+                        Browse Tools <?= icon('arrow-right', '', 14) ?>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- SETTINGS                                                           -->
+    <!-- SETTINGS TAB                                                       -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="profile-panel" id="panel-settings">
 
-        <div class="section-card">
-            <div class="section-card-title">👤 Account Information</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('user', '', 18) ?> Account Information</h2>
+                    <div class="profile-card-subtitle">Manage your username and primary email address</div>
+                </div>
+            </div>
             <?php if ($update_success): ?>
-                <div class="alert alert-success">✅ Profile updated successfully.</div>
+                <div class="profile-alert profile-alert-success">
+                    <?= icon('check-circle', '', 16) ?> Profile updated successfully.
+                </div>
             <?php endif; ?>
             <?php if ($update_error): ?>
-                <div class="alert alert-error">⚠️ <?= e($update_error) ?></div>
+                <div class="profile-alert profile-alert-error">
+                    <?= icon('alert-circle', '', 16) ?> <?= e($update_error) ?>
+                </div>
             <?php endif; ?>
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 <input type="hidden" name="update_profile" value="1">
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-grid-2">
+                    <div class="form-field-group">
                         <label>Username</label>
-                        <input type="text" name="username" class="form-input" value="<?= e($user['username']) ?>">
+                        <input type="text" name="username" class="form-input-styled" value="<?= e($user['username']) ?>" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-field-group">
                         <label>Email Address</label>
-                        <input type="email" name="email" class="form-input" value="<?= e($user['email']) ?>">
+                        <input type="email" name="email" class="form-input-styled" value="<?= e($user['email']) ?>" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">Save Changes</button>
+                <button type="submit" class="btn-submit-primary">
+                    <?= icon('check', '', 15) ?> Save Changes
+                </button>
             </form>
         </div>
 
-        <div class="section-card">
-            <div class="section-card-title">🔒 Change Password</div>
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h2 class="profile-card-title"><?= icon('lock', '', 18) ?> Change Password</h2>
+                    <div class="profile-card-subtitle">Update your password to keep your account secure</div>
+                </div>
+            </div>
             <?php if ($pw_success): ?>
-                <div class="alert alert-success">✅ Password changed successfully.</div>
+                <div class="profile-alert profile-alert-success">
+                    <?= icon('check-circle', '', 16) ?> Password changed successfully.
+                </div>
             <?php endif; ?>
             <?php if ($pw_error): ?>
-                <div class="alert alert-error">⚠️ <?= e($pw_error) ?></div>
+                <div class="profile-alert profile-alert-error">
+                    <?= icon('alert-circle', '', 16) ?> <?= e($pw_error) ?>
+                </div>
             <?php endif; ?>
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 <input type="hidden" name="change_password" value="1">
-                <div class="form-group">
+                <div class="form-field-group">
                     <label>Current Password</label>
-                    <input type="password" name="current_password" class="form-input" placeholder="••••••••">
+                    <input type="password" name="current_password" class="form-input-styled" placeholder="••••••••" required>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-grid-2">
+                    <div class="form-field-group">
                         <label>New Password</label>
-                        <input type="password" name="new_password" class="form-input" placeholder="••••••••">
+                        <input type="password" name="new_password" class="form-input-styled" placeholder="••••••••" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-field-group">
                         <label>Confirm New Password</label>
-                        <input type="password" name="confirm_password" class="form-input" placeholder="••••••••">
+                        <input type="password" name="confirm_password" class="form-input-styled" placeholder="••••••••" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">Change Password</button>
+                <button type="submit" class="btn-submit-primary">
+                    <?= icon('lock', '', 15) ?> Change Password
+                </button>
             </form>
         </div>
 
-        <div class="danger-zone">
-            <div class="danger-title">⚠️ Danger Zone</div>
-            <div class="danger-desc">Deleting your account is permanent. All your saved settings, upvotes, and progress will be removed.</div>
-            <button class="btn-danger" id="deleteAccountBtn">Delete My Account</button>
+        <div class="danger-zone-box">
+            <div class="danger-zone-title">
+                <?= icon('alert-circle', '', 18) ?> Danger Zone
+            </div>
+            <div class="danger-zone-desc">Deleting your account is permanent. All your saved settings, upvotes, and custom stacks will be permanently wiped.</div>
+            <button class="btn-danger-action" id="deleteAccountBtn">
+                <?= icon('trash', '', 14) ?> Delete My Account
+            </button>
         </div>
 
     </div>
 
 </div>
+
 <script>
     function switchTab(name) {
-        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.profile-nav-btn').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('active'));
         const panel = document.getElementById('panel-' + name);
         if (panel) panel.classList.add('active');
-        const tabBtn = document.querySelector('.profile-tab[data-tab="' + name + '"]');
+        const tabBtn = document.querySelector('.profile-nav-btn[data-tab="' + name + '"]');
         if (tabBtn) tabBtn.classList.add('active');
     }
 
-    // Attach listeners to every element with a data-tab attribute
-    // (the top tab bar, plus any shortcut buttons/links elsewhere on the page)
     document.querySelectorAll('[data-tab]').forEach(function (el) {
         el.addEventListener('click', function () {
             switchTab(el.dataset.tab);
         });
     });
+
+    // Auto-switch tab based on hash or query param (e.g. #settings or ?tab=settings)
+    (function() {
+        const hashTab = (window.location.hash || '').replace('#', '');
+        const paramTab = new URLSearchParams(window.location.search).get('tab');
+        const initialTab = hashTab || paramTab;
+        if (initialTab && document.getElementById('panel-' + initialTab)) {
+            switchTab(initialTab);
+        }
+    })();
 
     function confirmDelete() {
         if (confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {

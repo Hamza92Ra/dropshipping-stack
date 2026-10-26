@@ -1,133 +1,223 @@
 <?php if (!defined('APP')) die('Direct access not allowed'); ?>
-<?php include 'partials/chatbot.php'; ?>
-<footer class="site-footer">
-    <div class="footer-inner">
 
-        <div class="footer-brand">
-            <a href="/" class="logo">
-                <span class="logo-icon">⚡</span>
-                <span class="logo-text"><?= SITE_NAME ?></span>
-            </a>
-            <p><?= SITE_TAGLINE ?></p>
-            <p class="footer-disclaimer">
-                Some links on this site are affiliate links. We may earn a commission at no extra cost to you.
-            </p>
-        </div>
+        </main><!-- /.app-content -->
 
-        <div class="footer-links">
-            <div class="footer-col">
-                <h4>Categories</h4>
-                <?php
-                $fcats = $pdo->query("SELECT name, slug FROM categories ORDER BY sort_order")->fetchAll();
-                foreach ($fcats as $c): ?>
-                    <a href="/category/index.php?slug=<?= e($c['slug']) ?>"><?= e($c['name']) ?></a>
-                <?php endforeach; ?>
+        <!-- ═══════════════════════════════════════════════════════════
+             NEWSLETTER EMBEDDED CARD (Centered ~1100px, Rounded Surface)
+             ═══════════════════════════════════════════════════════════ -->
+        <section class="newsletter-wrap" id="newsletter" aria-label="Newsletter Subscription">
+            <div class="newsletter-card">
+                <div class="newsletter-content">
+                    <div class="newsletter-badge">
+                        <span style="color:var(--accent);display:inline-flex"><?= icon('sparkles', '', 16) ?></span>
+                        <span>Free Dropshipping Kit</span>
+                    </div>
+                    <h3 class="newsletter-title">Get the Dropshipping Starter Kit</h3>
+                    <p class="newsletter-sub">
+                        Join 2,000+ dropshippers receiving weekly vetted tool breakdowns, margin benchmarks, and private software discounts.
+                    </p>
+                    <p class="newsletter-trust">
+                        <?= icon('check', '', 13) ?>
+                        <span>One-click unsubscribe anytime. Zero spam.</span>
+                    </p>
+                </div>
+
+                <div class="newsletter-action">
+                    <form class="newsletter-form" id="newsletterForm" onsubmit="handleNewsletterSubmit(event)">
+                        <div class="newsletter-pill-group" id="newsletterInputGroup">
+                            <span class="newsletter-input-icon"><?= icon('mail', '', 18) ?></span>
+                            <input type="email"
+                                   id="newsletterEmail"
+                                   name="email"
+                                   class="newsletter-input"
+                                   placeholder="Enter your email address..."
+                                   required
+                                   autocomplete="email"
+                                   aria-label="Email address for starter kit">
+                            <button type="submit" class="newsletter-btn" id="newsletterSubmitBtn">
+                                <span class="btn-text">Get Free Access</span>
+                                <?= icon('arrow-right', '', 15) ?>
+                            </button>
+                        </div>
+                        <div class="newsletter-feedback" id="newsletterFeedback" role="status" aria-live="polite"></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SITE FOOTER (Clean 5-Column Grid Desktop, 2-Col Mobile)
+             ═══════════════════════════════════════════════════════════ -->
+        <footer class="app-footer" id="site-footer">
+            <div class="footer-inner">
+                <!-- Brand & Affiliate Disclosure Column -->
+                <div class="footer-brand-col">
+                    <a href="/index.php" class="footer-logo">
+                        <span class="footer-logo-icon"><?= icon('sparkles', '', 20) ?></span>
+                        <span class="footer-logo-text"><?= SITE_NAME ?></span>
+                    </a>
+                    <p class="footer-tagline"><?= SITE_TAGLINE ?></p>
+                    <p class="footer-affiliate-note">
+                        <?= icon('info', '', 13) ?>
+                        <span>Some links on this platform are affiliate links. We may earn a commission at no extra cost to you.</span>
+                    </p>
+                </div>
+
+                <!-- Link Columns (Tools, Compare, Roadmap, Calculator, Legal) -->
+                <div class="footer-links-grid">
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">Tools</h4>
+                        <a href="/tool/index.php?slug=shopify">Shopify</a>
+                        <a href="/tool/index.php?slug=minea">Minea</a>
+                        <a href="/tool/index.php?slug=zendrop">Zendrop</a>
+                        <a href="/tool/index.php?slug=klaviyo">Klaviyo</a>
+                        <a href="/tool/index.php?slug=triple-whale">Triple Whale</a>
+                        <a href="/index.php">All 20+ Tools</a>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">Compare</h4>
+                        <a href="/compare.php?a=shopify&b=woocommerce">Shopify vs WooCommerce</a>
+                        <a href="/compare.php?a=zendrop&b=spocket">Zendrop vs Spocket</a>
+                        <a href="/compare.php?a=minea&b=adspy">Minea vs AdSpy</a>
+                        <a href="/compare.php?a=autods&b=dsers">AutoDS vs DSers</a>
+                        <a href="/compare.php">Comparison Hub</a>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">Roadmap</h4>
+                        <a href="/roadmap.php#stage-beginner">Beginner Stage</a>
+                        <a href="/roadmap.php#stage-intermediate">Intermediate Stage</a>
+                        <a href="/roadmap.php#stage-advanced">Scaling Stage</a>
+                        <a href="/roadmap.php">Execution Roadmap</a>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">Calculator</h4>
+                        <a href="/calculator.php">Profit Calculator</a>
+                        <a href="/calculator.php#simulate">Margin Simulator</a>
+                        <a href="/stack-builder.php">Stack Builder</a>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">Company</h4>
+                        <a href="/about.php">About DropshippingStack</a>
+                        <a href="/privacy.php">Privacy Policy</a>
+                        <a href="/affiliate-disclosure.php">Affiliate Disclosure</a>
+                        <button type="button" class="footer-btn-link" onclick="openIntroModal()">How It Works</button>
+                        <a href="/submit.php">Submit a Tool</a>
+                    </div>
+                </div>
             </div>
 
-            <div class="footer-col">
-                <h4>Site</h4>
-                <a href="/">Home</a>
-                <a href="/submit.php">Submit a Tool</a>
-                <a href="/about.php">About</a>
-                <a href="/privacy.php">Privacy Policy</a>
-                <a href="/affiliate-disclosure.php">Affiliate Disclosure</a>
+            <!-- Footer Bottom Row -->
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-left">
+                    <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?>. All rights reserved.</p>
+                    <span class="footer-verified-badge">
+                        <?= icon('shield-check', '', 14) ?>
+                        <span>Verified Software Directory</span>
+                    </span>
+                </div>
+
+                <div class="footer-social-links">
+                    <a href="mailto:contact@dropshippingstack.com" aria-label="Email support" title="Email us">
+                        <?= icon('mail', '', 16) ?>
+                        <span>Email</span>
+                    </a>
+                    <a href="https://www.instagram.com/hdro.pshipping/#" target="_blank" rel="noopener noreferrer" aria-label="Instagram profile" title="Instagram">
+                        <span>Instagram</span>
+                    </a>
+                    <a href="https://www.facebook.com/share/18ojiJyzhF/" target="_blank" rel="noopener noreferrer" aria-label="Facebook page" title="Facebook">
+                        <span>Facebook</span>
+                    </a>
+                </div>
             </div>
+        </footer>
 
-            <div class="footer-col">
-                <h4>Top Tools</h4>
-                <?php
-                $top = $pdo->query("SELECT name, slug FROM tools WHERE is_active=1 ORDER BY clicks DESC LIMIT 5")->fetchAll();
-                foreach ($top as $t): ?>
-                    <a href="/tool/index.php?slug=<?= e($t['slug']) ?>"><?= e($t['name']) ?></a>
-                <?php endforeach; ?>
-            </div>
-            <div class="footer-col">
-                <h4>Connect</h4>
-                <a href="mailto:you@yourdomain.com">Email us</a>
-                <a href="https://www.instagram.com/hdro.pshipping/#" target="_blank" rel="noopener">Instagram</a>
-                <a href="https://www.facebook.com/share/18ojiJyzhF/" target="_blank" rel="noopener">Facebook</a>
-                <!-- <a href="https://tiktok.com/@yourhandle" target="_blank" rel="noopener">TikTok</a> -->
-            </div>
-        </div>
+    </div><!-- /.app-shell -->
 
-    </div>
+    <!-- Chatbot Integration -->
+    <?php if (file_exists(__DIR__ . '/partials/chatbot.php')): ?>
+        <?php include __DIR__ . '/partials/chatbot.php'; ?>
+    <?php else: ?>
+        <script src="/assets/js/chat-widget.js" data-api="/api/chat-api.php" defer></script>
+    <?php endif; ?>
 
-    <div class="footer-bottom">
-        <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?>. All rights reserved.</p>
-    </div>
-</footer>
-<!-- Email Popup -->
-<div id="emailPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center">
-    <div style="background:#fff;border-radius:16px;padding:40px;max-width:440px;width:90%;text-align:center;position:relative">
-        <button onclick="closePopup()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999">✕</button>
-        <div style="font-size:48px;margin-bottom:12px">🎁</div>
-        <h2 style="font-size:22px;font-weight:800;color:#0d0d1a;margin-bottom:8px">Get the Free Starter Kit</h2>
-        <p style="font-size:14px;color:#9898b8;margin-bottom:24px;line-height:1.6">Join 2,000+ dropshippers getting weekly tool reviews, exclusive deals and the best affiliate programs straight to their inbox.</p>
-        <input type="email" id="popupEmail" placeholder="your@email.com" style="width:100%;border:1.5px solid #e2e2eb;border-radius:8px;padding:11px 14px;font-size:14px;margin-bottom:10px;outline:none;font-family:inherit">
-        <button onclick="submitEmail()" style="width:100%;background:#6366f1;color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Get Free Access →</button>
-        <p style="font-size:11px;color:#c0c0d8;margin-top:12px">No spam. Unsubscribe anytime.</p>
-    </div>
-</div>
+    <!-- Newsletter AJAX Submission Handler -->
+    <script>
+    async function handleNewsletterSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('newsletterEmail');
+        const btn = document.getElementById('newsletterSubmitBtn');
+        const group = document.getElementById('newsletterInputGroup');
+        const feedback = document.getElementById('newsletterFeedback');
 
-<script>
-    function closePopup() {
-        document.getElementById('emailPopup').style.display = 'none';
-        localStorage.setItem('popupClosed', '1');
-    }
+        if (!input || !btn || !feedback) return;
+        const email = input.value.trim();
 
-    function submitEmail() {
-        const email = document.getElementById('popupEmail').value;
         if (!email || !email.includes('@')) {
-            alert('Please enter a valid email address.');
+            group.classList.add('has-error');
+            feedback.className = 'newsletter-feedback error';
+            feedback.innerHTML = '<span>Please enter a valid email address.</span>';
+            input.focus();
             return;
         }
-        document.getElementById('emailPopup').innerHTML = '<div style="background:#fff;border-radius:16px;padding:48px 40px;max-width:440px;width:90%;text-align:center"><div style="font-size:52px;margin-bottom:16px">✅</div><h2 style="font-size:20px;font-weight:800;color:#0d0d1a;margin-bottom:8px">You\'re in!</h2><p style="color:#9898b8;font-size:14px">Check your inbox for the Starter Kit.</p></div>';
-        setTimeout(closePopup, 3000);
-    }
 
-    // Show popup after 30 seconds if not already closed
-    if (!localStorage.getItem('popupClosed')) {
-        setTimeout(() => {
-            document.getElementById('emailPopup').style.display = 'flex';
-        }, 30000);
-    }
-</script>
-<script>
-    function handleUpvote(btn) {
-        if (btn.classList.contains('needs-login')) {
-            window.location.href = '/login.php';
-            return;
-        }
-        const toolId = btn.dataset.id;
-        fetch('/upvote.php', {
+        group.classList.remove('has-error');
+        group.classList.add('is-loading');
+        btn.disabled = true;
+        btn.innerHTML = '<span>Joining...</span>';
+        feedback.className = 'newsletter-feedback';
+        feedback.textContent = '';
+
+        try {
+            const formData = new FormData();
+            formData.append('email', email);
+
+            const res = await fetch('/api/newsletter.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'tool_id=' + toolId
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.error === 'login_required') {
-                    window.location.href = '/login.php';
-                    return;
-                }
-                btn.querySelector('.upvote-count').textContent = data.count;
-                btn.style.borderColor = data.action === 'added' ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
-                btn.style.color = data.action === 'added' ? 'var(--accent)' : 'rgba(255,255,255,0.6)';
+                body: formData
             });
-    }
-</script>
-<script src="/assets/js/main.js"></script>
-<script src="/assets/js/chat-widget.js" data-api="/api/chat-api.php"></script>
-<script>
-    document.getElementById('themeToggle').addEventListener('click', function() {
-        var html = document.documentElement;
-        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-    });
-</script>
-</body>
+            const data = await res.json();
 
+            if (data.success) {
+                group.style.display = 'none';
+                feedback.className = 'newsletter-feedback success';
+                feedback.innerHTML = `
+                    <div class="newsletter-success-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <div>
+                            <strong>You're on the list!</strong>
+                            <p>We've sent the complete Starter Kit to <em>${escapeHtml(email)}</em>.</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                group.classList.remove('is-loading');
+                group.classList.add('has-error');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="btn-text">Get Free Access</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+                feedback.className = 'newsletter-feedback error';
+                feedback.textContent = data.error || 'Submission failed. Please try again.';
+            }
+        } catch (err) {
+            group.classList.remove('is-loading');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="btn-text">Get Free Access</span>';
+            feedback.className = 'newsletter-feedback error';
+            feedback.textContent = 'Connection error. Please try again later.';
+        }
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+    </script>
+    <?php if (isset($_GET['scroll']) && $_GET['scroll'] === 'footer'): ?>
+    <style>
+        .app-content { display: none !important; }
+    </style>
+    <?php endif; ?>
+</body>
 </html>

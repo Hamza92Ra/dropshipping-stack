@@ -1,0 +1,171 @@
+/* ============================================================
+   DropshippingStack — theme.css
+   Modern Fintech "AI Dashboard" Design System & Tokens
+   Driven by <html data-theme="light|dark">
+   ============================================================ */
+
+:root {
+    color-scheme: light;
+
+    /* ── Surface & Canvas ── */
+    --bg: #F4F6F4;
+    --surface: #FFFFFF;
+    --surface-2: #EDF2EE;
+    --surface-hover: #F8FAF8;
+    --card: #FFFFFF;
+
+    /* ── Borders & Outlines ── */
+    --border: rgba(18, 24, 20, 0.08);
+    --border-subtle: rgba(18, 24, 20, 0.04);
+    --border-focus: #326346;
+
+    /* ── Typography & Ink ── */
+    --text: #121814;
+    --ink: #121814;
+    --body: #4A564D;
+    --body-c: #4A564D;
+    --muted: #7A897D;
+    --muted-light: #A3B1A6;
+
+    /* ── Accent: Sage / Forest Green (Sole Accent) ── */
+    --accent: #326346;
+    --accent-h: #264E37;
+    --accent-light: #E7EFEA;
+    --accent-contrast: #FFFFFF;
+    --on-accent: #FFFFFF;
+
+    /* ── Primary Action (Near-Black in Light Mode) ── */
+    --btn-primary-bg: #121814;
+    --btn-primary-text: #FFFFFF;
+    --btn-primary-hover: #222C25;
+
+    /* ── Status Tokens ── */
+    --positive: #16A34A;
+    --positive-bg: #EAF7ED;
+    --positive-border: #C6E9CC;
+    --positive-text: #15803D;
+
+    --negative: #DC2626;
+    --negative-bg: #FEF2F2;
+    --negative-border: #FCA5A5;
+    --negative-text: #B91C1C;
+
+    --amber: #D97706;
+    --amber-light: #FEF3C7;
+    --amber-text: #B45309;
+
+    /* ── Shadows (Soft, Diffused Fintech Style) ── */
+    --shadow-xs: 0 1px 2px rgba(18, 24, 20, 0.03);
+    --shadow-sm: 0 2px 8px -1px rgba(18, 24, 20, 0.04), 0 1px 2px rgba(18, 24, 20, 0.02);
+    --shadow: 0 10px 25px -4px rgba(18, 24, 20, 0.05), 0 4px 10px -2px rgba(18, 24, 20, 0.02);
+    --shadow-hover: 0 20px 32px -8px rgba(18, 24, 20, 0.09), 0 6px 12px -3px rgba(18, 24, 20, 0.03);
+    --shadow-lg: 0 25px 50px -12px rgba(18, 24, 20, 0.12);
+
+    /* ── Radii ── */
+    --radius-2xl: 20px;
+    --radius-xl: 16px;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-full: 9999px;
+
+    /* ── Skeletons & Overlays ── */
+    --skeleton-a: rgba(50, 99, 70, 0.05);
+    --skeleton-b: rgba(50, 99, 70, 0.12);
+    --input-focus-bg: #FFFFFF;
+    --overlay: rgba(14, 20, 16, 0.6);
+
+    /* ── Motion & Font ── */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-fast: 0.18s;
+    --dur: 0.3s;
+    --dur-slow: 0.5s;
+    --font: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --display: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ── Dark Palette (Deep Green-Black Surfaces) ── */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* ── Deep Green-Black Canvas ── */
+    --bg: #0D1310;
+    --surface: #141B17;
+    --surface-2: #1B241F;
+    --surface-hover: #1F2A24;
+    --card: #141B17;
+
+    /* ── Dark Mode Borders ── */
+    --border: rgba(235, 245, 238, 0.09);
+    --border-subtle: rgba(235, 245, 238, 0.05);
+    --border-focus: #78B38E;
+
+    /* ── Dark Typography ── */
+    --text: #EDF3EE;
+    --ink: #EDF3EE;
+    --body: #B0BEB3;
+    --body-c: #B0BEB3;
+    --muted: #7B8D80;
+    --muted-light: #526356;
+
+    /* ── Luminous Sage Accent for Dark Mode ── */
+    --accent: #78B38E;
+    --accent-h: #90C8A4;
+    --accent-light: rgba(120, 179, 142, 0.15);
+    --accent-contrast: #0D1310;
+    --on-accent: #0D1310;
+
+    /* ── Primary Action on Dark (Contrast Light) ── */
+    --btn-primary-bg: #EDF3EE;
+    --btn-primary-text: #0D1310;
+    --btn-primary-hover: #FFFFFF;
+
+    /* ── Status Tokens in Dark ── */
+    --positive: #4ADE80;
+    --positive-bg: rgba(74, 222, 128, 0.12);
+    --positive-border: rgba(74, 222, 128, 0.25);
+    --positive-text: #4ADE80;
+
+    --negative: #F87171;
+    --negative-bg: rgba(248, 113, 113, 0.12);
+    --negative-border: rgba(248, 113, 113, 0.25);
+    --negative-text: #F87171;
+
+    --amber: #FBBF24;
+    --amber-light: rgba(251, 191, 36, 0.12);
+    --amber-text: #FCD34D;
+
+    /* ── Dark Shadows ── */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-sm: 0 2px 8px -1px rgba(0, 0, 0, 0.35);
+    --shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.45);
+    --shadow-hover: 0 20px 32px -8px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+
+    /* ── Skeletons & Inputs ── */
+    --skeleton-a: rgba(235, 245, 238, 0.04);
+    --skeleton-b: rgba(235, 245, 238, 0.09);
+    --input-focus-bg: #1B241F;
+    --overlay: rgba(0, 0, 0, 0.75);
+}
+
+/* ── Smooth Theme Transition ── */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+    transition: background-color 0.25s var(--ease),
+                color 0.25s var(--ease),
+                border-color 0.25s var(--ease),
+                box-shadow 0.25s var(--ease) !important;
+}
+
+/* ── Respect Prefers Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

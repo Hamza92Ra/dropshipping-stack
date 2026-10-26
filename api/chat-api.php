@@ -116,8 +116,8 @@ function describeTool($t)
 function prosConsLine($t)
 {
     $reply = "{$t['name']}:\n";
-    if (!empty($t['pros'])) $reply .= "👍 Pros: {$t['pros']}\n";
-    if (!empty($t['cons'])) $reply .= "👎 Cons: {$t['cons']}\n";
+    if (!empty($t['pros'])) $reply .= "• Pros: {$t['pros']}\n";
+    if (!empty($t['cons'])) $reply .= "• Cons: {$t['cons']}\n";
     if (empty($t['pros']) && empty($t['cons'])) $reply .= "I don't have pros/cons listed for this one yet — check its review page for more detail.";
     return trim($reply);
 }

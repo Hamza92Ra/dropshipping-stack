@@ -40,19 +40,18 @@ function sendVerificationEmail(string $email, string $token): bool {
     <tr><td align="center" style="padding:40px 20px">
       <table width="500" cellpadding="0" cellspacing="0"
              style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
-        <tr><td style="background:linear-gradient(135deg,#6c63ff,#5a52e0);padding:32px;text-align:center">
-          <h1 style="color:#fff;margin:0;font-size:24px">🚀 ' . SITE_NAME . '</h1>
+        <tr><td style="background:#121814;padding:32px;text-align:center">
+          <h1 style="color:#fff;margin:0;font-size:24px;font-weight:800;letter-spacing:-0.02em;">' . SITE_NAME . '</h1>
         </td></tr>
         <tr><td style="padding:40px 32px;text-align:center">
-          <div style="font-size:48px;margin-bottom:16px">✉️</div>
-          <h2 style="color:#1a1a2e;font-size:20px;margin:0 0 12px">Verify your email address</h2>
+          <h2 style="color:#121814;font-size:20px;font-weight:700;margin:0 0 12px">Verify your email address</h2>
           <p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 28px">
             Thanks for signing up! Click the button below to verify your email.<br>
             This link is valid for <strong>24 hours</strong>.
           </p>
           <a href="' . $link . '"
-             style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#6c63ff,#5a52e0);
-                    color:#fff;font-size:15px;font-weight:700;border-radius:10px;text-decoration:none">
+             style="display:inline-block;padding:14px 36px;background:#121814;
+                    color:#fff;font-size:15px;font-weight:700;border-radius:99px;text-decoration:none">
             Verify Email →
           </a>
           <p style="color:#aaa;font-size:12px;margin:24px 0 0">

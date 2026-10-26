@@ -1,417 +1,386 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
+
 $savedStack = null;
-
 if (isset($_SESSION['user_id'])) {
-
-    $stmt = $pdo->prepare(
-        "SELECT tools_json
-FROM user_stack
-WHERE user_id=?"
-    );
-
-    $stmt->execute([
-        $_SESSION['user_id']
-    ]);
-
+    $stmt = $pdo->prepare("SELECT tools_json FROM user_stack WHERE user_id=?");
+    $stmt->execute([$_SESSION['user_id']]);
     $row = $stmt->fetch();
-
     if ($row) {
-        $savedStack = json_decode(
-            $row['tools_json'],
-            true
-        );
+        $savedStack = json_decode($row['tools_json'], true);
     }
 }
 
-$page_title = 'Build Your Stack — Find the Perfect Dropshipping Tools';
-$page_desc  = 'Answer 3 quick questions and get a personalized dropshipping tool stack recommendation.';
+$page_title      = 'Build Your Dropshipping Stack — Personalized Software Stack';
+$page_heading    = 'Stack Builder';
+$page_subheading = 'Interactive configuration quiz to assemble your ideal toolkit';
+$page_desc       = 'Answer 3 quick questions and get a personalized dropshipping tool stack recommendation.';
 
 include __DIR__ . '/header.php';
-
-
 ?>
+
 <style>
-    .quiz-wrap {
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 48px 24px 80px;
-    }
+.quiz-wrap {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 10px 0 60px;
+}
 
-    .quiz-hero {
-        text-align: center;
-        margin-bottom: 48px;
-    }
+.quiz-hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
 
-    .quiz-hero .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--accent-light);
-        color: var(--accent);
-        font-size: 12px;
-        font-weight: 700;
-        padding: 5px 14px;
-        border-radius: 20px;
-        margin-bottom: 18px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-    }
+.quiz-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: var(--radius-full);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
 
-    .quiz-hero h1 {
-        font-size: clamp(28px, 4vw, 44px);
-        font-weight: 800;
-        color: var(--ink);
-        letter-spacing: -0.025em;
-        margin-bottom: 14px;
-        line-height: 1.15;
-    }
+.quiz-hero h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.025em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+}
 
-    .quiz-hero h1 span {
-        color: var(--accent);
-    }
+.quiz-hero h1 span {
+    color: var(--accent);
+}
 
-    .quiz-hero p {
-        font-size: 16px;
-        color: var(--muted);
-        max-width: 480px;
-        margin: 0 auto;
-        line-height: 1.7;
-    }
+.quiz-hero p {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.65;
+}
 
-    /* Progress */
-    .progress-bar-wrap {
-        background: var(--border);
-        border-radius: 99px;
-        height: 5px;
-        margin-bottom: 40px;
-        overflow: hidden;
-    }
+/* Quiz Card Container */
+.quiz-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: 36px;
+    box-shadow: var(--shadow-sm);
+}
 
-    .progress-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent), #8b5cf6);
-        border-radius: 99px;
-        transition: width 0.4s ease;
-    }
+.step-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+}
 
-    .step-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: 10px;
-    }
+.progress-bar-wrap {
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    height: 8px;
+    margin-bottom: 36px;
+    overflow: hidden;
+}
 
-    /* Steps */
-    .quiz-step {
-        display: none;
-    }
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #16a34a);
+    border-radius: var(--radius-full);
+    transition: width 0.35s var(--ease);
+}
 
-    .quiz-step.active {
-        display: block;
-    }
+.quiz-step {
+    display: none;
+}
 
-    .quiz-question {
-        font-size: 22px;
-        font-weight: 800;
-        color: var(--ink);
-        margin-bottom: 24px;
-        letter-spacing: -0.01em;
-        line-height: 1.3;
-    }
+.quiz-step.active {
+    display: block;
+    animation: fadeRise 0.3s var(--ease) both;
+}
 
+.quiz-question {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+
+.quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.quiz-option {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    background: var(--surface-2);
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.quiz-option:hover {
+    border-color: var(--accent);
+    background: var(--surface);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.quiz-option.selected {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.option-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.option-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+
+.option-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.quiz-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+/* Results Section */
+.results-wrap {
+    display: none;
+}
+
+.results-wrap.show {
+    display: block;
+    animation: fadeRise 0.35s var(--ease) both;
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.results-header-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.results-header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+}
+
+.results-header p {
+    font-size: 14.5px;
+    color: var(--muted);
+}
+
+.stack-section {
+    margin-bottom: 32px;
+}
+
+.stack-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stack-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.stack-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+.stack-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(50, 99, 70, 0.25);
+}
+
+.stack-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--accent-light);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stack-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.stack-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+}
+
+.stack-card-reason {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.stack-card-right {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.stack-card-price {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.total-cost-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+.total-cost-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.total-cost-val {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.03em;
+}
+
+.restart-btn {
+    display: block;
+    text-align: center;
+    margin: 28px auto 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+
+.restart-btn:hover {
+    color: var(--accent);
+}
+
+@media (max-width: 768px) {
     .quiz-options {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 32px;
+        grid-template-columns: 1fr;
     }
-
-    .quiz-option {
-        border: 2px solid var(--border);
-        border-radius: var(--radius);
-        padding: 18px 20px;
-        cursor: pointer;
-        transition: all 0.15s;
-        background: var(--surface);
-        text-align: left;
-        display: flex;
+    .quiz-container {
+        padding: 24px 18px;
+    }
+    .total-cost-card {
+        flex-direction: column;
         align-items: flex-start;
-        gap: 14px;
-    }
-
-    .quiz-option:hover {
-        border-color: var(--accent);
-        background: var(--accent-light);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .quiz-option.selected {
-        border-color: var(--accent);
-        background: var(--accent-light);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    .option-icon {
-        font-size: 28px;
-        flex-shrink: 0;
-        line-height: 1;
-    }
-
-    .option-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--ink);
-        margin-bottom: 3px;
-    }
-
-    .option-desc {
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.5;
-    }
-
-    .quiz-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 8px;
-    }
-
-    .btn-back {
-        background: none;
-        border: 1.5px solid var(--border);
-        color: var(--body);
-        padding: 10px 20px;
-        border-radius: var(--radius-sm);
-        font-family: var(--font);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-
-    .btn-back:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-    }
-
-    .btn-next {
-        background: var(--accent);
-        color: #fff;
-        border: none;
-        padding: 12px 28px;
-        border-radius: var(--radius-sm);
-        font-family: var(--font);
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.15s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-next:hover {
-        background: var(--accent-h);
-        transform: translateY(-1px);
-    }
-
-    .btn-next:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    /* Results */
-    .results-wrap {
-        display: none;
-    }
-
-    .results-wrap.show {
-        display: block;
-    }
-
-    .results-header {
-        text-align: center;
-        margin-bottom: 36px;
-    }
-
-    .results-header h2 {
-        font-size: 30px;
-        font-weight: 800;
-        color: var(--ink);
-        margin-bottom: 8px;
-        letter-spacing: -0.02em;
-    }
-
-    .results-header p {
-        font-size: 15px;
-        color: var(--muted);
-    }
-
-    .stack-section {
-        margin-bottom: 32px;
-    }
-
-    .stack-section-title {
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .stack-section-title::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-    }
-
-    .stack-card {
-        background: var(--surface);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius);
-        padding: 20px;
-        display: flex;
-        align-items: center;
         gap: 16px;
-        margin-bottom: 10px;
-        transition: all 0.15s;
     }
-
-    .stack-card:hover {
-        border-color: var(--accent);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .stack-card-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        flex-shrink: 0;
-    }
-
-    .stack-card-info {
-        flex: 1;
-    }
-
-    .stack-card-name {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--ink);
-        margin-bottom: 2px;
-    }
-
-    .stack-card-reason {
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.5;
-    }
-
-    .stack-card-right {
-        text-align: right;
-        flex-shrink: 0;
-    }
-
-    .stack-card-price {
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--body);
-        margin-bottom: 6px;
-    }
-
-    .stack-card-btn {
-        display: inline-block;
-        background: var(--accent);
-        color: #fff;
-        padding: 7px 14px;
-        border-radius: 7px;
-        font-size: 12px;
-        font-weight: 700;
-        transition: background 0.15s;
-    }
-
-    .stack-card-btn:hover {
-        background: var(--accent-h);
-    }
-
-    .stack-card.essential {
-        border-color: var(--featured);
-    }
-
-    .stack-card.essential .stack-card-icon {
-        background: #fef3c7;
-    }
-
-    .total-cost {
-        background: var(--dark);
-        color: #fff;
-        border-radius: var(--radius);
-        padding: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 24px;
-    }
-
-    .total-cost-label {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-    .total-cost-val {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--cyan);
-        letter-spacing: -0.02em;
-    }
-
-    .total-cost-note {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.3);
-        margin-top: 2px;
-    }
-
-    .restart-btn {
-        display: block;
-        text-align: center;
-        margin-top: 24px;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        background: none;
-        border: none;
-        font-family: var(--font);
-        text-decoration: underline;
-    }
+}
 </style>
 
 <div class="quiz-wrap">
 
     <div class="quiz-hero">
-        <div class="badge">✨ Free Tool</div>
-        <h1>Build Your Perfect<br><span>Dropshipping Stack</span></h1>
-        <p>Answer 3 quick questions and get a personalized tool recommendation based on your budget, experience, and niche.</p>
+        <div class="quiz-badge">
+            <?= icon('layers', '', 14) ?>
+            <span>Architecture Architect</span>
+        </div>
+        <h1>Build Your Optimized<br><span>Dropshipping Stack</span></h1>
+        <p>Answer 3 quick benchmarks to generate a lean, maximum-ROI software stack matched to your current phase.</p>
     </div>
 
-    <!-- Quiz -->
+    <!-- Quiz Interactive Card -->
     <div class="quiz-container" id="quizContainer">
         <div class="step-label" id="stepLabel">Step 1 of 3</div>
         <div class="progress-bar-wrap">
@@ -420,905 +389,367 @@ include __DIR__ . '/header.php';
 
         <!-- Step 1: Experience -->
         <div class="quiz-step active" id="step1">
-            <div class="quiz-question">What's your experience level with dropshipping?</div>
+            <div class="quiz-question">What is your current dropshipping experience level?</div>
             <div class="quiz-options">
-                <label class="quiz-option" onclick="selectOption(this, 'experience', 'beginner')">
-                    <div class="option-icon">🌱</div>
+                <div class="quiz-option" onclick="selectOption(this, 'experience', 'beginner')">
+                    <div class="option-icon"><?= icon('package', '', 20) ?></div>
                     <div>
                         <div class="option-title">Complete Beginner</div>
-                        <div class="option-desc">Never run a dropshipping store before</div>
+                        <div class="option-desc">Starting fresh, building first storefront</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'experience', 'intermediate')">
-                    <div class="option-icon">📈</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'experience', 'intermediate')">
+                    <div class="option-icon"><?= icon('trending-up', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Some Experience</div>
-                        <div class="option-desc">Made a few sales, learning the ropes</div>
+                        <div class="option-title">Intermediate Operator</div>
+                        <div class="option-desc">Consistent orders, seeking scale and margins</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'experience', 'advanced')">
-                    <div class="option-icon">🚀</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'experience', 'advanced')">
+                    <div class="option-icon"><?= icon('zap', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Experienced</div>
-                        <div class="option-desc">Running a store, want to scale</div>
+                        <div class="option-title">Advanced Brand</div>
+                        <div class="option-desc">Scaling ad spend, private label supply</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'experience', 'pro')">
-                    <div class="option-icon">💎</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'experience', 'pro')">
+                    <div class="option-icon"><?= icon('sparkles', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Pro / Agency</div>
-                        <div class="option-desc">Managing multiple stores</div>
+                        <div class="option-title">Enterprise / Portfolio</div>
+                        <div class="option-desc">Managing multi-brand operations</div>
                     </div>
-                </label>
+                </div>
             </div>
             <div class="quiz-nav">
                 <span></span>
-                <button class="btn-next" id="next1" onclick="nextStep(2)" disabled>Continue →</button>
+                <button type="button" class="btn-primary" id="next1" onclick="nextStep(2)" disabled style="padding:10px 24px">
+                    <span>Continue</span>
+                    <?= icon('arrow-right', '', 15) ?>
+                </button>
             </div>
         </div>
 
         <!-- Step 2: Budget -->
         <div class="quiz-step" id="step2">
-            <div class="quiz-question">What's your monthly tool budget?</div>
+            <div class="quiz-question">What is your monthly software tool budget?</div>
             <div class="quiz-options">
-                <label class="quiz-option" onclick="selectOption(this, 'budget', 'free')">
-                    <div class="option-icon">🆓</div>
+                <div class="quiz-option" onclick="selectOption(this, 'budget', 'free')">
+                    <div class="option-icon"><?= icon('check-circle', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Free only</div>
-                        <div class="option-desc">Just starting, no budget yet</div>
+                        <div class="option-title">Zero / Freemium Tiers</div>
+                        <div class="option-desc">Bootstrap mode with free trial setups</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'budget', 'low')">
-                    <div class="option-icon">💵</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'budget', 'low')">
+                    <div class="option-icon"><?= icon('dollar-sign', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Under $100/mo</div>
-                        <div class="option-desc">Essential tools only</div>
+                        <div class="option-title">Lean (Under $100/mo)</div>
+                        <div class="option-desc">Essential high-priority tools only</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'budget', 'mid')">
-                    <div class="option-icon">💰</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'budget', 'mid')">
+                    <div class="option-icon"><?= icon('activity', '', 20) ?></div>
                     <div>
-                        <div class="option-title">$100–$300/mo</div>
-                        <div class="option-desc">Ready to invest in growth</div>
+                        <div class="option-title">Growth ($100–$300/mo)</div>
+                        <div class="option-desc">Invested in email retention and research</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'budget', 'high')">
-                    <div class="option-icon">🏦</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'budget', 'high')">
+                    <div class="option-icon"><?= icon('shield-check', '', 20) ?></div>
                     <div>
-                        <div class="option-title">$300+/mo</div>
-                        <div class="option-desc">Best tools, no compromises</div>
+                        <div class="option-title">Scale ($300+/mo)</div>
+                        <div class="option-desc">Top-tier attribution, multi-channel tools</div>
                     </div>
-                </label>
+                </div>
             </div>
             <div class="quiz-nav">
-                <button class="btn-back" onclick="prevStep(1)">← Back</button>
-                <button class="btn-next" id="next2" onclick="nextStep(3)" disabled>Continue →</button>
+                <button type="button" class="btn-secondary" onclick="prevStep(1)">← Back</button>
+                <button type="button" class="btn-primary" id="next2" onclick="nextStep(3)" disabled style="padding:10px 24px">
+                    <span>Continue</span>
+                    <?= icon('arrow-right', '', 15) ?>
+                </button>
             </div>
         </div>
 
         <!-- Step 3: Niche -->
         <div class="quiz-step" id="step3">
-            <div class="quiz-question">What type of products do you want to sell?</div>
+            <div class="quiz-question">Which core vertical are you operating in?</div>
             <div class="quiz-options">
-                <label class="quiz-option" onclick="selectOption(this, 'niche', 'general')">
-                    <div class="option-icon">🛍️</div>
+                <div class="quiz-option" onclick="selectOption(this, 'niche', 'general')">
+                    <div class="option-icon"><?= icon('shopping-bag', '', 20) ?></div>
                     <div>
-                        <div class="option-title">General Store</div>
-                        <div class="option-desc">Multiple categories, trend-based</div>
+                        <div class="option-title">Broad Catalog / Multi-Product</div>
+                        <div class="option-desc">Testing across diverse trending angles</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'niche', 'fashion')">
-                    <div class="option-icon">👗</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'niche', 'fashion')">
+                    <div class="option-icon"><?= icon('star', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Fashion & Beauty</div>
-                        <div class="option-desc">Clothing, accessories, cosmetics</div>
+                        <div class="option-title">Fashion, Beauty & Wellness</div>
+                        <div class="option-desc">High AOV, visual social-driven sales</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'niche', 'home')">
-                    <div class="option-icon">🏠</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'niche', 'home')">
+                    <div class="option-icon"><?= icon('layout-grid', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Home & Garden</div>
-                        <div class="option-desc">Furniture, decor, kitchen</div>
+                        <div class="option-title">Home, Pet & Lifestyle</div>
+                        <div class="option-desc">High repeat purchase and loyalty</div>
                     </div>
-                </label>
-                <label class="quiz-option" onclick="selectOption(this, 'niche', 'tech')">
-                    <div class="option-icon">📱</div>
+                </div>
+                <div class="quiz-option" onclick="selectOption(this, 'niche', 'tech')">
+                    <div class="option-icon"><?= icon('zap', '', 20) ?></div>
                     <div>
-                        <div class="option-title">Tech & Gadgets</div>
-                        <div class="option-desc">Electronics, accessories, tools</div>
+                        <div class="option-title">Consumer Tech & Gadgets</div>
+                        <div class="option-desc">Problem-solving video demonstration items</div>
                     </div>
-                </label>
+                </div>
             </div>
             <div class="quiz-nav">
-                <button class="btn-back" onclick="prevStep(2)">← Back</button>
-                <button class="btn-next" id="next3" onclick="showResults()" disabled>Build My Stack →</button>
+                <button type="button" class="btn-secondary" onclick="prevStep(2)">← Back</button>
+                <button type="button" class="btn-primary" id="next3" onclick="showResults()" disabled style="padding:10px 24px">
+                    <span>Generate Stack</span>
+                    <?= icon('arrow-right', '', 15) ?>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Results -->
+    <!-- Results Container -->
     <div class="results-wrap" id="resultsWrap">
         <div class="results-header">
-            <div style="font-size:48px;margin-bottom:12px">🎯</div>
-            <h2>Your Perfect Stack</h2>
-            <p id="resultsSubtitle">Based on your answers, here are the best tools for you.</p>
+            <div class="results-header-icon">
+                <?= icon('layers', '', 26) ?>
+            </div>
+            <h2>Your Recommended Stack</h2>
+            <p id="resultsSubtitle">Based on your parameters, here is your vetted toolkit setup.</p>
         </div>
 
         <div id="stackResults"></div>
 
-        <button class="restart-btn" onclick="restartQuiz()">← Start over with different answers</button>
+        <button type="button" class="restart-btn" onclick="restartQuiz()">
+            ← Re-calibrate with different parameters
+        </button>
     </div>
 
 </div>
 
 <script>
-    const answers = {
-        experience: null,
-        budget: null,
-        niche: null
-    };
+const answers = {
+    experience: null,
+    budget: null,
+    niche: null
+};
 
-    function selectOption(el, key, val) {
-        el.closest('.quiz-options').querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
-        el.classList.add('selected');
-        answers[key] = val;
-        const stepMap = {
-            experience: 'next1',
-            budget: 'next2',
-            niche: 'next3'
-        };
-        document.getElementById(stepMap[key]).disabled = false;
+function selectOption(el, key, val) {
+    el.closest('.quiz-options').querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    answers[key] = val;
+    const stepMap = { experience: 'next1', budget: 'next2', niche: 'next3' };
+    const btn = document.getElementById(stepMap[key]);
+    if (btn) btn.disabled = false;
+}
+
+function nextStep(n) {
+    document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+    const step = document.getElementById('step' + n);
+    if (step) step.classList.add('active');
+    document.getElementById('stepLabel').textContent = `Step ${n} of 3`;
+    document.getElementById('progressBar').style.width = (n / 3 * 100) + '%';
+}
+
+function prevStep(n) {
+    document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+    const step = document.getElementById('step' + n);
+    if (step) step.classList.add('active');
+    document.getElementById('stepLabel').textContent = `Step ${n} of 3`;
+    document.getElementById('progressBar').style.width = (n / 3 * 100) + '%';
+}
+
+const stacks = {
+    beginner: {
+        free: [
+            { name: 'WooCommerce', reason: 'Open-source storefront foundation with zero upfront software fee', price: 'Free', slug: 'woocommerce', essential: true },
+            { name: 'DSers', reason: 'Free AliExpress supply chain sync and fulfillment automation', price: 'Free tier', slug: 'dsers', essential: true },
+            { name: 'Canva Pro', reason: 'Rapid asset creation and mockups for product listings', price: 'Free tier', slug: 'canva-pro', essential: false }
+        ],
+        low: [
+            { name: 'Shopify', reason: 'Fastest turn-key checkout with integrated payment processing', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'DSers', reason: 'Automated catalog sync and 1-click supplier routing', price: 'Free tier', slug: 'dsers', essential: true },
+            { name: 'Minea', reason: 'Spot trending ad creatives and viral engagement signals early', price: 'From $49/mo', slug: 'minea', essential: false },
+            { name: 'Tidio', reason: 'Real-time live chat to recover hesitant cart abandoners', price: 'Free tier', slug: 'tidio', essential: false }
+        ],
+        mid: [
+            { name: 'Shopify', reason: 'High-converting checkout engine designed for scale', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Zendrop', reason: 'Vetted suppliers with expedited domestic delivery windows', price: 'Free tier', slug: 'zendrop', essential: true },
+            { name: 'Minea', reason: 'Data-driven product research and competitive ad intelligence', price: 'From $49/mo', slug: 'minea', essential: true },
+            { name: 'Klaviyo', reason: 'Automated email flows to maximize checkout recovery', price: 'Free tier', slug: 'klaviyo', essential: false }
+        ],
+        high: [
+            { name: 'Shopify', reason: 'Uncompromising enterprise infrastructure and checkout', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Spocket', reason: 'US & EU localized shipping with branded packaging support', price: 'From $39/mo', slug: 'spocket', essential: true },
+            { name: 'AdSpy', reason: 'Deepest intelligence database across Meta ad networks', price: 'From $149/mo', slug: 'adspy', essential: true },
+            { name: 'Triple Whale', reason: 'Multi-touch attribution to protect advertising profitability', price: 'From $129/mo', slug: 'triple-whale', essential: false }
+        ]
+    },
+    intermediate: {
+        free: [
+            { name: 'WooCommerce', reason: 'Flexible open store infrastructure for customizable margin rules', price: 'Free', slug: 'woocommerce', essential: true },
+            { name: 'Spocket', reason: 'US suppliers with fast delivery on freemium entry tier', price: 'Free tier', slug: 'spocket', essential: true }
+        ],
+        low: [
+            { name: 'Shopify', reason: 'Core conversion engine', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'AutoDS', reason: 'Comprehensive inventory sync and automated order routing', price: 'From $27/mo', slug: 'autods', essential: true }
+        ],
+        mid: [
+            { name: 'Shopify', reason: 'Scalable commerce foundation', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Zendrop', reason: 'Automated warehouse fulfillment', price: 'From $49/mo', slug: 'zendrop', essential: true },
+            { name: 'Klaviyo', reason: 'High-margin automated retention engine', price: 'From $45/mo', slug: 'klaviyo', essential: true }
+        ],
+        high: [
+            { name: 'Shopify', reason: 'Tier-1 store architecture', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Triple Whale', reason: 'Accurate ROAS attribution across Meta and TikTok', price: 'From $129/mo', slug: 'triple-whale', essential: true },
+            { name: 'AdSpy', reason: 'High-velocity competitor ad intelligence', price: 'From $149/mo', slug: 'adspy', essential: true }
+        ]
+    },
+    advanced: {
+        free: [
+            { name: 'Shopify', reason: 'Industry standard foundation', price: 'From $29/mo', slug: 'shopify', essential: true }
+        ],
+        low: [
+            { name: 'Shopify', reason: 'Scale infrastructure', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Klaviyo', reason: 'Advanced customer lifecycle segmentation', price: 'From $45/mo', slug: 'klaviyo', essential: true }
+        ],
+        mid: [
+            { name: 'Shopify', reason: 'Scale infrastructure', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Triple Whale', reason: 'Attribution & unit economics tracking', price: 'From $129/mo', slug: 'triple-whale', essential: true },
+            { name: 'Klaviyo', reason: 'High-LTV email/SMS lifecycle', price: 'From $45/mo', slug: 'klaviyo', essential: true }
+        ],
+        high: [
+            { name: 'Shopify', reason: 'Enterprise checkout framework', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Triple Whale', reason: 'Server-side attribution and P&L dashboards', price: 'From $129/mo', slug: 'triple-whale', essential: true },
+            { name: 'AdSpy', reason: 'Omnichannel ad creative tracking', price: 'From $149/mo', slug: 'adspy', essential: true },
+            { name: 'Gorgias', reason: 'Unified customer desk automation', price: 'From $10/mo', slug: 'gorgias', essential: false }
+        ]
+    },
+    pro: {
+        high: [
+            { name: 'Shopify', reason: 'Enterprise checkout framework', price: 'From $29/mo', slug: 'shopify', essential: true },
+            { name: 'Triple Whale', reason: 'Multi-store attribution and aggregated unit economics', price: 'From $129/mo', slug: 'triple-whale', essential: true },
+            { name: 'AdSpy', reason: 'Ad database intelligence across global markets', price: 'From $149/mo', slug: 'adspy', essential: true }
+        ]
     }
+};
 
-    function nextStep(n) {
-        document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + n).classList.add('active');
-        document.getElementById('stepLabel').textContent = `Step ${n} of 3`;
-        document.getElementById('progressBar').style.width = (n / 3 * 100) + '%';
-    }
+function showResults() {
+    const { experience, budget, niche } = answers;
+    if (!experience || !budget || !niche) return;
 
-    function prevStep(n) {
-        document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + n).classList.add('active');
-        document.getElementById('stepLabel').textContent = `Step ${n} of 3`;
-        document.getElementById('progressBar').style.width = (n / 3 * 100) + '%';
-    }
+    document.getElementById('quizContainer').style.display = 'none';
+    const resultsWrap = document.getElementById('resultsWrap');
+    resultsWrap.classList.add('show');
 
-    const stacks = {
-        // [experience][budget] → tool list
-        beginner: {
-            free: [{
-                    name: 'WooCommerce',
-                    icon: '🛒',
-                    reason: 'Free store builder — perfect to start with zero cost',
-                    price: 'Free',
-                    slug: 'woocommerce',
-                    essential: true
-                },
-                {
-                    name: 'DSers',
-                    icon: '📦',
-                    reason: 'Free AliExpress dropshipping automation',
-                    price: 'Free',
-                    slug: 'dsers',
-                    essential: true
-                },
-                {
-                    name: 'Canva Pro',
-                    icon: '🎨',
-                    reason: 'Design ads and product images for free',
-                    price: 'Free plan',
-                    slug: 'canva-pro',
-                    essential: false
-                },
-            ],
-            low: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Best beginner store builder — easiest to set up',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'DSers',
-                    icon: '📦',
-                    reason: 'Free AliExpress supplier integration',
-                    price: 'Free',
-                    slug: 'dsers',
-                    essential: true
-                },
-                {
-                    name: 'Minea',
-                    icon: '🔍',
-                    reason: 'Find winning products from real ad data',
-                    price: 'From $49/mo',
-                    slug: 'minea',
-                    essential: false
-                },
-                {
-                    name: 'Tidio',
-                    icon: '💬',
-                    reason: 'Live chat to recover abandoning visitors',
-                    price: 'Freemium',
-                    slug: 'tidio',
-                    essential: false
-                },
-            ],
-            mid: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Best store builder for growing brands',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Zendrop',
-                    icon: '📦',
-                    reason: 'US-based suppliers with fast 3-5 day shipping',
-                    price: 'Freemium',
-                    slug: 'zendrop',
-                    essential: true
-                },
-                {
-                    name: 'Minea',
-                    icon: '🔍',
-                    reason: 'Find winning products before competitors',
-                    price: 'From $49/mo',
-                    slug: 'minea',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Email marketing to maximize repeat sales',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Loox',
-                    icon: '⭐',
-                    reason: 'Photo reviews to build trust and increase conversions',
-                    price: 'From $10/mo',
-                    slug: 'loox',
-                    essential: false
-                },
-            ],
-            high: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Best store builder — non-negotiable at this level',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Spocket',
-                    icon: '📦',
-                    reason: 'Premium US/EU suppliers, fast shipping',
-                    price: 'Freemium',
-                    slug: 'spocket',
-                    essential: true
-                },
-                {
-                    name: 'AdSpy',
-                    icon: '🔍',
-                    reason: 'Largest ad database to find winning products',
-                    price: 'From $149/mo',
-                    slug: 'adspy',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Best email + SMS marketing platform',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Triple Whale',
-                    icon: '📊',
-                    reason: 'Accurate profit tracking and attribution',
-                    price: 'From $129/mo',
-                    slug: 'triple-whale',
-                    essential: false
-                },
-                {
-                    name: 'AdCreative.ai',
-                    icon: '🤖',
-                    reason: 'AI-generated ads that convert',
-                    price: 'From $29/mo',
-                    slug: 'adcreative-ai',
-                    essential: false
-                },
-            ],
-        },
-        intermediate: {
-            free: [{
-                    name: 'WooCommerce',
-                    icon: '🛒',
-                    reason: 'Free and powerful — move from basic platforms',
-                    price: 'Free',
-                    slug: 'woocommerce',
-                    essential: true
-                },
-                {
-                    name: 'Spocket',
-                    icon: '📦',
-                    reason: 'Better suppliers than AliExpress',
-                    price: 'Freemium',
-                    slug: 'spocket',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Free up to 250 contacts — start building your list',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-            ],
-            low: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Upgrade from WooCommerce for better conversion',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Zendrop',
-                    icon: '📦',
-                    reason: 'Faster shipping = better reviews',
-                    price: 'Freemium',
-                    slug: 'zendrop',
-                    essential: true
-                },
-                {
-                    name: 'Sell The Trend',
-                    icon: '🔍',
-                    reason: 'All-in-one product research + store builder',
-                    price: 'From $40/mo',
-                    slug: 'sell-the-trend',
-                    essential: false
-                },
-                {
-                    name: 'Omnisend',
-                    icon: '📧',
-                    reason: 'Email + SMS automation for more sales',
-                    price: 'Freemium',
-                    slug: 'omnisend',
-                    essential: false
-                },
-            ],
-            mid: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Scale with Shopify\'s advanced features',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'AutoDS',
-                    icon: '⚙️',
-                    reason: 'Automate your entire dropshipping operation',
-                    price: 'From $27/mo',
-                    slug: 'autods',
-                    essential: true
-                },
-                {
-                    name: 'Minea',
-                    icon: '🔍',
-                    reason: 'Spy on winning ads to find your next product',
-                    price: 'From $49/mo',
-                    slug: 'minea',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Email sequences that recover abandoned carts',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Loox',
-                    icon: '⭐',
-                    reason: 'Social proof that increases conversions by 15%',
-                    price: 'From $10/mo',
-                    slug: 'loox',
-                    essential: false
-                },
-                {
-                    name: 'Tidio',
-                    icon: '💬',
-                    reason: 'AI chatbot handles customer questions 24/7',
-                    price: 'Freemium',
-                    slug: 'tidio',
-                    essential: false
-                },
-            ],
-            high: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'The foundation of every serious store',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Spocket',
-                    icon: '📦',
-                    reason: 'Premium US/EU suppliers, 2-5 day delivery',
-                    price: 'Freemium',
-                    slug: 'spocket',
-                    essential: true
-                },
-                {
-                    name: 'AdSpy',
-                    icon: '🔍',
-                    reason: 'Find competitors\' winning ads instantly',
-                    price: 'From $149/mo',
-                    slug: 'adspy',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Email + SMS that generates 20-40% of revenue',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Triple Whale',
-                    icon: '📊',
-                    reason: 'Know your real ROAS and profit',
-                    price: 'From $129/mo',
-                    slug: 'triple-whale',
-                    essential: false
-                },
-                {
-                    name: 'Gorgias',
-                    icon: '🎧',
-                    reason: 'Customer support that scales with your store',
-                    price: 'From $10/mo',
-                    slug: 'gorgias',
-                    essential: false
-                },
-            ],
-        },
-        advanced: {
-            free: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'You need Shopify to scale — worth the investment',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Free tier is powerful enough to start',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: true
-                },
-            ],
-            low: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Best platform for scaling dropshipping',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'AutoDS',
-                    icon: '⚙️',
-                    reason: 'Automate fulfillment and price monitoring',
-                    price: 'From $27/mo',
-                    slug: 'autods',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Email revenue should be 30%+ of your total',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Loox',
-                    icon: '⭐',
-                    reason: 'Video reviews are the highest converting social proof',
-                    price: 'From $10/mo',
-                    slug: 'loox',
-                    essential: false
-                },
-            ],
-            mid: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Advanced plan for lower transaction fees at scale',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Spocket',
-                    icon: '📦',
-                    reason: 'Branded invoicing + faster US/EU suppliers',
-                    price: 'Freemium',
-                    slug: 'spocket',
-                    essential: true
-                },
-                {
-                    name: 'Triple Whale',
-                    icon: '📊',
-                    reason: 'You can\'t scale what you can\'t measure accurately',
-                    price: 'From $129/mo',
-                    slug: 'triple-whale',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Advanced flows and segmentation for high AOV',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'AdCreative.ai',
-                    icon: '🤖',
-                    reason: 'Scale ad creative production with AI',
-                    price: 'From $29/mo',
-                    slug: 'adcreative-ai',
-                    essential: false
-                },
-                {
-                    name: 'Gorgias',
-                    icon: '🎧',
-                    reason: 'Handle high volume support tickets efficiently',
-                    price: 'From $10/mo',
-                    slug: 'gorgias',
-                    essential: false
-                },
-            ],
-            high: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Shopify Plus territory — lowest fees at high volume',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Spocket',
-                    icon: '📦',
-                    reason: 'Private label + branded packaging at scale',
-                    price: 'Freemium',
-                    slug: 'spocket',
-                    essential: true
-                },
-                {
-                    name: 'AdSpy',
-                    icon: '🔍',
-                    reason: 'Stay ahead of competitors with ad intelligence',
-                    price: 'From $149/mo',
-                    slug: 'adspy',
-                    essential: true
-                },
-                {
-                    name: 'Triple Whale',
-                    icon: '📊',
-                    reason: 'Real-time profit dashboard and attribution',
-                    price: 'From $129/mo',
-                    slug: 'triple-whale',
-                    essential: true
-                },
-                {
-                    name: 'Northbeam',
-                    icon: '📈',
-                    reason: 'Multi-touch attribution for high ad spend',
-                    price: 'From $250/mo',
-                    slug: 'northbeam',
-                    essential: false
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Predictive analytics and VIP segmentation',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Gorgias',
-                    icon: '🎧',
-                    reason: 'Enterprise support with Shopify deep integration',
-                    price: 'From $10/mo',
-                    slug: 'gorgias',
-                    essential: false
-                },
-            ],
-        },
-        pro: {
-            free: [],
-            low: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Essential for managing multiple stores',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'AutoDS',
-                    icon: '⚙️',
-                    reason: 'Multi-store automation from one dashboard',
-                    price: 'From $27/mo',
-                    slug: 'autods',
-                    essential: true
-                },
-            ],
-            mid: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Multiple store management made easy',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'AutoDS',
-                    icon: '⚙️',
-                    reason: 'Automate all stores from one place',
-                    price: 'From $27/mo',
-                    slug: 'autods',
-                    essential: true
-                },
-                {
-                    name: 'Triple Whale',
-                    icon: '📊',
-                    reason: 'Consolidated analytics across all stores',
-                    price: 'From $129/mo',
-                    slug: 'triple-whale',
-                    essential: true
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Separate email lists per store, one platform',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Gorgias',
-                    icon: '🎧',
-                    reason: 'Centralized support inbox for all stores',
-                    price: 'From $10/mo',
-                    slug: 'gorgias',
-                    essential: false
-                },
-            ],
-            high: [{
-                    name: 'Shopify',
-                    icon: '🏪',
-                    reason: 'Shopify Plus for multi-store management',
-                    price: 'From $29/mo',
-                    slug: 'shopify',
-                    essential: true
-                },
-                {
-                    name: 'Spocket',
-                    icon: '📦',
-                    reason: 'White-label products across all stores',
-                    price: 'Freemium',
-                    slug: 'spocket',
-                    essential: true
-                },
-                {
-                    name: 'AdSpy',
-                    icon: '🔍',
-                    reason: 'Monitor competitors across all your niches',
-                    price: 'From $149/mo',
-                    slug: 'adspy',
-                    essential: true
-                },
-                {
-                    name: 'Northbeam',
-                    icon: '📈',
-                    reason: 'Agency-level attribution reporting',
-                    price: 'From $250/mo',
-                    slug: 'northbeam',
-                    essential: true
-                },
-                {
-                    name: 'Triple Whale',
-                    icon: '📊',
-                    reason: 'Real-time profit for every store',
-                    price: 'From $129/mo',
-                    slug: 'triple-whale',
-                    essential: false
-                },
-                {
-                    name: 'Klaviyo',
-                    icon: '📧',
-                    reason: 'Email infrastructure for all brands',
-                    price: 'Freemium',
-                    slug: 'klaviyo',
-                    essential: false
-                },
-                {
-                    name: 'Gorgias',
-                    icon: '🎧',
-                    reason: 'One support platform for all stores',
-                    price: 'From $10/mo',
-                    slug: 'gorgias',
-                    essential: false
-                },
-                {
-                    name: 'AdCreative.ai',
-                    icon: '🤖',
-                    reason: 'Scale creative production across all brands',
-                    price: 'From $29/mo',
-                    slug: 'adcreative-ai',
-                    essential: false
-                },
-            ],
-        }
-    };
+    const tools = stacks[experience]?.[budget] || stacks['beginner']['low'];
+    saveStack({ experience, budget, niche });
 
-    function showResults() {
-        const {
-            experience,
-            budget,
-            niche
-        } = answers;
-        if (!experience || !budget || !niche) return;
+    const expLabels = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', pro: 'Portfolio Pro' };
+    const budgetLabels = { free: 'Zero / Freemium', low: 'Under $100/mo', mid: '$100–$300/mo', high: '$300+/mo' };
+    const nicheLabels = { general: 'Broad Catalog', fashion: 'Fashion & Beauty', home: 'Home & Pet', tech: 'Tech & Gadgets' };
 
-        document.getElementById('quizContainer').style.display = 'none';
-        const resultsWrap = document.getElementById('resultsWrap');
-        resultsWrap.classList.add('show');
+    document.getElementById('resultsSubtitle').textContent =
+        `${expLabels[experience] || 'Custom'} · ${budgetLabels[budget] || 'Flexible'} · ${nicheLabels[niche] || 'General'}`;
 
-        const tools = stacks[experience]?.[budget] || stacks['beginner']['low'];
-        saveStack({
-            experience,
-            budget,
-            niche
-        });
+    const essential = tools.filter(t => t.essential);
+    const optional = tools.filter(t => !t.essential);
 
-        const expLabels = {
-            beginner: 'Beginner',
-            intermediate: 'Intermediate',
-            advanced: 'Advanced',
-            pro: 'Pro'
-        };
-        const budgetLabels = {
-            free: 'Free',
-            low: 'Under $100/mo',
-            mid: '$100–$300/mo',
-            high: '$300+/mo'
-        };
-        const nicheLabels = {
-            general: 'General Store',
-            fashion: 'Fashion & Beauty',
-            home: 'Home & Garden',
-            tech: 'Tech & Gadgets'
-        };
+    let pricedTools = tools.filter(t => t.price.match(/\$(\d+)/));
+    let total = pricedTools.reduce((sum, t) => {
+        const match = t.price.match(/\$(\d+)/);
+        return sum + (match ? parseInt(match[1]) : 0);
+    }, 0);
 
-        document.getElementById('resultsSubtitle').textContent =
-            `${expLabels[experience]} · ${budgetLabels[budget]} · ${nicheLabels[niche]}`;
-
-        const essential = tools.filter(t => t.essential);
-        const optional = tools.filter(t => !t.essential);
-
-        let pricedTools = tools.filter(t => {
-            const match = t.price.match(/\$(\d+)/);
-            return match;
-        });
-        let total = pricedTools.reduce((sum, t) => {
-            const match = t.price.match(/\$(\d+)/);
-            return sum + (match ? parseInt(match[1]) : 0);
-        }, 0);
-
-        const renderCard = t => `
-        <div class="stack-card ${t.essential ? 'essential' : ''}">
-            <div class="stack-card-icon">${t.icon}</div>
+    const renderCard = t => `
+        <div class="stack-card">
+            <div class="stack-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </div>
             <div class="stack-card-info">
-                <div class="stack-card-name">${t.name} ${t.essential ? '<span style="font-size:10px;background:#fef3c7;color:#b45309;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px">MUST HAVE</span>' : ''}</div>
+                <div class="stack-card-name">
+                    ${t.name}
+                    ${t.essential ? '<span style="font-size:10.5px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">CORE STACK</span>' : ''}
+                </div>
                 <div class="stack-card-reason">${t.reason}</div>
             </div>
             <div class="stack-card-right">
                 <div class="stack-card-price">${t.price}</div>
-                <a href="http://hdropshipping.com//go.php?slug=${t.slug}" class="stack-card-btn" target="_blank">Get it →</a>
+                <a href="/go.php?slug=${t.slug}" class="btn-primary" target="_blank" rel="noopener" style="padding:6px 14px;font-size:12px">
+                    <span>Visit</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                </a>
             </div>
         </div>
     `;
 
-        let html = '';
-        if (essential.length) {
-            html += `<div class="stack-section"><div class="stack-section-title">⭐ Essential Tools</div>${essential.map(renderCard).join('')}</div>`;
-        }
-        if (optional.length) {
-            html += `<div class="stack-section"><div class="stack-section-title">💡 Recommended Add-ons</div>${optional.map(renderCard).join('')}</div>`;
-        }
+    let html = '';
+    if (essential.length) {
+        html += `<div class="stack-section"><div class="stack-section-title">Core Foundation (${essential.length})</div>${essential.map(renderCard).join('')}</div>`;
+    }
+    if (optional.length) {
+        html += `<div class="stack-section"><div class="stack-section-title">High-ROI Add-ons (${optional.length})</div>${optional.map(renderCard).join('')}</div>`;
+    }
 
-        html += `
-        <div class="total-cost">
+    html += `
+        <div class="total-cost-card">
             <div>
-                <div class="total-cost-label">Estimated monthly cost</div>
-                <div class="total-cost-val">$${total}/mo</div>
-                <div class="total-cost-note">Free tiers not included in estimate</div>
+                <div class="total-cost-label">Estimated Monthly Tool Run-Rate</div>
+                <div class="total-cost-val">$${total}<span style="font-size:16px;font-weight:500;color:var(--muted)">/mo</span></div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">Free tiers and usage-based scaling excluded</div>
             </div>
-            <div style="text-align:right">
-                <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px">${tools.length} tools recommended</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.3)">All links are affiliate links</div>
+            <div style="display:flex;gap:10px">
+                <a href="/calculator.php" class="btn-secondary" style="padding:10px 18px">Simulate Net Margins</a>
+                <a href="/roadmap.php" class="btn-primary" style="padding:10px 18px">View Growth Roadmap</a>
             </div>
         </div>
     `;
 
-        document.getElementById('stackResults').innerHTML = html;
-    }
+    document.getElementById('stackResults').innerHTML = html;
+}
 
-    function restartQuiz() {
-        answers.experience = null;
-        answers.budget = null;
-        answers.niche = null;
-        document.getElementById('quizContainer').style.display = 'block';
-        document.getElementById('resultsWrap').classList.remove('show');
-        document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step1').classList.add('active');
-        document.getElementById('stepLabel').textContent = 'Step 1 of 3';
-        document.getElementById('progressBar').style.width = '33%';
-        document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
-        ['next1', 'next2', 'next3'].forEach(id => document.getElementById(id).disabled = true);
+function restartQuiz() {
+    answers.experience = null;
+    answers.budget = null;
+    answers.niche = null;
+    document.getElementById('quizContainer').style.display = 'block';
+    document.getElementById('resultsWrap').classList.remove('show');
+    document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('stepLabel').textContent = 'Step 1 of 3';
+    document.getElementById('progressBar').style.width = '33%';
+    document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+    ['next1', 'next2', 'next3'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = true;
+    });
+}
+
+async function saveStack(data) {
+    try {
+        await fetch('/save-stack.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (e) {
+        console.error("Save failed:", e);
     }
+}
+
+const savedStack = <?= json_encode($savedStack ?? null) ?>;
+if (savedStack && savedStack.experience && savedStack.budget && savedStack.niche) {
+    answers.experience = savedStack.experience;
+    answers.budget = savedStack.budget;
+    answers.niche = savedStack.niche;
+    showResults();
+}
 </script>
 
-<script>
-    async function saveStack(data) {
-
-        try {
-
-            await fetch(
-                '/save-stack.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                }
-            );
-
-        } catch (e) {
-            console.log("Save failed:", e);
-        }
-
-    }
-
-    const savedStack = <?= json_encode($savedStack ?? null) ?>;
-
-    if (savedStack) {
-
-        answers.experience = savedStack.experience;
-        answers.budget = savedStack.budget;
-        answers.niche = savedStack.niche;
-
-        showResults();
-
-    }
-</script>;
-<script src="/assets/js/darkmode.js"></script>
 <?php include __DIR__ . '/footer.php'; ?>
