@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/partials/icons.php';
 if (!defined('APP')) die('Direct access not allowed');
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
