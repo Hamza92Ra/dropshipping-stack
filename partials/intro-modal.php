@@ -1,5 +1,6 @@
 <?php
 if (!defined('APP')) die('Direct access not allowed');
+require_once __DIR__ . '/../functions.php';
 ?>
 <!-- ═══════════════════════════════════════════════════════════
      INTRO ONBOARDING MODAL / OVERLAY (Part 2)

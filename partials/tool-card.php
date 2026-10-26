@@ -1,6 +1,7 @@
 <?php
 // Expects $t = tool row with cat_name, cat_slug
 if (!defined('APP')) die('Direct access not allowed');
+require_once __DIR__ . '/../functions.php';
 
 $rating_val = (float)($t['rating'] ?? 0);
 $round_rating = (int)round($rating_val);

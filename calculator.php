@@ -1,6 +1,7 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/functions.php';
 
 $page_title      = 'Dropshipping Cost & Profit Calculator';
 $page_heading    = 'Profit & Cost Calculator';

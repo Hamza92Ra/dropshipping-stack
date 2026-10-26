@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../../functions.php'; ?>
 <!-- Desktop Admin Sidebar -->
 <aside class="admin-sidebar">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">

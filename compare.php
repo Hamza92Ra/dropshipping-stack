@@ -1,6 +1,7 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/functions.php';
 
 // Get tools for comparison from URL params
 $slug1 = preg_replace('/[^a-z0-9-]/', '', $_GET['a'] ?? '');

@@ -1,6 +1,7 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/functions.php';
 
 $q = trim($_GET['q'] ?? '');
 $page_title = $q ? 'Search: ' . $q : 'Search Tools';

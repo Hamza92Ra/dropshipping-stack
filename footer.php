@@ -1,4 +1,7 @@
-<?php if (!defined('APP')) die('Direct access not allowed'); ?>
+<?php
+if (!defined('APP')) die('Direct access not allowed');
+require_once __DIR__ . '/functions.php';
+?>
 
         </main><!-- /.app-content -->
 

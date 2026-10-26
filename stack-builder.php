@@ -1,6 +1,7 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/functions.php';
 
 $savedStack = null;
 if (isset($_SESSION['user_id'])) {

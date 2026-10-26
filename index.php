@@ -1,6 +1,7 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/functions.php';
 
 $logged_in = isset($_SESSION['user_id']);
 $user_id   = $logged_in ? (int)$_SESSION['user_id'] : 0;
