@@ -56,6 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
         $pdo->prepare("INSERT INTO tools ($columns) VALUES ($placeholders)")
             ->execute(array_values($fields));
 
+        cache_clear();
+
         $_SESSION['flash'] = "\"$name\" was added successfully.";
         redirect('/admin/tools/');
     }

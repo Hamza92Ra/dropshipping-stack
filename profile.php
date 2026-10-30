@@ -33,7 +33,7 @@ $stack = $stack->fetch();
 
 // ── Fetch upvoted tools ──────────────────────────────────────────────────────
 $upvotes = $pdo->prepare("
-    SELECT t.name, t.slug, t.logo_url AS icon, t.upvotes AS total_votes, uv.created_at AS voted_at
+    SELECT t.*, uv.created_at AS voted_at, t.upvotes AS total_votes
     FROM upvotes uv
     JOIN tools t ON t.id = uv.tool_id
     WHERE uv.user_id = ?
@@ -815,7 +815,7 @@ include __DIR__ . '/header.php';
                 $saved_tool_slugs = array_filter(explode(',', $calc['calculator_tools'] ?? ''));
                 if ($saved_tool_slugs):
                     $placeholders = implode(',', array_fill(0, count($saved_tool_slugs), '?'));
-                    $tool_rows = $pdo->prepare("SELECT name, logo_url AS icon, slug FROM tools WHERE slug IN ($placeholders)");
+                    $tool_rows = $pdo->prepare("SELECT * FROM tools WHERE slug IN ($placeholders)");
                     $tool_rows->execute($saved_tool_slugs);
                     $tool_rows = $tool_rows->fetchAll();
                 ?>
@@ -823,7 +823,7 @@ include __DIR__ . '/header.php';
                     <div class="tool-pills-wrap">
                         <?php foreach ($tool_rows as $t): ?>
                             <span class="tool-pill-item">
-                                <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
+                                <img src="<?= e(tool_logo_url($t)) ?>" alt="<?= e($t['name']) ?>" width="18" height="18" loading="lazy" decoding="async" style="width:18px;height:18px;object-fit:contain;border-radius:4px" onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                                 <?= e($t['name']) ?>
                             </span>
                         <?php endforeach; ?>
@@ -852,19 +852,19 @@ include __DIR__ . '/header.php';
                 </div>
             </div>
             <?php if ($upvoted_tools): ?>
-                <div class="list-panel" style="border:none;padding:0;background:transparent;box-shadow:none">
+                <div class="list-panel" style="border:none;padding:0;background:transparent;box-shadow:none;min-width:0;box-sizing:border-box;max-width:100%">
                     <?php foreach (array_slice($upvoted_tools, 0, 4) as $t): ?>
-                        <a href="/tool/<?= e($t['slug']) ?>" class="list-row" style="text-decoration:none;border-radius:var(--radius-xl);background:var(--surface-2);margin-bottom:8px;border:1px solid var(--border)">
-                            <div class="list-row-left">
-                                <div class="list-row-icon" style="background:var(--surface)">
-                                    <img src="<?= e($t['icon']) ?>" alt="<?= e($t['name']) ?>" style="width:24px;height:24px;object-fit:contain" onerror="this.style.display='none'">
+                        <a href="/tool/<?= e($t['slug']) ?>" class="list-row" style="text-decoration:none;border-radius:var(--radius-xl);background:var(--surface-2);margin-bottom:8px;border:1px solid var(--border);box-sizing:border-box;max-width:100%;min-width:0">
+                            <div class="list-row-left" style="min-width:0;flex:1 1 auto;overflow:hidden">
+                                <div class="list-row-icon" style="background:var(--surface);width:36px;height:36px;flex-shrink:0;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                                    <img src="<?= e(tool_logo_url($t)) ?>" alt="<?= e($t['name']) ?>" width="24" height="24" loading="lazy" decoding="async" style="width:24px;height:24px;object-fit:contain" onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                                 </div>
-                                <div class="list-row-info">
-                                    <div class="list-row-title"><?= e($t['name']) ?></div>
-                                    <div class="list-row-subtitle">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
+                                <div class="list-row-info" style="min-width:0;flex:1;overflow:hidden">
+                                    <div class="list-row-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($t['name']) ?></div>
+                                    <div class="list-row-subtitle" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
                                 </div>
                             </div>
-                            <div class="list-row-right">
+                            <div class="list-row-right" style="flex-shrink:0;min-width:0;white-space:nowrap">
                                 <span class="stat-delta positive" style="display:inline-flex;align-items:center;gap:4px">
                                     <?= icon('thumbs-up', '', 12) ?> <?= number_format($t['total_votes']) ?>
                                 </span>
@@ -926,7 +926,7 @@ include __DIR__ . '/header.php';
                 $tool_names = [];
                 if ($tool_slugs) {
                     $ph = implode(',', array_fill(0, count($tool_slugs), '?'));
-                    $tr = $pdo->prepare("SELECT name, logo_url AS icon, slug, price_from AS price FROM tools WHERE slug IN ($ph)");
+                    $tr = $pdo->prepare("SELECT *, price_from AS price FROM tools WHERE slug IN ($ph)");
                     $tr->execute($tool_slugs);
                     foreach ($tr->fetchAll() as $r) {
                         $tool_cost += $r['price'];
@@ -958,7 +958,7 @@ include __DIR__ . '/header.php';
                     <div class="tool-pills-wrap">
                         <?php foreach ($tool_names as $t): ?>
                             <span class="tool-pill-item">
-                                <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
+                                <img src="<?= e(tool_logo_url($t)) ?>" alt="<?= e($t['name']) ?>" width="18" height="18" loading="lazy" decoding="async" style="width:18px;height:18px;object-fit:contain;border-radius:4px" onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                                 <?= e($t['name']) ?> <span style="opacity:.5">·</span> $<?= number_format($t['price']) ?>/mo
                             </span>
                         <?php endforeach; ?>
@@ -1048,7 +1048,7 @@ include __DIR__ . '/header.php';
                 $stack_rows = [];
                 if ($stack_tools) {
                     $ph = implode(',', array_fill(0, count($stack_tools), '?'));
-                    $stack_rows = $pdo->prepare("SELECT name, logo_url AS icon, slug, category_id AS category FROM tools WHERE slug IN ($ph)");
+                    $stack_rows = $pdo->prepare("SELECT *, category_id AS category FROM tools WHERE slug IN ($ph)");
                     $stack_rows->execute($stack_tools);
                     $stack_rows = $stack_rows->fetchAll();
                 }
@@ -1060,7 +1060,7 @@ include __DIR__ . '/header.php';
                     <?php foreach ($stack_rows as $t): ?>
                         <a href="/tool/<?= e($t['slug']) ?>" class="stack-card-single">
                             <div class="stack-card-icon-box">
-                                <img src="<?= e($t['icon']) ?>" onerror="this.style.display='none'">
+                                <img src="<?= e(tool_logo_url($t)) ?>" alt="<?= e($t['name']) ?>" width="28" height="28" loading="lazy" decoding="async" style="width:28px;height:28px;object-fit:contain;border-radius:6px" onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                             </div>
                             <div class="stack-card-name"><?= e($t['name']) ?></div>
                             <div class="stack-card-category">Category #<?= e($t['category']) ?></div>
@@ -1094,19 +1094,19 @@ include __DIR__ . '/header.php';
                 </div>
             </div>
             <?php if ($upvoted_tools): ?>
-                <div class="list-panel" style="border:none;padding:0;background:transparent;box-shadow:none">
+                <div class="list-panel" style="border:none;padding:0;background:transparent;box-shadow:none;min-width:0;box-sizing:border-box;max-width:100%">
                     <?php foreach ($upvoted_tools as $t): ?>
-                        <a href="/tool/<?= e($t['slug']) ?>" class="list-row" style="text-decoration:none;border-radius:var(--radius-xl);background:var(--surface-2);margin-bottom:8px;border:1px solid var(--border)">
-                            <div class="list-row-left">
-                                <div class="list-row-icon" style="background:var(--surface)">
-                                    <img src="<?= e($t['icon']) ?>" alt="<?= e($t['name']) ?>" style="width:24px;height:24px;object-fit:contain" onerror="this.style.display='none'">
+                        <a href="/tool/<?= e($t['slug']) ?>" class="list-row" style="text-decoration:none;border-radius:var(--radius-xl);background:var(--surface-2);margin-bottom:8px;border:1px solid var(--border);box-sizing:border-box;max-width:100%;min-width:0">
+                            <div class="list-row-left" style="min-width:0;flex:1 1 auto;overflow:hidden">
+                                <div class="list-row-icon" style="background:var(--surface);width:36px;height:36px;flex-shrink:0;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                                    <img src="<?= e(tool_logo_url($t)) ?>" alt="<?= e($t['name']) ?>" width="24" height="24" loading="lazy" decoding="async" style="width:24px;height:24px;object-fit:contain" onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                                 </div>
-                                <div class="list-row-info">
-                                    <div class="list-row-title"><?= e($t['name']) ?></div>
-                                    <div class="list-row-subtitle">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
+                                <div class="list-row-info" style="min-width:0;flex:1;overflow:hidden">
+                                    <div class="list-row-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($t['name']) ?></div>
+                                    <div class="list-row-subtitle" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Voted <?= date('M d, Y', strtotime($t['voted_at'])) ?></div>
                                 </div>
                             </div>
-                            <div class="list-row-right">
+                            <div class="list-row-right" style="flex-shrink:0;min-width:0;white-space:nowrap">
                                 <span class="stat-delta positive" style="display:inline-flex;align-items:center;gap:4px">
                                     <?= icon('thumbs-up', '', 12) ?> <?= number_format($t['total_votes']) ?> votes
                                 </span>

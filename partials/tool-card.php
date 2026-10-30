@@ -12,15 +12,29 @@ $price_label = $price_type === 'freemium'
 $domain = !empty($t['website_url']) ? parse_url($t['website_url'], PHP_URL_HOST) : '';
 
 $hasUpvoted = false;
-if (isset($_SESSION['user_id'])) {
-    $check = $pdo->prepare("SELECT id FROM upvotes WHERE user_id=? AND tool_id=?");
-    $check->execute([$_SESSION['user_id'], $t['id']]);
-    $hasUpvoted = (bool)$check->fetch();
+if (isset($user_upvoted_tool_ids) && is_array($user_upvoted_tool_ids)) {
+    $hasUpvoted = !empty($user_upvoted_tool_ids[(int)$t['id']]) || in_array((int)$t['id'], $user_upvoted_tool_ids, true);
+} elseif (isset($_SESSION['user_id']) && isset($pdo)) {
+    static $user_upvotes_cache = null;
+    if ($user_upvotes_cache === null) {
+        try {
+            $stmt = $pdo->prepare("SELECT tool_id FROM upvotes WHERE user_id = ?");
+            $stmt->execute([(int)$_SESSION['user_id']]);
+            $user_upvotes_cache = array_fill_keys(array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN)), true);
+        } catch (Throwable $e) {
+            $user_upvotes_cache = [];
+        }
+    }
+    $hasUpvoted = !empty($user_upvotes_cache[(int)$t['id']]);
 }
 ?>
 <div class="tool-card <?= !empty($t['is_featured']) ? 'featured' : '' ?>"
      data-price="<?= e($price_type) ?>"
-     data-featured="<?= !empty($t['is_featured']) ? '1' : '0' ?>">
+     data-price-type="<?= e($price_type) ?>"
+     data-featured="<?= !empty($t['is_featured']) ? '1' : '0' ?>"
+     data-category="<?= (int)($t['category_id'] ?? 0) ?>"
+     data-category-slug="<?= e($t['cat_slug'] ?? '') ?>"
+     data-name="<?= strtolower(e($t['name'])) ?>">
 
     <?php if (!empty($t['is_featured']) && empty($hide_featured_badge)): ?>
         <div class="featured-badge">
@@ -31,21 +45,16 @@ if (isset($_SESSION['user_id'])) {
 
     <div class="tool-card-top">
         <div class="tool-logo">
-            <?php if ($domain): ?>
-                <img src="https://img.logo.dev/<?= e($domain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=128"
-                     alt="<?= e($t['name']) ?>"
-                     class="skeleton-img"
-                     style="width:100%;height:100%;object-fit:contain;border-radius:10px"
-                     loading="lazy"
-                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--accent)">
-                    <?= icon('package', '', 24) ?>
-                </div>
-            <?php else: ?>
-                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--accent)">
-                    <?= icon('package', '', 24) ?>
-                </div>
-            <?php endif; ?>
+            <img src="<?= e(tool_logo_url($t)) ?>"
+                 srcset="<?= e(tool_logo_srcset($t)) ?>"
+                 alt="<?= e($t['name']) ?>"
+                 class="skeleton-img"
+                 width="44"
+                 height="44"
+                 style="width:100%;height:100%;object-fit:contain;border-radius:10px"
+                 loading="lazy"
+                 decoding="async"
+                 onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
         </div>
 
         <div class="tool-info">

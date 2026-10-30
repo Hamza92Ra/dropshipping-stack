@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
             rating = (SELECT AVG(r.rating) FROM reviews r WHERE r.tool_id=t.id AND r.approved=1),
             review_count = (SELECT COUNT(*) FROM reviews r WHERE r.tool_id=t.id AND r.approved=1)
             WHERE t.id = (SELECT tool_id FROM reviews WHERE id=?)")->execute([$id]);
+        cache_clear();
     }
 } elseif (($_POST['action'] ?? '') === 'delete') {
     $stmt = $pdo->prepare("SELECT tool_id FROM reviews WHERE id=?");
@@ -28,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
             review_count = (SELECT COUNT(*) FROM reviews WHERE tool_id=? AND approved=1)
             WHERE id=?")->execute([$toolId, $toolId, $toolId]);
     }
+    cache_clear();
 }
 
 $reviews = $pdo->query("

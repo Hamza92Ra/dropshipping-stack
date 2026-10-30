@@ -74,6 +74,14 @@ html, body {
         grid-template-columns: repeat(3, 1fr);
         gap: 24px;
     }
+
+    /* ── Featured Carousel: 2 cards visible on tablet ── */
+    .featured-card-wrapper,
+    .embla-slide {
+        flex: 0 0 calc((100% - 16px) / 2) !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
 }
 
 @media (max-width: 768px) {
@@ -725,16 +733,39 @@ html, body {
         letter-spacing: -0.02em !important;
     }
 
-    /* ── Category Pills: Sticky Snap Row with Faded Edges Under Header ── */
+    /* ── Category Pills: Sticky Snap Row with Faded Edges Under Header (Task 1 Fix) ── */
     .category-pills-wrap {
         position: sticky;
         top: var(--header-height-mobile, 58px);
         z-index: 250;
         background: var(--surface);
         border-bottom: 1px solid var(--border-subtle);
-        margin: 0 -16px 20px;
+        margin-inline: -16px;
+        margin-bottom: 16px;
         padding: 0;
-        width: calc(100% + 32px);
+        width: auto;
+        overflow: hidden;
+    }
+
+    .category-pills-wrap::before,
+    .category-pills-wrap::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 18px;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .category-pills-wrap::before {
+        left: 0;
+        background: linear-gradient(to right, var(--surface), transparent);
+    }
+
+    .category-pills-wrap::after {
+        right: 0;
+        background: linear-gradient(to left, var(--surface), transparent);
     }
 
     .category-pills-bar,
@@ -748,8 +779,8 @@ html, body {
         padding: 10px 16px !important;
         margin: 0 !important;
         flex-wrap: nowrap !important;
-        mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 24px), transparent 100%) !important;
-        -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 24px), transparent 100%) !important;
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
     }
 
     .category-pills-bar::-webkit-scrollbar,
@@ -760,41 +791,95 @@ html, body {
     .cat-pill {
         flex-shrink: 0;
         scroll-snap-align: start;
-        min-height: 38px;
+        min-height: 40px;
         display: inline-flex;
         align-items: center;
         white-space: nowrap;
+        padding: 8px 16px !important;
     }
 
-    /* ── Featured Tools Embla Swipe Carousel ── */
+    /* ── Featured Tools Horizontal Carousel (Task 1 Bleed & Clip Fix) ── */
     .featured-section {
-        margin-bottom: 32px;
+        margin-bottom: 24px;
         position: relative;
-    }
-
-    .embla-carousel {
-        overflow: hidden;
-        margin: 0 -16px;
-        padding: 10px 16px 14px;
-    }
-
-    .embla-container {
-        display: flex;
-        touch-action: pan-y pinch-zoom;
-        margin-left: -12px;
-    }
-
-    .embla-slide {
-        flex: 0 0 84%;
+        width: 100%;
         min-width: 0;
-        padding-left: 12px;
-        box-sizing: border-box;
-        transform-origin: center center;
-        transition: transform 0.25s ease, opacity 0.25s ease;
     }
 
+    .featured-carousel,
+    .embla-carousel {
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .featured-track,
+    .embla-container {
+        display: flex !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        gap: 12px !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin-inline: -16px !important;
+        padding-inline: 16px !important;
+        scroll-padding-inline: 16px !important;
+        padding-top: 4px !important;
+        padding-bottom: 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    .featured-track::-webkit-scrollbar,
+    .embla-container::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* Mobile: ~1.2 cards visible with peek of next card */
+    .featured-card-wrapper,
+    .embla-slide {
+        flex: 0 0 82% !important;
+        min-width: 0 !important;
+        max-width: 85% !important;
+        scroll-snap-align: start !important;
+        box-sizing: border-box !important;
+        padding-left: 0 !important;
+        transform-origin: center center;
+    }
+
+    .featured-arrows,
     .embla-arrows-desktop {
-        display: none;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .featured-arrow-btn,
+    .dir-arrow-btn {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text) !important;
+        padding: 0 !important;
+        cursor: pointer;
+    }
+
+    .featured-arrow-btn:disabled,
+    .featured-arrow-btn[aria-disabled="true"],
+    .dir-arrow-btn:disabled,
+    .dir-arrow-btn[aria-disabled="true"] {
+        opacity: 0.35 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
     }
 
     /* Morphing Pagination Dots */
@@ -822,6 +907,83 @@ html, body {
         background: var(--accent);
     }
 
+    /* ── Header Stacking for All Tools Directory & Sections (Task 1 & 2 Fix) ── */
+    .dashboard-section-head {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin: 24px 0 14px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .section-head-top-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        gap: 8px !important;
+    }
+
+    .section-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        min-width: 0 !important;
+        flex: 1 1 auto;
+    }
+
+    .section-title {
+        font-size: 17px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0 !important;
+    }
+
+    .tools-count-badge {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        font-size: 11.5px !important;
+        padding: 2px 8px !important;
+    }
+
+    .section-desc {
+        font-size: 12.5px !important;
+        color: var(--muted) !important;
+        margin: 0 !important;
+    }
+
+    /* Filter Pill Row: Smooth horizontal scroll, non-wrapping */
+    .section-filters-pill {
+        display: flex !important;
+        overflow-x: auto !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 4px !important;
+        box-sizing: border-box !important;
+        border-radius: var(--radius-full) !important;
+    }
+
+    .section-filters-pill::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .section-filters-pill .filter-btn {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        padding: 6px 14px !important;
+        font-size: 12.5px !important;
+        min-height: 36px;
+    }
+
     /* ── Compact Full-Width Tool Cards (All Directory & Grid) ── */
     .tools-grid {
         display: grid;
@@ -829,16 +991,84 @@ html, body {
         gap: 14px;
     }
 
-    .tool-card {
+    .tools-grid.is-carousel {
         display: flex !important;
-        flex-direction: column !important;
-        height: 100% !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        gap: 12px !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        grid-template-columns: none !important;
+        margin-inline: -16px !important;
+        padding-inline: 16px !important;
+        scroll-padding-inline: 16px !important;
+        padding-bottom: 12px !important;
+        width: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    .tools-grid.is-carousel .tool-card {
+        flex: 0 0 min(300px, 82%) !important;
+        max-width: min(300px, 82%) !important;
+        scroll-snap-align: start !important;
+    }
+
+    .tools-grid.is-carousel.single-tool .tool-card {
+        flex: 0 0 calc(100% - 32px) !important;
+        max-width: calc(100% - 32px) !important;
+    }
+
+    .tool-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 16px;
+        border-radius: var(--radius-xl);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-sizing: border-box;
+        justify-content: space-between;
+    }
+
+    .tool-card[hidden],
+    .tool-card.is-filtered-out {
+        display: none !important;
+    }
+
+    /* ── Profile & List Rows Mobile Hardening ── */
+    .profile-card {
         padding: 16px !important;
         border-radius: var(--radius-xl) !important;
-        background: var(--surface) !important;
-        border: 1px solid var(--border) !important;
         box-sizing: border-box !important;
-        justify-content: space-between !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+    }
+
+    .list-row {
+        padding: 10px 12px !important;
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .list-row-left {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+        gap: 10px !important;
+    }
+
+    .list-row-info {
+        min-width: 0 !important;
+        flex: 1 !important;
+        overflow: hidden !important;
+    }
+
+    .list-row-title,
+    .list-row-subtitle {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
     }
 
     .tool-card-top {
@@ -951,96 +1181,52 @@ html, body {
         white-space: nowrap !important;
     }
 
-    /* ── My Stack Swipe Rows Architecture ── */
-    .swipe-row-wrap {
-        position: relative;
-        overflow: hidden;
-        border-radius: var(--radius-xl);
-        margin-bottom: 10px;
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-    }
-
-    .swipe-actions-underlay {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        width: 140px;
-        display: flex;
-        align-items: stretch;
-        z-index: 1;
-    }
-
-    .swipe-action-btn {
-        flex: 1;
+    /* ── My Stack Mobile Rows (Bug 1 Fix) ── */
+    .my-stack-rows-list {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        font-size: 11px;
-        font-weight: 700;
-        color: #ffffff;
-        border: none;
-        text-decoration: none;
-        cursor: pointer;
-        transition: opacity var(--dur-fast);
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .swipe-action-btn.compare-btn {
-        background: #326346;
-    }
-
-    .swipe-action-btn.remove-btn {
-        background: #DC2626;
-    }
-
-    .my-stack-row-front {
-        position: relative;
-        z-index: 2;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-xl);
-        padding: 12px 14px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
         width: 100%;
         min-width: 0;
-        box-sizing: border-box;
-        touch-action: pan-y;
-        user-select: none;
-        -webkit-user-select: none;
-        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
     }
 
-    .my-stack-row-front.is-swiped {
-        box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+    .my-stack-row {
+        position: relative;
+        background: transparent !important;
+        border-bottom: 1px solid var(--border-subtle) !important;
+        padding: 10px 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .my-stack-row:last-child {
+        border-bottom: none !important;
     }
 
     .my-stack-row-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 0;
-        flex: 1;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-width: 0 !important;
+        flex: 1 !important;
     }
 
     .my-stack-logo {
-        width: 38px;
-        height: 38px;
-        border-radius: 9px;
-        background: var(--surface-2);
-        border: 1px solid var(--border-subtle);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 4px;
-        flex-shrink: 0;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 9px !important;
+        background: var(--surface-2) !important;
+        border: 1px solid var(--border-subtle) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 4px !important;
+        flex-shrink: 0 !important;
     }
 
     .my-stack-logo img {
@@ -1050,74 +1236,96 @@ html, body {
     }
 
     .my-stack-info {
-        min-width: 0;
-        flex: 1;
+        min-width: 0 !important;
+        flex: 1 !important;
     }
 
     .my-stack-name {
-        font-size: 14.5px;
-        font-weight: 700;
-        color: var(--text);
-        line-height: 1.25;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: var(--text) !important;
+        line-height: 1.25 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .my-stack-category {
-        font-size: 12px;
-        color: var(--muted);
-        display: block;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 11.5px !important;
+        color: var(--muted) !important;
+        display: block !important;
+        margin-top: 2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .my-stack-row-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
     }
 
     .my-stack-price-pill {
-        font-size: 12.5px;
-        font-weight: 700;
-        color: var(--text);
-        background: var(--surface-2);
-        border: 1px solid var(--border-subtle);
-        padding: 4px 10px;
-        border-radius: var(--radius-full);
-        white-space: nowrap;
-        min-width: 74px;
-        text-align: center;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        color: var(--text) !important;
+        background: var(--surface-2) !important;
+        border: 1px solid var(--border-subtle) !important;
+        padding: 3px 8px !important;
+        border-radius: var(--radius-full) !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+    }
+
+    .stack-ghost-btn {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: var(--radius-full) !important;
+        border: none !important;
+        background: transparent !important;
+        color: var(--muted) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        padding: 0 !important;
     }
 
     .row-more-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--muted);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 999px !important;
+        border: none !important;
+        background: transparent !important;
+        color: var(--muted) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
         transition: all var(--dur-fast);
         -webkit-tap-highlight-color: transparent;
+        padding: 0 !important;
     }
 
     .row-more-btn:active {
-        background: var(--surface-hover);
-        color: var(--text);
+        background: var(--surface-hover) !important;
+        color: var(--text) !important;
+    }
+
+    /* Collapse compare and remove on narrow mobile widths */
+    @media (max-width: 480px) {
+        .stack-ghost-btn.stack-compare-btn,
+        .stack-ghost-btn.stack-remove-btn {
+            display: none !important;
+        }
     }
 
     /* ── 5-Second Undo Toast ── */
     .undo-toast {
         position: fixed;
-        bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(84px + env(safe-area-inset-bottom, 0px));
         left: 50%;
         transform: translateX(-50%) translateY(20px);
         opacity: 0;

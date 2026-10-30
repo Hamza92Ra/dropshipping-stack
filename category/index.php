@@ -14,15 +14,29 @@ if (!$cat) {
     die('Category not found.');
 }
 
-$tools = $pdo->prepare("
-    SELECT t.*, c.name AS cat_name, c.slug AS cat_slug, c.icon AS cat_icon
-    FROM tools t
-    LEFT JOIN categories c ON c.id = t.category_id
-    WHERE t.category_id = ? AND t.is_active = 1
-    ORDER BY t.is_featured DESC, t.rating DESC
-");
-$tools->execute([$cat['id']]);
-$tools = $tools->fetchAll();
+$tools = cache_remember('category_tools_' . $slug, 300, function() use ($pdo, $cat) {
+    $stmt = $pdo->prepare("
+        SELECT t.*, c.name AS cat_name, c.slug AS cat_slug, c.icon AS cat_icon
+        FROM tools t
+        LEFT JOIN categories c ON c.id = t.category_id
+        WHERE t.category_id = ? AND t.is_active = 1
+        ORDER BY t.is_featured DESC, t.rating DESC
+    ");
+    $stmt->execute([$cat['id']]);
+    return $stmt->fetchAll();
+});
+
+$user_upvoted_tool_ids = [];
+if (isset($_SESSION['user_id'])) {
+    $uvStmt = $pdo->prepare("SELECT tool_id FROM upvotes WHERE user_id = ?");
+    $uvStmt->execute([(int)$_SESSION['user_id']]);
+    $user_upvoted_tool_ids = array_fill_keys(array_map('intval', $uvStmt->fetchAll(PDO::FETCH_COLUMN)), true);
+}
+
+// Release session lock early
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
 
 $page_title       = $cat['name'] . ' Dropshipping Tools — Best ' . $cat['name'] . ' Software';
 $page_heading     = e($cat['name']);
@@ -80,8 +94,12 @@ include __DIR__ . '/../header.php';
 <script>
 function filterTools(type, btn) {
     if (btn) {
-        btn.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.parentElement.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
     }
 
     const cards = document.querySelectorAll('#categoryToolsGrid .tool-card');
@@ -95,6 +113,8 @@ function filterTools(type, btn) {
         else if (type === 'paid') show = (price === 'paid');
         else if (type === 'featured') show = (featured === '1');
 
+        card.hidden = !show;
+        card.classList.toggle('is-filtered-out', !show);
         card.style.display = show ? 'flex' : 'none';
     });
 }

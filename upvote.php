@@ -9,8 +9,10 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$tool_id = (int)($_POST['tool_id'] ?? 0);
-$user_id = $_SESSION['user_id'];
+$raw = file_get_contents('php://input');
+$data = json_decode($raw, true) ?? $_POST;
+$tool_id = (int)($data['tool_id'] ?? ($_POST['tool_id'] ?? 0));
+$user_id = (int)$_SESSION['user_id'];
 
 if (!$tool_id) {
     echo json_encode(['error' => 'invalid']);

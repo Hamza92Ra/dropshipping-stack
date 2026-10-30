@@ -124,6 +124,11 @@ require_once __DIR__ . '/functions.php';
                 </div>
 
                 <div class="footer-social-links">
+                    <!-- Lite Mode Quick Toggle (Task 5) -->
+                    <button type="button" class="perf-toggle-btn" id="perfToggleBtn" onclick="cyclePerfMode()" title="Interface performance mode" aria-label="Toggle interface performance mode">
+                        <?= icon('zap', '', 14) ?>
+                        <span id="perfStatusText">Lite mode</span>
+                    </button>
                     <a href="mailto:contact@dropshippingstack.com" aria-label="Email support" title="Email us">
                         <?= icon('mail', '', 16) ?>
                         <span>Email</span>
@@ -140,12 +145,72 @@ require_once __DIR__ . '/functions.php';
 
     </div><!-- /.app-shell -->
 
-    <!-- Chatbot Integration -->
-    <?php if (file_exists(__DIR__ . '/partials/chatbot.php')): ?>
-        <?php include __DIR__ . '/partials/chatbot.php'; ?>
-    <?php else: ?>
-        <script src="/assets/js/chat-widget.js" data-api="/api/chat-api.php" defer></script>
-    <?php endif; ?>
+    <!-- Chatbot Integration (Lazy Loaded on first interaction or idle, skipped in Lite mode) -->
+    <script>
+    (function() {
+        let chatLoaded = false;
+        function loadChatWidget() {
+            if (chatLoaded) return;
+            if (document.documentElement.dataset.perf === 'lite') return;
+            chatLoaded = true;
+            const s = document.createElement('script');
+            s.src = '<?= asset("/assets/js/chat-widget.js") ?>';
+            s.setAttribute('data-api', '/api/chat-api.php');
+            s.defer = true;
+            document.body.appendChild(s);
+            cleanup();
+        }
+        function cleanup() {
+            ['pointerdown', 'keydown', 'touchstart'].forEach(e => {
+                window.removeEventListener(e, loadChatWidget, { passive: true });
+            });
+        }
+        ['pointerdown', 'keydown', 'touchstart'].forEach(e => {
+            window.addEventListener(e, loadChatWidget, { passive: true, once: true });
+        });
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => setTimeout(loadChatWidget, 3000));
+        } else {
+            setTimeout(loadChatWidget, 3500);
+        }
+        window.loadChatWidget = loadChatWidget;
+    })();
+    </script>
+
+    <!-- Speculation Rules for Instant Client-Side Prerender / Prefetch (Full mode only) -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        {
+          "source": "list",
+          "urls": ["/index.php", "/calculator.php", "/compare.php", "/roadmap.php", "/stack-builder.php", "/about.php"],
+          "eagerness": "moderate"
+        },
+        {
+          "where": {
+            "and": [
+              { "href_matches": "/*" },
+              { "not": { "href_matches": "/admin/*" } },
+              { "not": { "href_matches": "/api/*" } },
+              { "not": { "href_matches": "*/logout.php*" } },
+              { "not": { "href_matches": "*/go.php*" } },
+              { "not": { "href_matches": "*#*" } }
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ]
+    }
+    </script>
+
+    <!-- Progressive Service Worker Registration (HTTPS Only) -->
+    <script>
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').catch(function() {});
+        });
+    }
+    </script>
 
     <!-- Newsletter AJAX Submission Handler -->
     <script>

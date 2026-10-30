@@ -148,3 +148,167 @@ if (!function_exists('get_user_stack_data')) {
 
 // Global SVG Lucide icons
 require_once __DIR__ . '/partials/icons.php';
+
+/**
+ * Simple file-based query/data cache with TTL and safe fallback
+ *
+ * @param string $key Cache key (alphanumeric and dashes/underscores)
+ * @param int $ttl Time to live in seconds (e.g. 300 to 600)
+ * @param callable $callback Function that returns fresh data on cache miss
+ * @return mixed
+ */
+if (!function_exists('cache_remember')) {
+    function cache_remember(string $key, int $ttl, callable $callback)
+    {
+        $cacheDir = __DIR__ . '/cache';
+        $safeKey = preg_replace('/[^a-zA-Z0-9_-]/', '_', $key);
+        $cacheFile = $cacheDir . '/' . $safeKey . '.cache';
+
+        // 1. Try reading from cache file if valid
+        if (file_exists($cacheFile)) {
+            $mtime = @filemtime($cacheFile);
+            if ($mtime && (time() - $mtime < $ttl)) {
+                $content = @file_get_contents($cacheFile);
+                if ($content !== false) {
+                    $unserialized = @unserialize($content);
+                    if ($unserialized !== false || $content === serialize(false)) {
+                        return $unserialized;
+                    }
+                }
+            }
+        }
+
+        // 2. Fetch fresh data via callback
+        $data = $callback();
+
+        // 3. Attempt to save to cache file (safe fallback if unwritable)
+        try {
+            if (!is_dir($cacheDir)) {
+                @mkdir($cacheDir, 0755, true);
+            }
+            if (is_dir($cacheDir) && is_writable($cacheDir)) {
+                @file_put_contents($cacheFile, serialize($data), LOCK_EX);
+            }
+        } catch (Throwable $e) {
+            // Silently fall back to fresh data
+        }
+
+        return $data;
+    }
+}
+
+/**
+ * Resolves the logo URL for a tool to an absolute path like /assets/img/logos/<file>
+ * Resolution order:
+ * 1. logo column (cleans any /dropshipping/ prefix, checks file_exists against __DIR__)
+ * 2. domain-without-dots pattern from website_url
+ * 3. clean slug pattern
+ * 4. fallback: /assets/img/logos/placeholder.svg
+ *
+ * @param array $tool Tool row/data array
+ * @return string Absolute URL path
+ */
+if (!function_exists('tool_logo_url')) {
+    function tool_logo_url(array $tool): string
+    {
+        $raw = $tool['logo_url'] ?? $tool['icon'] ?? '';
+        if ($raw) {
+            $clean = preg_replace('#^/dropshipping/#', '/', $raw);
+            $basename = basename($clean);
+            if ($basename && file_exists(__DIR__ . '/assets/img/logos/' . $basename)) {
+                return '/assets/img/logos/' . $basename;
+            }
+        }
+
+        if (!empty($tool['website_url'])) {
+            $host = parse_url($tool['website_url'], PHP_URL_HOST);
+            $clean_domain = strtolower(preg_replace('/[^a-z0-9]/i', '', preg_replace('/^www\./i', '', $host ?: '')));
+            if ($clean_domain && file_exists(__DIR__ . '/assets/img/logos/' . $clean_domain . '.png')) {
+                return '/assets/img/logos/' . $clean_domain . '.png';
+            }
+        }
+
+        if (!empty($tool['slug'])) {
+            $clean_slug = strtolower(preg_replace('/[^a-z0-9]/i', '', $tool['slug']));
+            if ($clean_slug && file_exists(__DIR__ . '/assets/img/logos/' . $clean_slug . '.png')) {
+                return '/assets/img/logos/' . $clean_slug . '.png';
+            }
+        }
+
+        return '/assets/img/logos/placeholder.svg';
+    }
+}
+
+/**
+ * Resolves responsive WebP srcset for tool logo if .webp versions exist
+ *
+ * @param array $tool Tool row/data array
+ * @return string E.g. '/assets/img/logos/shopifycom-96.webp 1x, /assets/img/logos/shopifycom-192.webp 2x'
+ */
+if (!function_exists('tool_logo_srcset')) {
+    function tool_logo_srcset(array $tool): string
+    {
+        $pngUrl = tool_logo_url($tool);
+        if (!$pngUrl || substr($pngUrl, -4) !== '.png') {
+            return '';
+        }
+        $baseName = pathinfo($pngUrl, PATHINFO_FILENAME);
+        $w96 = __DIR__ . '/assets/img/logos/' . $baseName . '-96.webp';
+        $w192 = __DIR__ . '/assets/img/logos/' . $baseName . '-192.webp';
+
+        if (file_exists($w96) && file_exists($w192)) {
+            return "/assets/img/logos/{$baseName}-96.webp 1x, /assets/img/logos/{$baseName}-192.webp 2x";
+        } elseif (file_exists($w96)) {
+            return "/assets/img/logos/{$baseName}-96.webp 1x";
+        }
+        return '';
+    }
+}
+
+/**
+ * Clear cached query files (e.g. on admin tool/review mutations)
+ */
+if (!function_exists('cache_clear')) {
+    function cache_clear(): void
+    {
+        $cacheDir = __DIR__ . '/cache';
+        if (is_dir($cacheDir)) {
+            $files = glob($cacheDir . '/*.cache');
+            if ($files) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        @unlink($file);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Resolves an asset URL, pointing to its minified .min version in assets/dist/
+ * if it exists, along with automatic filemtime cache-busting.
+ *
+ * @param string $path E.g. '/assets/css/style.css'
+ * @return string E.g. '/assets/dist/style.min.css?v=12345678'
+ */
+if (!function_exists('asset')) {
+    function asset(string $path): string
+    {
+        $cleanPath = '/' . ltrim($path, '/');
+        $ext = pathinfo($cleanPath, PATHINFO_EXTENSION);
+        $filename = pathinfo($cleanPath, PATHINFO_FILENAME);
+        $minDistPath = '/assets/dist/' . $filename . '.min.' . $ext;
+        $minDiskPath = __DIR__ . $minDistPath;
+
+        if (file_exists($minDiskPath)) {
+            return $minDistPath . '?v=' . filemtime($minDiskPath);
+        }
+
+        $origDiskPath = __DIR__ . $cleanPath;
+        $mtime = file_exists($origDiskPath) ? filemtime($origDiskPath) : time();
+        return $cleanPath . '?v=' . $mtime;
+    }
+}
+
+

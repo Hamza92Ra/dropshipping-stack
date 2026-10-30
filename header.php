@@ -4,8 +4,10 @@ require_once __DIR__ . '/partials/icons.php';
 if (!defined('APP')) die('Direct access not allowed');
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
-// Fetch all categories
-$cats = $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
+// Fetch all categories (cached 10 min with DB fallback)
+$cats = cache_remember('all_categories', 600, function() use ($pdo) {
+    return $pdo->query("SELECT * FROM categories ORDER BY sort_order")->fetchAll();
+});
 
 $logged_in   = isset($_SESSION['user_id']);
 $username    = $logged_in ? ($_SESSION['username'] ?? '') : '';
@@ -29,10 +31,14 @@ $heading_sub   = $page_subheading ?? ($page_desc ?? 'Find, compare and optimize 
     <meta property="og:description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="<?= SITE_URL . $_SERVER['REQUEST_URI'] ?>">
+    <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
 
-    <!-- Anti-flash theme script -->
+    <!-- Anti-flash theme & Adaptive Lite detection script -->
     <script>
         (function() {
+            // Theme detection
             var t = null;
             try {
                 var urlParam = new URLSearchParams(window.location.search).get('theme');
@@ -46,22 +52,39 @@ $heading_sub   = $page_subheading ?? ($page_desc ?? 'Find, compare and optimize 
                 t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
             document.documentElement.setAttribute('data-theme', t);
+
+            // Adaptive Lite Mode Detection (Task 5)
+            var perf = 'full';
+            try {
+                var storedPerf = localStorage.getItem('perfMode');
+                if (storedPerf === 'lite' || storedPerf === 'full') {
+                    perf = storedPerf;
+                } else {
+                    var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                    var isSaveData = conn && conn.saveData;
+                    var isSlowConn = conn && (['slow-2g', '2g', '3g'].indexOf(conn.effectiveType) !== -1 || (conn.downlink && conn.downlink < 1.5) || (conn.rtt && conn.rtt > 400));
+                    var isLowMem = navigator.deviceMemory && navigator.deviceMemory <= 2;
+                    var isLowCpu = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
+                    if (isSaveData || isSlowConn || isLowMem || isLowCpu) {
+                        perf = 'lite';
+                    }
+                }
+            } catch (e) {}
+            document.documentElement.setAttribute('data-perf', perf);
         })();
     </script>
 
-    <!-- Google Fonts: Modern Sans (Plus Jakarta Sans & Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Self-Hosted Fast Font Preload (Omitted automatically if Lite mode) -->
+    <link rel="preload" href="/assets/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/assets/css/theme.css?v=<?= filemtime(__DIR__ . '/assets/css/theme.css') ?>">
-    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/assets/css/style.css') ?>">
-    <link rel="stylesheet" href="/assets/css/mobile.css?v=<?= filemtime(__DIR__ . '/assets/css/mobile.css') ?>">
+    <link rel="stylesheet" href="<?= asset('/assets/css/theme.css') ?>">
+    <link rel="stylesheet" href="<?= asset('/assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('/assets/css/mobile.css') ?>" media="(max-width: 767px)">
 
     <!-- Scripts -->
-    <script src="/assets/js/theme.js?v=<?= filemtime(__DIR__ . '/assets/js/theme.js') ?>" defer></script>
-    <script src="/assets/js/main.js?v=<?= filemtime(__DIR__ . '/assets/js/main.js') ?>" defer></script>
+    <script src="<?= asset('/assets/js/theme.js') ?>" defer></script>
+    <script src="<?= asset('/assets/js/main.js') ?>" defer></script>
 </head>
 
 <body data-page="<?= e($current_page) ?>" data-logged-in="<?= $logged_in ? '1' : '0' ?>">

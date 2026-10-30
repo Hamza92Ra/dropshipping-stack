@@ -88,6 +88,11 @@ $page_heading    = e($t['name']);
 $page_subheading = e($t['tagline']);
 $page_desc       = $t['tagline'];
 
+// Release session lock early if not posting
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
+
 include __DIR__ . '/../header.php';
 ?>
 
@@ -494,20 +499,15 @@ include __DIR__ . '/../header.php';
         <!-- Tool Header Card -->
         <div class="tool-hero-card">
             <div class="tool-hero-logo">
-                <?php if ($domain): ?>
-                    <img src="https://img.logo.dev/<?= e($domain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=128"
-                         alt="<?= e($t['name']) ?>"
-                         class="skeleton-img"
-                         style="width:100%;height:100%;object-fit:contain;border-radius:10px"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                    <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--accent)">
-                        <?= icon('package', '', 32) ?>
-                    </div>
-                <?php else: ?>
-                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--accent)">
-                        <?= icon('package', '', 32) ?>
-                    </div>
-                <?php endif; ?>
+                <img src="<?= e(tool_logo_url($t)) ?>"
+                     alt="<?= e($t['name']) ?>"
+                     class="skeleton-img"
+                     width="64"
+                     height="64"
+                     loading="lazy"
+                     decoding="async"
+                     style="width:100%;height:100%;object-fit:contain;border-radius:10px"
+                     onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
             </div>
 
             <div class="tool-hero-body">

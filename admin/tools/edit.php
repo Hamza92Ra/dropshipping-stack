@@ -33,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
     $pdo->prepare("UPDATE tools SET name=?,tagline=?,description=?,affiliate_link=?,website_url=?,commission=?,price_type=?,price_from=?,is_featured=?,is_active=?,category_id=?,pros=?,cons=? WHERE id=?")
         ->execute(array_merge(array_values($fields), [$t['id']]));
 
+    cache_clear();
+
     $_SESSION['flash'] = 'Tool updated successfully.';
     redirect('/admin/tools/');
 }

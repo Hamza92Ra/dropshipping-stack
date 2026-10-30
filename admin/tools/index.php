@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($action === 'delete') {
                 $pdo->prepare("DELETE FROM tools WHERE id IN ($in)")->execute($ids);
+                cache_clear();
                 $out['deleted'] = $ids;
                 $msg = count($ids) === 1 ? 'Tool deleted.' : count($ids) . ' tools deleted.';
             } else {
@@ -43,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->prepare("UPDATE tools SET is_active = ? WHERE id IN ($in)")
                         ->execute(array_merge([$action === 'show' ? 1 : 0], $ids));
                 }
+                cache_clear();
 
                 $st = $pdo->prepare("SELECT id, name, is_active FROM tools WHERE id IN ($in)");
                 $st->execute($ids);

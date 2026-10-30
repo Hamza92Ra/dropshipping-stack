@@ -23,7 +23,12 @@ header('Content-Type: application/json');
 // If the widget lives on the same domain as this script, delete the next
 // two lines entirely. If it's cross-origin, replace '*' with your exact
 // site origin (e.g. https://yourdomain.com) and keep the credentials header.
-header('Access-Control-Allow-Origin: https://hdropshipping.com');
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    header('Access-Control-Allow-Origin: https://hdropshipping.com');
+}
 header('Access-Control-Allow-Credentials: true');
 
 require __DIR__ . '/db-config.php';
@@ -177,7 +182,7 @@ function askLLM($message, $history, $tools)
     $messages[] = ['role' => 'user', 'content' => $message];
 
     $payload = json_encode([
-        'model' => 'openai/gpt-oss-120b',
+        'model' => 'llama-3.3-70b-versatile',
         'max_tokens' => 600,
         'messages' => $messages,
     ]);

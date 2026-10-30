@@ -45,32 +45,69 @@ if ($logged_in) {
 
 $page_desc = SITE_TAGLINE;
 
-// ── Real Global Statistics (Database Only, Zero Invented Figures) ───────────
-$total_tools   = (int)$pdo->query("SELECT COUNT(*) FROM tools WHERE is_active=1")->fetchColumn();
-$total_cats    = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
-$total_upvotes = (int)$pdo->query("SELECT COALESCE(SUM(upvotes), 0) FROM tools WHERE is_active=1")->fetchColumn();
-$free_count    = (int)$pdo->query("SELECT COUNT(*) FROM tools WHERE is_active=1 AND price_type IN ('free', 'freemium')")->fetchColumn();
-$paid_count    = (int)$pdo->query("SELECT COUNT(*) FROM tools WHERE is_active=1 AND price_type = 'paid'")->fetchColumn();
-$avg_paid_price= (int)round((float)$pdo->query("SELECT AVG(price_from) FROM tools WHERE is_active=1 AND price_type='paid' AND price_from > 0")->fetchColumn() ?: 29);
+// ── Real Global Statistics (Cached 5 min with Safe DB Fallback) ───────────
+$global_stats = cache_remember('global_stats', 300, function() use ($pdo) {
+    return [
+        'total_tools'    => (int)$pdo->query("SELECT COUNT(*) FROM tools WHERE is_active=1")->fetchColumn(),
+        'total_cats'     => (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn(),
+        'total_upvotes'  => (int)$pdo->query("SELECT COALESCE(SUM(upvotes), 0) FROM tools WHERE is_active=1")->fetchColumn(),
+        'free_count'     => (int)$pdo->query("SELECT COUNT(*) FROM tools WHERE is_active=1 AND price_type IN ('free', 'freemium')")->fetchColumn(),
+        'paid_count'     => (int)$pdo->query("SELECT COUNT(*) FROM tools WHERE is_active=1 AND price_type = 'paid'")->fetchColumn(),
+        'avg_paid_price' => (int)round((float)$pdo->query("SELECT AVG(price_from) FROM tools WHERE is_active=1 AND price_type='paid' AND price_from > 0")->fetchColumn() ?: 29),
+    ];
+});
 
-// Featured tools
-$featured = $pdo->query("
-    SELECT t.*, c.name AS cat_name, c.slug AS cat_slug
-    FROM tools t
-    LEFT JOIN categories c ON c.id = t.category_id
-    WHERE t.is_featured = 1 AND t.is_active = 1
-    ORDER BY t.clicks DESC
-    LIMIT 6
-")->fetchAll();
+$total_tools    = $global_stats['total_tools'];
+$total_cats     = $global_stats['total_cats'];
+$total_upvotes  = $global_stats['total_upvotes'];
+$free_count     = $global_stats['free_count'];
+$paid_count     = $global_stats['paid_count'];
+$avg_paid_price = $global_stats['avg_paid_price'];
 
-// All tools
-$all_tools = $pdo->query("
-    SELECT t.*, c.name AS cat_name, c.slug AS cat_slug, c.icon AS cat_icon
-    FROM tools t
-    LEFT JOIN categories c ON c.id = t.category_id
-    WHERE t.is_active = 1
-    ORDER BY c.sort_order, t.rating DESC
-")->fetchAll();
+// Featured tools (Cached 5 min with Safe DB Fallback)
+$featured = cache_remember('featured_tools', 300, function() use ($pdo) {
+    return $pdo->query("
+        SELECT t.*, c.name AS cat_name, c.slug AS cat_slug
+        FROM tools t
+        LEFT JOIN categories c ON c.id = t.category_id
+        WHERE t.is_featured = 1 AND t.is_active = 1
+        ORDER BY t.clicks DESC
+        LIMIT 6
+    ")->fetchAll();
+});
+
+// All tools (Cached 5 min with Safe DB Fallback)
+$all_tools = cache_remember('all_tools_directory', 300, function() use ($pdo) {
+    return $pdo->query("
+        SELECT t.*, c.name AS cat_name, c.slug AS cat_slug, c.icon AS cat_icon
+        FROM tools t
+        LEFT JOIN categories c ON c.id = t.category_id
+        WHERE t.is_active = 1
+        ORDER BY c.sort_order, t.rating DESC
+    ")->fetchAll();
+});
+
+// Category counts for pills
+$cat_counts = [];
+foreach ($all_tools as $t) {
+    $cid = (int)($t['category_id'] ?? 0);
+    $cat_counts[$cid] = ($cat_counts[$cid] ?? 0) + 1;
+}
+
+// Preload user upvotes in single query to eliminate N+1 queries in tool cards
+$user_upvoted_tool_ids = [];
+if ($logged_in) {
+    try {
+        $uvStmt = $pdo->prepare("SELECT tool_id FROM upvotes WHERE user_id = ?");
+        $uvStmt->execute([$user_id]);
+        $user_upvoted_tool_ids = array_fill_keys(array_map('intval', $uvStmt->fetchAll(PDO::FETCH_COLUMN)), true);
+    } catch (Throwable $e) {}
+}
+
+// Release session lock early so concurrent requests/assets do not block
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
 
 include __DIR__ . '/header.php';
 ?>
@@ -220,46 +257,47 @@ include __DIR__ . '/header.php';
                             ? 'Free'
                             : ($tool['price_type'] === 'freemium' ? 'Freemium' : 'From $' . round($tool['price_from']) . '/mo');
                     ?>
-                        <div class="swipe-row-wrap" data-tool-id="<?= (int)$tool['id'] ?>" data-tool-name="<?= e($tool['name']) ?>" data-tool-slug="<?= e($tool['slug']) ?>">
-                            <!-- Swipe Actions Underlay -->
-                            <div class="swipe-actions-underlay">
-                                <a href="/compare.php?a=<?= urlencode($tool['slug']) ?>" class="swipe-action-btn compare-btn" title="Compare <?= e($tool['name']) ?>">
-                                    <?= icon('scale', '', 16) ?>
-                                    <span>Compare</span>
-                                </a>
-                                <button type="button" class="swipe-action-btn remove-btn" onclick="triggerRowRemoval(<?= (int)$tool['id'] ?>, this)" title="Remove <?= e($tool['name']) ?>">
-                                    <?= icon('trash-2', '', 16) ?>
-                                    <span>Remove</span>
-                                </button>
+                        <div class="my-stack-row swipe-row-wrap" data-tool-id="<?= (int)$tool['id'] ?>" data-tool-name="<?= e($tool['name']) ?>" data-tool-slug="<?= e($tool['slug']) ?>">
+                            <div class="my-stack-row-left">
+                                <div class="my-stack-logo">
+                                    <img src="<?= e(tool_logo_url($tool)) ?>"
+                                         alt="<?= e($tool['name']) ?>"
+                                         class="skeleton-img"
+                                         width="40"
+                                         height="40"
+                                         style="width:100%;height:100%;object-fit:contain;border-radius:8px"
+                                         loading="lazy"
+                                         decoding="async"
+                                         onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
+                                </div>
+                                <div class="my-stack-info">
+                                    <div class="my-stack-name"><?= e($tool['name']) ?></div>
+                                    <span class="my-stack-category"><?= e($tool['cat_name'] ?? 'General') ?></span>
+                                </div>
                             </div>
 
-                            <!-- Front Row -->
-                            <div class="my-stack-row-front <?= $is_first_swiped ? 'is-swiped' : '' ?>" style="<?= $is_first_swiped ? 'transform:translateX(-140px)' : '' ?>">
-                                <div class="my-stack-row-left">
-                                    <div class="my-stack-logo">
-                                        <?php if ($domain): ?>
-                                            <img src="https://img.logo.dev/<?= e($domain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=64"
-                                                 alt="<?= e($tool['name']) ?>"
-                                                 class="skeleton-img">
-                                        <?php else: ?>
-                                            <?= icon('package', '', 18) ?>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="my-stack-info">
-                                        <div class="my-stack-name"><?= e($tool['name']) ?></div>
-                                        <span class="my-stack-category"><?= e($tool['cat_name'] ?? 'General') ?></span>
-                                    </div>
-                                </div>
-
-                                <div class="my-stack-row-right">
-                                    <span class="my-stack-price-pill"><?= e($price_text) ?></span>
-                                    <button type="button"
-                                            class="row-more-btn"
-                                            onclick="openToolActionSheet(<?= (int)$tool['id'] ?>, '<?= e(addslashes($tool['name'])) ?>', '<?= e($tool['slug']) ?>', '<?= e($price_text) ?>')"
-                                            aria-label="More actions for <?= e($tool['name']) ?>">
-                                        <?= icon('more-horizontal', '', 18) ?>
-                                    </button>
-                                </div>
+                            <div class="my-stack-row-right">
+                                <span class="my-stack-price-pill"><?= e($price_text) ?></span>
+                                <a href="/compare.php?a=<?= urlencode($tool['slug']) ?>"
+                                   class="stack-ghost-btn stack-compare-btn"
+                                   title="Compare <?= e($tool['name']) ?> Side-by-Side"
+                                   aria-label="Compare <?= e($tool['name']) ?> Side-by-Side">
+                                    <?= icon('scale', '', 16) ?>
+                                </a>
+                                <button type="button"
+                                        class="stack-ghost-btn stack-remove-btn"
+                                        onclick="triggerRowRemoval(<?= (int)$tool['id'] ?>, this)"
+                                        title="Remove <?= e($tool['name']) ?> from My Stack"
+                                        aria-label="Remove <?= e($tool['name']) ?> from My Stack">
+                                    <?= icon('trash-2', '', 16) ?>
+                                </button>
+                                <button type="button"
+                                        class="stack-ghost-btn row-more-btn"
+                                        onclick="openToolActionSheet(<?= (int)$tool['id'] ?>, '<?= e(addslashes($tool['name'])) ?>', '<?= e($tool['slug']) ?>', '<?= e($price_text) ?>')"
+                                        aria-label="More actions for <?= e($tool['name']) ?>"
+                                        title="More actions">
+                                    <?= icon('more-horizontal', '', 18) ?>
+                                </button>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -287,13 +325,15 @@ include __DIR__ . '/header.php';
                     <div class="recommended-row" data-tool-id="<?= (int)$rec['id'] ?>">
                         <div class="my-stack-row-left">
                             <div class="my-stack-logo">
-                                <?php if ($rdomain): ?>
-                                    <img src="https://img.logo.dev/<?= e($rdomain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=64"
-                                         alt="<?= e($rec['name']) ?>"
-                                         class="skeleton-img">
-                                <?php else: ?>
-                                    <?= icon('package', '', 18) ?>
-                                <?php endif; ?>
+                                <img src="<?= e(tool_logo_url($rec)) ?>"
+                                     alt="<?= e($rec['name']) ?>"
+                                     class="skeleton-img"
+                                     width="40"
+                                     height="40"
+                                     style="width:100%;height:100%;object-fit:contain;border-radius:8px"
+                                     loading="lazy"
+                                     decoding="async"
+                                     onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                             </div>
                             <div class="my-stack-info">
                                 <div class="my-stack-name"><?= e($rec['name']) ?></div>
@@ -435,14 +475,15 @@ include __DIR__ . '/header.php';
                     <a href="/tool/index.php?slug=<?= e($dt['slug']) ?>" class="deck-item">
                         <div class="deck-tool-left">
                             <div class="deck-tool-logo">
-                                <?php if ($dt_domain): ?>
-                                    <img src="https://img.logo.dev/<?= e($dt_domain) ?>?token=pk_IPkJggMaTFC35CqF8UE3hg&size=64"
-                                         alt="<?= e($dt['name']) ?>"
-                                         class="skeleton-img"
-                                         style="width:100%;height:100%;object-fit:contain;border-radius:6px">
-                                <?php else: ?>
-                                    <?= icon('package', '', 18) ?>
-                                <?php endif; ?>
+                                <img src="<?= e(tool_logo_url($dt)) ?>"
+                                     alt="<?= e($dt['name']) ?>"
+                                     class="skeleton-img"
+                                     width="36"
+                                     height="36"
+                                     style="width:100%;height:100%;object-fit:contain;border-radius:6px"
+                                     loading="lazy"
+                                     decoding="async"
+                                     onerror="this.onerror=null;this.src='/assets/img/logos/placeholder.svg';">
                             </div>
                             <div>
                                 <div class="deck-tool-name"><?= e($dt['name']) ?></div>
@@ -482,15 +523,17 @@ include __DIR__ . '/header.php';
      CATEGORY FILTER PILLS (Sticky with Faded Edges)
      ═══════════════════════════════════════════════════════════ -->
 <div class="category-pills-wrap">
-    <div class="category-pills-bar <?= $logged_in ? 'pills-quieter' : '' ?>" role="navigation" aria-label="Filter by category">
-        <a href="/index.php" class="cat-pill active-pill">
+    <div class="category-pills-bar <?= $logged_in ? 'pills-quieter' : '' ?>" id="categoryPillsBar" role="tablist" aria-label="Filter by category">
+        <button type="button" class="cat-pill active-pill" data-category="all" role="tab" aria-selected="true" aria-pressed="true">
             <?= icon('layout-grid', '', 14) ?>
-            <span>All Tools (<?= $total_tools ?>)</span>
-        </a>
+            <span>All Tools</span>
+            <span class="cat-pill-count">(<?= $total_tools ?>)</span>
+        </button>
         <?php foreach ($cats as $cat): ?>
-            <a href="/category/index.php?slug=<?= e($cat['slug']) ?>" class="cat-pill">
+            <button type="button" class="cat-pill" data-category="<?= e($cat['slug']) ?>" role="tab" aria-selected="false" aria-pressed="false">
                 <span><?= e($cat['name']) ?></span>
-            </a>
+                <span class="cat-pill-count">(<?= (int)($cat_counts[$cat['id']] ?? 0) ?>)</span>
+            </button>
         <?php endforeach; ?>
     </div>
 </div>
@@ -499,38 +542,39 @@ include __DIR__ . '/header.php';
      FEATURED TOOLS SECTION (Embla Swipe Carousel with Peek & Dots)
      ═══════════════════════════════════════════════════════════ -->
 <?php if (!empty($featured)): ?>
-    <section aria-labelledby="featured-heading" class="featured-section <?= $logged_in ? 'section-quieter' : '' ?>">
-        <div class="dashboard-section-head">
-            <div>
-                <h2 id="featured-heading" class="section-title">
-                    <?= icon('sparkles', '', 20) ?>
-                    <span>Featured Tools</span>
-                </h2>
-                <span style="font-size:13px;color:var(--muted)">Hand-picked software with high community ROI</span>
-            </div>
+    <section id="featuredSection" aria-labelledby="featured-heading" class="featured-section <?= $logged_in ? 'section-quieter' : '' ?>">
+        <div class="dashboard-section-head featured-section-head">
+            <div class="section-head-top-row">
+                <div class="section-title-wrap">
+                    <h2 id="featured-heading" class="section-title">
+                        <?= icon('sparkles', '', 20) ?>
+                        <span>Featured Tools</span>
+                    </h2>
+                </div>
 
-            <!-- Carousel Desktop Navigation Arrows -->
-            <div class="embla-arrows-desktop">
-                <button type="button" class="embla-arrow-btn" id="featuredPrev" aria-label="Previous slide">
-                    <?= icon('chevron-left', '', 18) ?>
-                </button>
-                <button type="button" class="embla-arrow-btn" id="featuredNext" aria-label="Next slide">
-                    <?= icon('chevron-right', '', 18) ?>
-                </button>
+                <!-- Carousel Navigation Arrows (Bug 2 & Task 1 Fix: Right-aligned with section title) -->
+                <div class="featured-arrows embla-arrows-desktop">
+                    <button type="button" class="featured-arrow-btn embla-arrow-btn" id="featuredPrev" aria-label="Previous slide" title="Previous tools">
+                        <?= icon('chevron-left', '', 18) ?>
+                    </button>
+                    <button type="button" class="featured-arrow-btn embla-arrow-btn" id="featuredNext" aria-label="Next slide" title="Next tools">
+                        <?= icon('chevron-right', '', 18) ?>
+                    </button>
+                </div>
             </div>
+            <p class="section-desc">Hand-picked software with high community ROI</p>
         </div>
 
-        <!-- Embla Carousel Viewport -->
-        <div class="embla-carousel" id="featuredEmbla" role="region" aria-roledescription="carousel" aria-label="Featured Tools">
-            <div class="embla-container" role="presentation">
+        <!-- Carousel Viewport (Native Scroll-Snap with Smooth Scrolling) -->
+        <div class="featured-carousel embla-carousel" id="featuredEmbla" role="region" aria-roledescription="carousel" aria-label="Featured Tools">
+            <div class="featured-track embla-container" role="presentation">
                 <?php
-                // Requirement 3: Remove the "Featured" badge inside this carousel since section is already named Featured
                 $hide_featured_badge = true;
                 $f_idx = 0;
                 foreach ($featured as $t):
                     $f_idx++;
                 ?>
-                    <div class="embla-slide" role="group" aria-roledescription="slide" aria-label="<?= e($t['name']) ?> (<?= $f_idx ?> of <?= count($featured) ?>)">
+                    <div class="featured-card-wrapper embla-slide" role="group" aria-roledescription="slide" aria-label="<?= e($t['name']) ?> (<?= $f_idx ?> of <?= count($featured) ?>)">
                         <?php include __DIR__ . '/partials/tool-card.php'; ?>
                     </div>
                 <?php endforeach;
@@ -547,25 +591,61 @@ include __DIR__ . '/header.php';
 <!-- ═══════════════════════════════════════════════════════════
      ALL TOOLS DIRECTORY (Normal Vertical Scroll with Compact Cards)
      ═══════════════════════════════════════════════════════════ -->
-<section aria-labelledby="all-tools-heading" class="<?= $logged_in ? 'section-quieter' : '' ?>">
-    <div class="dashboard-section-head">
-        <div>
-            <h2 id="all-tools-heading" class="section-title">
-                <?= icon('package', '', 20) ?>
-                <span>All Tools Directory</span>
-            </h2>
-            <span style="font-size:13px;color:var(--muted)">Complete catalogue of verified dropshipping tools</span>
+<section aria-labelledby="all-tools-heading" class="<?= $logged_in ? 'section-quieter' : '' ?>" id="allToolsSection">
+    <div class="dashboard-section-head directory-section-head">
+        <div class="section-head-top-row">
+            <div class="section-title-wrap">
+                <h2 id="all-tools-heading" class="section-title">
+                    <?= icon('package', '', 20) ?>
+                    <span>All Tools Directory</span>
+                </h2>
+                <span class="tools-count-badge" id="dirToolsCount">
+                    <?= count($all_tools) ?> tools
+                </span>
+            </div>
+
+            <!-- Carousel Navigation Controls (Shown in carousel mode, aligned with title) -->
+            <div class="dir-carousel-controls" id="dirCarouselControls" style="display:none;" aria-label="Carousel navigation">
+                <span class="dir-carousel-counter" id="dirCounter" aria-live="polite">1 / <?= count($all_tools) ?></span>
+                <button type="button" class="dir-arrow-btn" id="dirPrev" aria-label="Previous tools" title="Previous tools" disabled>
+                    <?= icon('chevron-left', '', 18) ?>
+                </button>
+                <button type="button" class="dir-arrow-btn" id="dirNext" aria-label="Next tools" title="Next tools">
+                    <?= icon('chevron-right', '', 18) ?>
+                </button>
+            </div>
         </div>
 
-        <div class="section-filters-pill" role="tablist" aria-label="Filter pricing">
-            <button type="button" class="filter-btn active" onclick="filterTools('all', this)" role="tab" aria-selected="true">All</button>
-            <button type="button" class="filter-btn" onclick="filterTools('free', this)" role="tab" aria-selected="false">Free / Freemium</button>
-            <button type="button" class="filter-btn" onclick="filterTools('paid', this)" role="tab" aria-selected="false">Paid</button>
-            <button type="button" class="filter-btn" onclick="filterTools('featured', this)" role="tab" aria-selected="false">Featured</button>
+        <p class="section-desc">Complete catalogue of verified dropshipping tools</p>
+
+        <div class="section-filters-pill" id="dirFilterPills" role="tablist" aria-label="Filter pricing">
+            <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true" aria-pressed="true">All</button>
+            <button type="button" class="filter-btn" data-filter="free" role="tab" aria-selected="false" aria-pressed="false">Free / Freemium</button>
+            <button type="button" class="filter-btn" data-filter="paid" role="tab" aria-selected="false" aria-pressed="false">Paid</button>
+            <button type="button" class="filter-btn" data-filter="featured" role="tab" aria-selected="false" aria-pressed="false">Featured</button>
         </div>
     </div>
 
-    <div class="tools-grid" id="mainToolsGrid">
+    <!-- Screen-reader live status announcement (Task 2) -->
+    <div id="dirLiveRegion" class="sr-only" role="status" aria-live="polite"></div>
+
+    <!-- Empty state container (hidden by default) -->
+    <div id="dirEmptyState" class="dir-empty-state" style="display:none;" role="status">
+        <div class="dir-empty-icon"><?= icon('package', '', 36) ?></div>
+        <p class="dir-empty-msg">No tools match this filter.</p>
+        <button type="button" class="btn-action-link" id="dirShowAllBtn">
+            Show all tools <?= icon('arrow-right', '', 14) ?>
+        </button>
+    </div>
+
+    <!-- Skeleton placeholder during transitions -->
+    <div id="dirSkeleton" class="dir-skeleton-wrap" style="display:none;" aria-hidden="true">
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+    </div>
+
+    <div class="tools-grid" id="mainToolsGrid" tabindex="0" role="region" aria-label="Tools Directory">
         <?php foreach ($all_tools as $t): ?>
             <?php include __DIR__ . '/partials/tool-card.php'; ?>
         <?php endforeach; ?>
@@ -573,10 +653,10 @@ include __DIR__ . '/header.php';
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     TOOL ACTION BOTTOM SHEET (Fallback for Non-Gestures)
+     TOOL ACTION BOTTOM SHEET (Hidden by Default - Bug 3 Fix)
      ═══════════════════════════════════════════════════════════ -->
-<div class="action-sheet-overlay" id="toolActionOverlay" onclick="closeToolActionSheet()"></div>
-<div class="action-sheet" id="toolActionSheet" role="dialog" aria-modal="true" aria-label="Tool Options">
+<div class="action-sheet-overlay" id="toolActionOverlay" onclick="closeToolActionSheet()" hidden></div>
+<div class="action-sheet" id="toolActionSheet" role="dialog" aria-modal="true" aria-label="Tool Options" hidden>
     <div class="action-sheet-handle" onclick="closeToolActionSheet()"></div>
     <div class="action-sheet-header">
         <h3 class="action-sheet-title" id="actionSheetTitle">Tool Name</h3>
@@ -605,240 +685,83 @@ include __DIR__ . '/header.php';
     <div class="undo-progress-bar" id="undoProgressBar"></div>
 </div>
 
-<!-- Include Full-Screen Intro Experience (Part 2) -->
-<?php include __DIR__ . '/partials/intro-modal.php'; ?>
+<!-- Include Full-Screen Intro Experience (Only for new visitors or when ?intro is requested) -->
+<?php if (empty($_COOKIE['intro_seen']) || isset($_GET['intro'])): ?>
+    <?php include __DIR__ . '/partials/intro-modal.php'; ?>
+<?php endif; ?>
 
 <!-- Vendored Embla Carousel Library -->
-<script src="/assets/js/embla-carousel.umd.js"></script>
+<script src="/assets/js/embla-carousel.umd.js" defer></script>
 
 <script>
-// ── Filter Tools Directory ──────────────────────────────────
+// ── Filter Tools Directory Delegate ─────────────────────────
 function filterTools(type, btn) {
-    if (btn) {
-        btn.parentElement.querySelectorAll('.filter-btn').forEach(b => {
-            b.classList.remove('active');
-            b.setAttribute('aria-selected', 'false');
-        });
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
+    if (typeof window.applyDirectoryFilter === 'function') {
+        window.applyDirectoryFilter(type, true);
     }
-
-    const cards = document.querySelectorAll('#mainToolsGrid .tool-card');
-    cards.forEach(card => {
-        const price = card.getAttribute('data-price');
-        const featured = card.getAttribute('data-featured');
-
-        let show = false;
-        if (type === 'all') {
-            show = true;
-        } else if (type === 'free') {
-            show = (price === 'free' || price === 'freemium');
-        } else if (type === 'paid') {
-            show = (price === 'paid');
-        } else if (type === 'featured') {
-            show = (featured === '1');
-        }
-
-        card.style.display = show ? 'flex' : 'none';
-    });
 }
 
-// ── Upvotes Handler ─────────────────────────────────────────
-document.querySelectorAll('.upvote-btn').forEach(btn => {
-    btn.addEventListener('click', async function(e) {
-        e.preventDefault();
-        const toolId = this.dataset.toolId;
-
-        try {
-            const res = await fetch('/upvote.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'tool_id=' + encodeURIComponent(toolId)
-            });
-
-            const data = await res.json();
-            if (data.error === "login_required") {
-                window.location = "/login.php";
-                return;
-            }
-
-            const countEl = this.querySelector('.upvote-count');
-            if (countEl && typeof data.count !== 'undefined') {
-                countEl.textContent = data.count;
-            }
-            this.classList.toggle('upvoted', data.action === 'added');
-        } catch (err) {
-            console.error('Upvote failed:', err);
-        }
-    });
-});
-
 // ════════════════════════════════════════════════════════════
-// EMBLA CAROUSEL: FEATURED TOOLS WITH TWEEN & MORPHING DOTS
+// FEATURED TOOLS CAROUSEL (Bug 2 Fix: Smooth Native Scroll-Snap)
 // ════════════════════════════════════════════════════════════
-(function initFeaturedEmbla() {
-    const emblaNode = document.getElementById('featuredEmbla');
-    if (!emblaNode || typeof EmblaCarousel === 'undefined') return;
-
-    const dotsNode = document.getElementById('featuredDots');
+(function initFeaturedCarousel() {
+    const carousel = document.getElementById('featuredEmbla');
+    if (!carousel) return;
+    const container = carousel.querySelector('.embla-container, .featured-track') || carousel;
     const prevBtn = document.getElementById('featuredPrev');
     const nextBtn = document.getElementById('featuredNext');
 
-    const embla = EmblaCarousel(emblaNode, {
-        loop: false,
-        align: 'start',
-        slidesToScroll: 1,
-        containScroll: 'trimSnaps'
-    });
+    function getCardWidth() {
+        const slide = container.querySelector('.embla-slide, .featured-card-wrapper');
+        return slide ? (slide.offsetWidth + 16) : 340;
+    }
 
-    const slides = embla.slideNodes();
+    function updateArrowStates() {
+        if (!prevBtn || !nextBtn) return;
+        const scrollLeft = container.scrollLeft;
+        const maxScroll = container.scrollWidth - container.clientWidth;
 
-    // Setup Dots
-    if (dotsNode) {
-        dotsNode.innerHTML = '';
-        slides.forEach((_, idx) => {
-            const dot = document.createElement('button');
-            dot.type = 'button';
-            dot.className = 'embla-dot' + (idx === 0 ? ' active' : '');
-            dot.setAttribute('aria-label', 'Go to slide ' + (idx + 1));
-            dot.setAttribute('role', 'tab');
-            dot.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
-            dot.addEventListener('click', () => embla.scrollTo(idx));
-            dotsNode.appendChild(dot);
+        const isStart = scrollLeft <= 4;
+        const isEnd = scrollLeft >= maxScroll - 4;
+
+        prevBtn.disabled = isStart;
+        prevBtn.setAttribute('aria-disabled', isStart ? 'true' : 'false');
+
+        nextBtn.disabled = isEnd;
+        nextBtn.setAttribute('aria-disabled', isEnd ? 'true' : 'false');
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            container.scrollBy({ left: -getCardWidth(), behavior: 'smooth' });
         });
     }
 
-    // Tweening: Active slide scale 1.0, neighbor slides scale 0.94 and opacity 0.85
-    function updateTween() {
-        const selected = embla.selectedScrollSnap();
-        const isMobile = window.innerWidth <= 768;
-
-        slides.forEach((slide, idx) => {
-            if (!isMobile) {
-                slide.style.transform = '';
-                slide.style.opacity = '';
-                return;
-            }
-            if (idx === selected) {
-                slide.style.transform = 'scale(1)';
-                slide.style.opacity = '1';
-            } else {
-                slide.style.transform = 'scale(0.94)';
-                slide.style.opacity = '0.85';
-            }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            container.scrollBy({ left: getCardWidth(), behavior: 'smooth' });
         });
-
-        if (dotsNode) {
-            const dotElements = dotsNode.querySelectorAll('.embla-dot');
-            dotElements.forEach((dot, idx) => {
-                const isActive = idx === selected;
-                dot.classList.toggle('active', isActive);
-                dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            });
-        }
     }
 
-    embla.on('select', updateTween);
-    embla.on('init', updateTween);
-    embla.on('reInit', updateTween);
-    window.addEventListener('resize', updateTween);
-
-    // Arrow navigation
-    if (prevBtn) prevBtn.addEventListener('click', () => embla.scrollPrev());
-    if (nextBtn) nextBtn.addEventListener('click', () => embla.scrollNext());
+    container.addEventListener('scroll', updateArrowStates, { passive: true });
+    window.addEventListener('resize', updateArrowStates, { passive: true });
+    updateArrowStates();
 
     // Arrow Key Navigation
-    emblaNode.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight') embla.scrollNext();
-        if (e.key === 'ArrowLeft') embla.scrollPrev();
+    carousel.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') container.scrollBy({ left: getCardWidth(), behavior: 'smooth' });
+        if (e.key === 'ArrowLeft') container.scrollBy({ left: -getCardWidth(), behavior: 'smooth' });
     });
 })();
 
 // ════════════════════════════════════════════════════════════
-// MY STACK SWIPE ROWS, BOTTOM SHEET & 5-SEC UNDO TOAST
+// MY STACK ROWS, BOTTOM SHEET & 5-SEC UNDO TOAST
 // ════════════════════════════════════════════════════════════
 let pendingRemovalTimeout = null;
 let pendingRemovalToolId = null;
 let pendingRemovalRow = null;
-let pendingRemovalData = null;
 
-// Touch Swipe Physics & Drag Gesture for Stack Rows
-document.querySelectorAll('.swipe-row-wrap').forEach(wrap => {
-    const front = wrap.querySelector('.my-stack-row-front');
-    if (!front) return;
-
-    let startX = 0;
-    let currentX = 0;
-    let isDragging = false;
-    let initialTranslate = 0;
-    const actionWidth = -140;
-
-    front.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-        isDragging = true;
-        front.style.transition = 'none';
-        const transformMatrix = window.getComputedStyle(front).transform;
-        if (transformMatrix && transformMatrix !== 'none') {
-            const values = transformMatrix.split('(')[1].split(')')[0].split(',');
-            initialTranslate = parseInt(values[4], 10) || 0;
-        } else {
-            initialTranslate = 0;
-        }
-    }, { passive: true });
-
-    front.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        currentX = e.touches[0].clientX;
-        const diffX = currentX - startX;
-        let targetX = initialTranslate + diffX;
-
-        // Prevent dragging right past 0
-        if (targetX > 0) targetX = targetX * 0.2;
-        // Rubber band beyond actionWidth
-        if (targetX < actionWidth) {
-            targetX = actionWidth + (targetX - actionWidth) * 0.35;
-        }
-
-        front.style.transform = `translateX(${targetX}px)`;
-    }, { passive: true });
-
-    front.addEventListener('touchend', (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        front.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-
-        const diffX = currentX - startX;
-        const totalX = initialTranslate + diffX;
-
-        // Full swipe trigger (> 210px left)
-        if (totalX < -210) {
-            const toolId = wrap.getAttribute('data-tool-id');
-            triggerRowRemoval(parseInt(toolId, 10), wrap);
-            return;
-        }
-
-        // Snap to reveal or snap closed
-        if (totalX < -50) {
-            front.style.transform = `translateX(${actionWidth}px)`;
-            front.classList.add('is-swiped');
-        } else {
-            front.style.transform = 'translateX(0)';
-            front.classList.remove('is-swiped');
-        }
-    }, { passive: true });
-});
-
-// Close swiped rows when clicking elsewhere
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.swipe-row-wrap')) {
-        document.querySelectorAll('.my-stack-row-front.is-swiped').forEach(el => {
-            el.style.transform = 'translateX(0)';
-            el.classList.remove('is-swiped');
-        });
-    }
-});
-
-// Bottom Sheet Handling
+// Bottom Sheet Handling (Bug 3 Fix)
 function openToolActionSheet(id, name, slug, price) {
     const sheet = document.getElementById('toolActionSheet');
     const overlay = document.getElementById('toolActionOverlay');
@@ -853,28 +776,51 @@ function openToolActionSheet(id, name, slug, price) {
     if (removeBtn) {
         removeBtn.onclick = () => {
             closeToolActionSheet();
-            const wrap = document.querySelector(`.swipe-row-wrap[data-tool-id="${id}"]`);
-            triggerRowRemoval(id, wrap);
+            const wrap = document.querySelector(`.my-stack-row[data-tool-id="${id}"], .swipe-row-wrap[data-tool-id="${id}"]`);
+            if (wrap) triggerRowRemoval(id, wrap);
         };
     }
 
-    if (sheet) sheet.classList.add('open');
-    if (overlay) overlay.classList.add('open');
+    if (sheet) {
+        sheet.hidden = false;
+        sheet.style.display = 'block';
+        requestAnimationFrame(() => sheet.classList.add('open'));
+    }
+    if (overlay) {
+        overlay.hidden = false;
+        overlay.style.display = 'block';
+        requestAnimationFrame(() => overlay.classList.add('open'));
+    }
 }
 
 function closeToolActionSheet() {
     const sheet = document.getElementById('toolActionSheet');
     const overlay = document.getElementById('toolActionOverlay');
-    if (sheet) sheet.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
+    if (sheet) {
+        sheet.classList.remove('open');
+        setTimeout(() => {
+            if (!sheet.classList.contains('open')) {
+                sheet.hidden = true;
+                sheet.style.display = 'none';
+            }
+        }, 250);
+    }
+    if (overlay) {
+        overlay.classList.remove('open');
+        setTimeout(() => {
+            if (!overlay.classList.contains('open')) {
+                overlay.hidden = true;
+                overlay.style.display = 'none';
+            }
+        }, 250);
+    }
 }
 
 // 5-Second Undo Toast & Row Removal Execution
 function triggerRowRemoval(toolId, triggerEl) {
-    const wrap = triggerEl.closest('.swipe-row-wrap');
+    const wrap = triggerEl.closest('.my-stack-row, .swipe-row-wrap');
     if (!wrap) return;
 
-    // Execute previous pending removal if exists
     if (pendingRemovalTimeout) {
         commitRemoval();
     }
@@ -884,21 +830,32 @@ function triggerRowRemoval(toolId, triggerEl) {
     pendingRemovalRow = wrap;
 
     // Animate row removal visually
-    wrap.style.transition = 'opacity 0.3s ease, height 0.3s ease, margin 0.3s ease, transform 0.3s ease';
-    wrap.style.transform = 'translateX(-100%)';
+    wrap.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    wrap.style.transform = 'translateX(-20px)';
     wrap.style.opacity = '0';
     setTimeout(() => {
         wrap.style.display = 'none';
-    }, 300);
+    }, 250);
+
+    // Optimistically update counter
+    const countEl = document.getElementById('statStackCount');
+    const subTitleEl = document.getElementById('myStackSubtitle');
+    if (countEl) {
+        const cur = parseInt(countEl.textContent || '0', 10);
+        if (cur > 0) countEl.textContent = cur - 1;
+        if (subTitleEl) subTitleEl.textContent = `${Math.max(0, cur - 1)} tool${cur - 1 !== 1 ? 's' : ''} in your active kit`;
+    }
 
     // Show Undo Toast
     const toast = document.getElementById('undoToast');
     const msg = document.getElementById('undoToastMsg');
     const pbar = document.getElementById('undoProgressBar');
+    const uBtn = document.getElementById('undoToastBtn');
 
     if (msg) msg.textContent = `Removed ${toolName} from stack`;
-    if (toast) toast.classList.add('show');
+    if (uBtn) uBtn.style.display = '';
     if (pbar) {
+        pbar.style.display = '';
         pbar.style.transition = 'none';
         pbar.style.transform = 'scaleX(1)';
         requestAnimationFrame(() => {
@@ -906,6 +863,7 @@ function triggerRowRemoval(toolId, triggerEl) {
             pbar.style.transform = 'scaleX(0)';
         });
     }
+    if (toast) toast.classList.add('show');
 
     pendingRemovalTimeout = setTimeout(commitRemoval, 5000);
 }
@@ -924,18 +882,41 @@ async function commitRemoval() {
     pendingRemovalRow = null;
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const res = await fetch('/api/stack-action.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'remove', tool_id: toolId })
+            body: JSON.stringify({ action: 'remove', tool_id: toolId, csrf_token: csrfToken })
         });
         const data = await res.json();
         if (data.success) {
             if (row) row.remove();
             updateStackDOM(data);
+        } else {
+            // Revert
+            if (row) {
+                row.style.display = '';
+                requestAnimationFrame(() => {
+                    row.style.transform = '';
+                    row.style.opacity = '1';
+                });
+            }
+            if (typeof showActionToast === 'function') {
+                showActionToast('Failed to remove tool.');
+            }
         }
     } catch (e) {
         console.error('Failed to commit removal:', e);
+        if (row) {
+            row.style.display = '';
+            requestAnimationFrame(() => {
+                row.style.transform = '';
+                row.style.opacity = '1';
+            });
+        }
+        if (typeof showActionToast === 'function') {
+            showActionToast('Connection error. Tool removal not saved.');
+        }
     }
 }
 
@@ -947,45 +928,83 @@ function undoRowRemoval() {
     if (toast) toast.classList.remove('show');
 
     if (pendingRemovalRow) {
-        pendingRemovalRow.style.display = 'block';
+        pendingRemovalRow.style.display = '';
         requestAnimationFrame(() => {
             pendingRemovalRow.style.transform = 'translateX(0)';
             pendingRemovalRow.style.opacity = '1';
         });
-        const front = pendingRemovalRow.querySelector('.my-stack-row-front');
-        if (front) {
-            front.style.transform = 'translateX(0)';
-            front.classList.remove('is-swiped');
-        }
+    }
+
+    // Revert counter
+    const countEl = document.getElementById('statStackCount');
+    const subTitleEl = document.getElementById('myStackSubtitle');
+    if (countEl) {
+        const cur = parseInt(countEl.textContent || '0', 10);
+        countEl.textContent = cur + 1;
+        if (subTitleEl) subTitleEl.textContent = `${cur + 1} tool${cur + 1 !== 1 ? 's' : ''} in your active kit`;
     }
 
     pendingRemovalToolId = null;
     pendingRemovalRow = null;
 }
 
+// Optimistic Add Tool to Stack (NO full-page reload)
 async function addToolToStack(toolId, btn) {
+    if (btn.disabled) return;
     btn.disabled = true;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = '<span>Adding...</span>';
+    const oldHtml = btn.innerHTML;
+    // Optimistic UI update
+    btn.innerHTML = '<span>Added ✓</span>';
+    btn.classList.add('btn-added');
+
+    // Optimistically increment stack counter in DOM
+    const countEl = document.getElementById('statStackCount');
+    const subTitleEl = document.getElementById('myStackSubtitle');
+    let prevCount = 0;
+    if (countEl) {
+        prevCount = parseInt(countEl.textContent || '0', 10);
+        countEl.textContent = prevCount + 1;
+    }
+    if (subTitleEl) {
+        subTitleEl.textContent = `${prevCount + 1} tools in your active kit`;
+    }
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const res = await fetch('/api/stack-action.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'add', tool_id: toolId })
+            body: JSON.stringify({ action: 'add', tool_id: toolId, csrf_token: csrfToken })
         });
         const data = await res.json();
 
         if (data.success) {
-            window.location.reload();
+            updateStackDOM(data);
+            if (typeof showActionToast === 'function') {
+                showActionToast('Tool added to your stack!');
+            }
         } else {
-            btn.innerHTML = oldText;
+            // Revert
+            btn.innerHTML = oldHtml;
             btn.disabled = false;
+            btn.classList.remove('btn-added');
+            if (countEl) countEl.textContent = prevCount;
+            if (subTitleEl) subTitleEl.textContent = `${prevCount} tools in your active kit`;
+            if (typeof showActionToast === 'function') {
+                showActionToast(data.error || 'Failed to add tool to stack.');
+            }
         }
     } catch (e) {
         console.error('Failed to add tool:', e);
-        btn.innerHTML = oldText;
+        // Revert
+        btn.innerHTML = oldHtml;
         btn.disabled = false;
+        btn.classList.remove('btn-added');
+        if (countEl) countEl.textContent = prevCount;
+        if (subTitleEl) subTitleEl.textContent = `${prevCount} tools in your active kit`;
+        if (typeof showActionToast === 'function') {
+            showActionToast('Connection error. Tool could not be added.');
+        }
     }
 }
 
