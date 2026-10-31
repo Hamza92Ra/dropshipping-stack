@@ -3,6 +3,20 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
+Disallow: /cache/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /go/
 Disallow: /go.php
+Disallow: /login.php
+Disallow: /register.php
+Disallow: /forgot-password.php
+Disallow: /reset-password.php
+Disallow: /profile.php
+Disallow: /bookmarks.php
+Disallow: /search.php
+Disallow: /price-alerts.php
+Disallow: /verify-email.php
+Disallow: /resend-verification.php
 
-Sitemap: https://www.hdropshipping.com/sitemap.xml
+Sitemap: https://hdropshipping.com/sitemap.xml

@@ -3,7 +3,16 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
 
-$page_title = 'Submit a Tool';
+$canonical_url   = 'https://hdropshipping.com/submit.php';
+$page_title      = 'Submit a Dropshipping Tool — Get Listed on ' . SITE_NAME;
+$page_heading    = 'Submit a Tool';
+$page_subheading = 'List your ecommerce software, SaaS, or dropshipping platform in our vetted directory';
+$page_desc       = 'Submit your dropshipping tool, ecommerce app, or supplier platform to DropshippingStack. Reach thousands of active online store owners.';
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => 'Submit a Tool', 'url' => '/submit.php']
+];
 $flash = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

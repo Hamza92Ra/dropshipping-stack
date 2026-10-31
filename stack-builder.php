@@ -13,10 +13,16 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
-$page_title      = 'Build Your Dropshipping Stack — Personalized Software Stack';
+$canonical_url   = 'https://hdropshipping.com/stack-builder.php';
+$page_title      = 'Build Your Dropshipping Stack — Personalized Software Toolkit (' . date('Y') . ')';
 $page_heading    = 'Stack Builder';
 $page_subheading = 'Interactive configuration quiz to assemble your ideal toolkit';
-$page_desc       = 'Answer 3 quick questions and get a personalized dropshipping tool stack recommendation.';
+$page_desc       = 'Assemble your custom dropshipping software stack based on store vertical and monthly budget. Real pricing breakdown and recommended tool combinations.';
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => 'Stack Builder', 'url' => '/stack-builder.php']
+];
 
 include __DIR__ . '/header.php';
 ?>
@@ -682,7 +688,7 @@ function showResults() {
             </div>
             <div class="stack-card-right">
                 <div class="stack-card-price">${t.price}</div>
-                <a href="/go.php?slug=${t.slug}" class="btn-primary" target="_blank" rel="noopener" style="padding:6px 14px;font-size:12px">
+                <a href="/go/${t.slug}" class="btn-primary" target="_blank" rel="sponsored nofollow noopener" style="padding:6px 14px;font-size:12px">
                     <span>Visit</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
                 </a>

@@ -17,23 +17,138 @@ $more_pages  = ['calculator', 'submit', 'profile', 'login', 'register'];
 // Dynamic title and subtitle for top header
 $heading_title = $page_heading ?? ($page_title ?? 'Overview & Tools');
 $heading_sub   = $page_subheading ?? ($page_desc ?? 'Find, compare and optimize your dropshipping workflow');
+
+// SEO Configuration
+$site_name     = defined('SITE_NAME') ? SITE_NAME : 'DropshippingStack';
+$site_tagline  = defined('SITE_TAGLINE') ? SITE_TAGLINE : 'Every tool you need to start and scale your dropshipping store';
+$site_url      = defined('SITE_URL') && SITE_URL ? rtrim(SITE_URL, '/') : 'https://hdropshipping.com';
+
+// Construct clean, non-duplicate page title
+if (empty($page_title)) {
+    $meta_title = $site_name . ' — ' . $site_tagline;
+} elseif (strpos($page_title, $site_name) !== false) {
+    $meta_title = $page_title;
+} else {
+    $meta_title = $page_title . ' — ' . $site_name;
+}
+
+$meta_description = !empty($page_desc) ? $page_desc : $site_tagline;
+$robots_content   = !empty($noindex) ? 'noindex, follow' : ($meta_robots ?? 'index, follow');
+
+// Canonical URL determination
+if (!empty($canonical_url)) {
+    $page_canonical = $canonical_url;
+} else {
+    $req_path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    if ($req_path === '/index.php') {
+        $req_path = '/';
+    }
+    $page_canonical = $site_url . $req_path;
+}
+
+// Social sharing parameters
+$og_title_val = !empty($og_title) ? $og_title : $meta_title;
+$og_desc_val  = !empty($og_description) ? $og_description : $meta_description;
+$og_type_val  = !empty($og_type) ? $og_type : 'website';
+$og_img_val   = !empty($og_image)
+    ? (preg_match('#^https?://#i', $og_image) ? $og_image : $site_url . '/' . ltrim($og_image, '/'))
+    : ($site_url . '/assets/img/og-image.png');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title><?= e($page_title ?? SITE_NAME) ?> — <?= e(SITE_NAME) ?></title>
+    <title><?= e($meta_title) ?></title>
+    <meta name="description" content="<?= e($meta_description) ?>">
+    <meta name="robots" content="<?= e($robots_content) ?>">
+    <link rel="canonical" href="<?= e($page_canonical) ?>">
+
+    <!-- Color Scheme & Theme Color -->
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#F4F6F4">
-    <meta name="description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
-    <meta property="og:title" content="<?= e($page_title ?? SITE_NAME) ?>">
-    <meta property="og:description" content="<?= e($page_desc ?? SITE_TAGLINE) ?>">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="<?= SITE_URL . $_SERVER['REQUEST_URI'] ?>">
+
+    <!-- Open Graph (Facebook / LinkedIn) -->
+    <meta property="og:site_name" content="<?= e($site_name) ?>">
+    <meta property="og:type" content="<?= e($og_type_val) ?>">
+    <meta property="og:title" content="<?= e($og_title_val) ?>">
+    <meta property="og:description" content="<?= e($og_desc_val) ?>">
+    <meta property="og:url" content="<?= e($page_canonical) ?>">
+    <meta property="og:image" content="<?= e($og_img_val) ?>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="<?= e($og_title_val) ?>">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($og_title_val) ?>">
+    <meta name="twitter:description" content="<?= e($og_desc_val) ?>">
+    <meta name="twitter:image" content="<?= e($og_img_val) ?>">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
     <meta name="csrf-token" content="<?= csrf_token() ?>">
+
+    <!-- Structured Data (JSON-LD): WebSite, Organization, BreadcrumbList, Custom Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "<?= $site_url ?>/#website",
+          "url": "<?= $site_url ?>/",
+          "name": "<?= e($site_name) ?>",
+          "description": "<?= e($site_tagline) ?>",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "<?= $site_url ?>/search.php?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "<?= $site_url ?>/#organization",
+          "name": "<?= e($site_name) ?>",
+          "url": "<?= $site_url ?>/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "<?= $site_url ?>/assets/img/favicon.svg"
+          },
+          "sameAs": [
+            "https://www.instagram.com/hdro.pshipping/#",
+            "https://www.facebook.com/share/18ojiJyzhF/"
+          ]
+        }
+        <?php if (!empty($breadcrumb_items) && is_array($breadcrumb_items)): ?>
+        ,{
+          "@type": "BreadcrumbList",
+          "@id": "<?= e($page_canonical) ?>#breadcrumb",
+          "itemListElement": [
+            <?php
+            $bcCount = count($breadcrumb_items);
+            $bcIndex = 0;
+            foreach ($breadcrumb_items as $bc):
+                $bcIndex++;
+                $bcItemUrl = preg_match('#^https?://#i', $bc['url']) ? $bc['url'] : ($site_url . $bc['url']);
+            ?>
+            {
+              "@type": "ListItem",
+              "position": <?= $bcIndex ?>,
+              "name": <?= json_encode($bc['name'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
+              "item": "<?= e($bcItemUrl) ?>"
+            }<?= $bcIndex < $bcCount ? ',' : '' ?>
+            <?php endforeach; ?>
+          ]
+        }
+        <?php endif; ?>
+        <?php if (!empty($structured_data) && is_array($structured_data)): ?>
+        ,<?= json_encode($structured_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+        <?php endif; ?>
+      ]
+    }
+    </script>
 
     <!-- Anti-flash theme & Adaptive Lite detection script -->
     <script>
@@ -223,6 +338,17 @@ $heading_sub   = $page_subheading ?? ($page_desc ?? 'Find, compare and optimize 
                 <?= icon('plus', '', 18) ?>
                 <span>Submit a Tool</span>
             </a>
+            <?php if (!empty($cats)): ?>
+                <div style="margin:14px 0 6px;padding-top:12px;border-top:1px solid var(--border-subtle)">
+                    <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:0 8px">Browse Categories</span>
+                </div>
+                <?php foreach ($cats as $catNav): ?>
+                    <a href="/category/<?= e($catNav['slug']) ?>" class="mobile-sheet-link">
+                        <span style="font-size:16px;line-height:1;width:18px;display:inline-flex;justify-content:center"><?= e($catNav['icon'] ?? '📁') ?></span>
+                        <span><?= e($catNav['name']) ?></span>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
             <?php if ($logged_in): ?>
                 <a href="/logout.php" class="mobile-sheet-link mobile-sheet-link-danger">
                     <?= icon('log-out', '', 18) ?>
@@ -293,7 +419,7 @@ $heading_sub   = $page_subheading ?? ($page_desc ?? 'Find, compare and optimize 
 
             <!-- Left: Desktop Page Title + Muted Subtitle -->
             <div class="topbar-titles">
-                <h1 class="topbar-title"><?= e($heading_title) ?></h1>
+                <<?= !empty($topbar_is_h1) ? 'h1' : 'div' ?> class="topbar-title"<?= !empty($topbar_is_h1) ? '' : ' role="heading" aria-level="2"' ?>><?= e($heading_title) ?></<?= !empty($topbar_is_h1) ? 'h1' : 'div' ?>>
                 <p class="topbar-sub"><?= e($heading_sub) ?></p>
             </div>
 

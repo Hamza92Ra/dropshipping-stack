@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Show the reset form with hidden token field
 
 $page_title = 'Reset Password';
+$noindex    = true;
 include __DIR__ . '/header.php';
 ?>
 

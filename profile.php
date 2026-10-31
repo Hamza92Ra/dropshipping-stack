@@ -121,6 +121,7 @@ foreach ($roadmap_levels as $lvl) {
 $stack_tools = $stack ? json_decode($stack['tools_json'] ?? '[]', true) : [];
 
 $page_title = 'My Profile — ' . e($user['username']);
+$noindex    = true;
 
 include __DIR__ . '/header.php';
 ?>

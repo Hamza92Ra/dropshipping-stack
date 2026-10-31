@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title      = 'Create Account';
 $page_heading    = 'Registration';
 $page_subheading = 'Join dropshippers vetting software, calculating stacks, and tracking benchmarks';
+$noindex         = true;
 
 include __DIR__ . '/header.php';
 ?>

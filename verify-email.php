@@ -29,6 +29,7 @@ if (!$token) {
 }
 
 $page_title = 'Verify Email';
+$noindex    = true;
 include __DIR__ . '/header.php';
 ?>
 

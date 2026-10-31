@@ -11,10 +11,16 @@ if (isset($_SESSION['user_id'])) {
     $roadmap = $stmt->fetch();
 }
 
-$page_title      = 'Dropshipping Roadmap 2026 — Step by Step Guide';
+$canonical_url   = 'https://hdropshipping.com/roadmap.php';
+$page_title      = 'Dropshipping Roadmap ' . date('Y') . ' — Step by Step Execution Guide';
 $page_heading    = 'Growth Roadmap';
 $page_subheading = 'Structured step-by-step milestones to scale from zero to $50k+/month';
 $page_desc       = 'The complete dropshipping roadmap for beginners, intermediate and advanced sellers. Follow the exact steps to build a profitable store.';
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => 'Execution Roadmap', 'url' => '/roadmap.php']
+];
 
 include __DIR__ . '/header.php';
 ?>
@@ -496,7 +502,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Validate demand with product spy software</div>
                         <div class="step-desc">Review viral ad metrics, engagement velocity, and trending order volume before committing funds.</div>
-                        <a href="/go.php?slug=minea" class="step-tool step-free" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=minea" class="step-tool step-free" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('search', '', 12) ?> <span>Try Minea Free</span>
                         </a>
                     </div>
@@ -519,7 +525,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Deploy high-converting ecommerce storefront</div>
                         <div class="step-desc">Set up Shopify with a fast, modern clean theme. Ensure lightning-fast checkout and mobile responsiveness.</div>
-                        <a href="/go.php?slug=shopify" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=shopify" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('shopping-bag', '', 12) ?> <span>Start Shopify Free Trial</span>
                         </a>
                     </div>
@@ -556,7 +562,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Filter products with 3x margin potential</div>
                         <div class="step-desc">Calculate landed costs including shipping and ad spend to protect minimum 30% net margin.</div>
-                        <a href="/go.php?slug=sell-the-trend" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=sell-the-trend" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('search', '', 12) ?> <span>Browse Sell The Trend</span>
                         </a>
                     </div>
@@ -566,7 +572,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Connect fast dispatch fulfillment supplier</div>
                         <div class="step-desc">Integrate Zendrop or DSers for streamlined 1-click fulfillment and express delivery options.</div>
-                        <a href="/go.php?slug=zendrop" class="step-tool step-free" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=zendrop" class="step-tool step-free" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('package', '', 12) ?> <span>Test Zendrop Free</span>
                         </a>
                     </div>
@@ -603,7 +609,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Launch controlled creative ad testing</div>
                         <div class="step-desc">Deploy test budgets ($15-25/day) across 3 creative variations with AI-generated ad copy.</div>
-                        <a href="/go.php?slug=adcreative-ai" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=adcreative-ai" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('zap', '', 12) ?> <span>AdCreative.ai Tools</span>
                         </a>
                     </div>
@@ -613,7 +619,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Install real-time chat & objection handling</div>
                         <div class="step-desc">Engage hesitant checkout visitors and answer sizing and shipping queries instantly.</div>
-                        <a href="/go.php?slug=tidio" class="step-tool step-free" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=tidio" class="step-tool step-free" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('message-square', '', 12) ?> <span>Add Tidio Live Chat</span>
                         </a>
                     </div>
@@ -667,7 +673,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Track net profit and multi-touch attribution</div>
                         <div class="step-desc">Audit blended ROAS, payment fees, shipping costs, and customer acquisition cost across channels.</div>
-                        <a href="/go.php?slug=triple-whale" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=triple-whale" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('bar-chart-2', '', 12) ?> <span>Audit with Triple Whale</span>
                         </a>
                     </div>
@@ -677,7 +683,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Deploy photo social proof & video reviews</div>
                         <div class="step-desc">Incorporate UGC reviews and verified buyer badges to lift conversion rates by 25-40%.</div>
-                        <a href="/go.php?slug=loox" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=loox" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('star', '', 12) ?> <span>Integrate Loox Reviews</span>
                         </a>
                     </div>
@@ -699,7 +705,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Build core Klaviyo automated flows</div>
                         <div class="step-desc">Launch high-converting Abandoned Cart sequence, Welcome series, and Post-Purchase cross-sell flows.</div>
-                        <a href="/go.php?slug=klaviyo" class="step-tool step-free" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=klaviyo" class="step-tool step-free" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('mail', '', 12) ?> <span>Deploy Klaviyo Free</span>
                         </a>
                     </div>
@@ -709,7 +715,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Switch to automated fulfillment & fast domestic shipping</div>
                         <div class="step-desc">Move off basic AliExpress to domestic warehouse fulfillment via AutoDS or Spocket to lower delivery times.</div>
-                        <a href="/go.php?slug=autods" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=autods" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('settings', '', 12) ?> <span>Automate with AutoDS</span>
                         </a>
                     </div>
@@ -762,7 +768,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Enterprise Ad Attribution & Competitor Tracking</div>
                         <div class="step-desc">Deploy Northbeam or Triple Whale pixel server-side events, and uncover competitor creative trends with AdSpy.</div>
-                        <a href="/go.php?slug=adspy" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=adspy" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('search', '', 12) ?> <span>Spy with AdSpy</span>
                         </a>
                     </div>
@@ -772,7 +778,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Private Label Packaging & Bulk Logistics</div>
                         <div class="step-desc">Migrate from dropshipping to private label inventory with custom packaging and 3-5 day regional delivery.</div>
-                        <a href="/go.php?slug=spocket" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=spocket" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('package', '', 12) ?> <span>Private Label on Spocket</span>
                         </a>
                     </div>
@@ -782,7 +788,7 @@ include __DIR__ . '/header.php';
                     <div class="step-body">
                         <div class="step-title">Automate customer service desk with Gorgias</div>
                         <div class="step-desc">Free up 15+ hours weekly by integrating multi-channel support tickets, order lookups, and auto-macros.</div>
-                        <a href="/go.php?slug=gorgias" class="step-tool" target="_blank" rel="noopener">
+                        <a href="/go.php?slug=gorgias" class="step-tool" target="_blank" rel="sponsored nofollow noopener">
                             <?= icon('message-square', '', 12) ?> <span>Configure Gorgias</span>
                         </a>
                     </div>
@@ -794,7 +800,7 @@ include __DIR__ . '/header.php';
 
     <!-- Roadmap Navigation CTA -->
     <div class="roadmap-cta-card">
-        <h3>Ready to Configure Your Infrastructure?</h3>
+        <h2>Ready to Configure Your Infrastructure?</h2>
         <p>Use our interactive tools to assemble, price, and compare your custom store stack.</p>
         <div class="roadmap-cta-btns">
             <a href="/stack-builder.php" class="btn-primary" style="padding:11px 22px">

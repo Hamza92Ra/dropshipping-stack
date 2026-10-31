@@ -21,14 +21,30 @@ if ($slug1 && $slug2) {
 // All tools for the selector
 $all_tools = $pdo->query("SELECT name, slug FROM tools WHERE is_active=1 ORDER BY name")->fetchAll();
 
-$page_title      = $tool1 && $tool2
-    ? $tool1['name'] . ' vs ' . $tool2['name'] . ' — Side by Side Comparison'
+$is_comparing    = !empty($tool1) && !empty($tool2);
+$canonical_url   = $is_comparing
+    ? 'https://hdropshipping.com/compare.php?a=' . urlencode($tool1['slug']) . '&b=' . urlencode($tool2['slug'])
+    : 'https://hdropshipping.com/compare.php';
+
+$page_title      = $is_comparing
+    ? $tool1['name'] . ' vs ' . $tool2['name'] . ' — Side-by-Side Dropshipping Software Comparison'
     : 'Compare Dropshipping Tools Side-by-Side';
-$page_heading    = $tool1 && $tool2 ? e($tool1['name']) . ' vs ' . e($tool2['name']) : 'Compare Tools';
+$page_heading    = $is_comparing ? $tool1['name'] . ' vs ' . $tool2['name'] : 'Compare Tools';
 $page_subheading = 'Detailed side-by-side feature, pricing, and pros/cons analysis';
-$page_desc       = $tool1 && $tool2
-    ? 'Side-by-side comparison of ' . $tool1['name'] . ' and ' . $tool2['name'] . ' — features, pricing, pros and cons.'
-    : 'Compare the best dropshipping tools side by side.';
+$page_desc       = $is_comparing
+    ? 'In-depth comparison of ' . $tool1['name'] . ' vs ' . $tool2['name'] . '. Compare features, pricing, pros and cons to pick the best tool for your store.'
+    : 'Compare top dropshipping tools side by side: features, pricing tiers, ratings, and pros & cons.';
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => 'Compare Tools', 'url' => '/compare.php']
+];
+if ($is_comparing) {
+    $breadcrumb_items[] = [
+        'name' => $tool1['name'] . ' vs ' . $tool2['name'],
+        'url' => '/compare.php?a=' . urlencode($tool1['slug']) . '&b=' . urlencode($tool2['slug'])
+    ];
+}
 
 include __DIR__ . '/header.php';
 
@@ -562,10 +578,10 @@ $popular = [
         <!-- Pros and Cons Side-by-Side -->
         <div class="verdict-grid">
             <div class="verdict-card">
-                <h3>
+                <h2>
                     <?= icon('package', '', 18) ?>
                     <span><?= e($tool1['name']) ?> Highlights</span>
-                </h3>
+                </h2>
                 <?php foreach (array_slice($pros1, 0, 4) as $p): ?>
                     <div class="verdict-item">
                         <span class="verdict-icon pro"><?= icon('check', '', 15) ?></span>
@@ -581,10 +597,10 @@ $popular = [
             </div>
 
             <div class="verdict-card">
-                <h3>
+                <h2>
                     <?= icon('package', '', 18) ?>
                     <span><?= e($tool2['name']) ?> Highlights</span>
-                </h3>
+                </h2>
                 <?php foreach (array_slice($pros2, 0, 4) as $p): ?>
                     <div class="verdict-item">
                         <span class="verdict-icon pro"><?= icon('check', '', 15) ?></span>
@@ -605,7 +621,7 @@ $popular = [
             <div class="cta-tool">
                 <div class="cta-tool-name"><?= e($tool1['name']) ?></div>
                 <div class="cta-tool-price"><?= e($price1) ?></div>
-                <a href="/go.php?slug=<?= e($tool1['slug']) ?>" class="btn-primary" target="_blank" rel="noopener noreferrer" style="margin:0 auto;display:inline-flex;padding:10px 24px">
+                <a href="/go/<?= e($tool1['slug']) ?>" class="btn-primary" target="_blank" rel="sponsored nofollow noopener" style="margin:0 auto;display:inline-flex;padding:10px 24px">
                     <span>Try <?= e($tool1['name']) ?></span>
                     <?= icon('arrow-up-right', '', 14) ?>
                 </a>
@@ -614,7 +630,7 @@ $popular = [
             <div class="cta-tool">
                 <div class="cta-tool-name"><?= e($tool2['name']) ?></div>
                 <div class="cta-tool-price"><?= e($price2) ?></div>
-                <a href="/go.php?slug=<?= e($tool2['slug']) ?>" class="btn-primary" target="_blank" rel="noopener noreferrer" style="margin:0 auto;display:inline-flex;padding:10px 24px">
+                <a href="/go/<?= e($tool2['slug']) ?>" class="btn-primary" target="_blank" rel="sponsored nofollow noopener" style="margin:0 auto;display:inline-flex;padding:10px 24px">
                     <span>Try <?= e($tool2['name']) ?></span>
                     <?= icon('arrow-up-right', '', 14) ?>
                 </a>

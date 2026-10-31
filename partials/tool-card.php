@@ -47,7 +47,7 @@ if (isset($user_upvoted_tool_ids) && is_array($user_upvoted_tool_ids)) {
         <div class="tool-logo">
             <img src="<?= e(tool_logo_url($t)) ?>"
                  srcset="<?= e(tool_logo_srcset($t)) ?>"
-                 alt="<?= e($t['name']) ?>"
+                 alt="<?= e($t['name']) ?> dropshipping software logo"
                  class="skeleton-img"
                  width="44"
                  height="44"
@@ -99,14 +99,14 @@ if (isset($user_upvoted_tool_ids) && is_array($user_upvoted_tool_ids)) {
             <span class="upvote-count"><?= (int)($t['upvotes'] ?? 0) ?></span>
         </button>
 
-        <a href="/tool/index.php?slug=<?= e($t['slug']) ?>" class="btn-secondary">
+        <a href="/tool/<?= e($t['slug']) ?>" class="btn-secondary">
             Review
         </a>
 
-        <a href="/go.php?slug=<?= e($t['slug']) ?>"
+        <a href="/go/<?= e($t['slug']) ?>"
            class="btn-primary"
            target="_blank"
-           rel="noopener noreferrer"
+           rel="sponsored nofollow noopener"
            aria-label="Visit <?= e($t['name']) ?>">
             <span>Visit Site</span>
             <?= icon('arrow-up-right', '', 14) ?>

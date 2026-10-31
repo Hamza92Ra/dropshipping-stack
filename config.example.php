@@ -15,8 +15,8 @@ if (session_status() === PHP_SESSION_NONE) {
 // ── Site Settings ─────────────────────────
 @define('SITE_NAME', 'DropshippingStack');
 @define('SITE_TAGLINE', 'Every tool you need to start and scale your dropshipping store');
-@define('SITE_URL', ''); // need to add my domain name   
-@define('SITE_EMAIL', '');
+@define('SITE_URL', 'https://hdropshipping.com');
+@define('SITE_EMAIL', 'contact@hdropshipping.com');
 // ── Mail Settings ─────────────────────────
 @define('MAIL_HOST',     'smtp.gmail.com');
 @define('MAIL_PORT',     587);

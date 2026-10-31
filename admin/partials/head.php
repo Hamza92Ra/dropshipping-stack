@@ -25,6 +25,6 @@
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/mobile.css">
     <script src="/assets/js/theme.js" defer></script>
-    <meta name="robots" content="noindex">
+    <meta name="robots" content="noindex, nofollow">
 </head>
 <body>

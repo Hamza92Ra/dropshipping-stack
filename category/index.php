@@ -11,7 +11,8 @@ $cat = $cat->fetch();
 
 if (!$cat) {
     http_response_code(404);
-    die('Category not found.');
+    include __DIR__ . '/../404.php';
+    exit;
 }
 
 $tools = cache_remember('category_tools_' . $slug, 300, function() use ($pdo, $cat) {
@@ -38,14 +39,47 @@ if (session_status() === PHP_SESSION_ACTIVE) {
     session_write_close();
 }
 
-$page_title       = $cat['name'] . ' Dropshipping Tools — Best ' . $cat['name'] . ' Software';
-$page_heading     = e($cat['name']);
-$page_subheading  = e($cat['description']);
-$page_desc        = $cat['description'];
-$active_cat       = $cat['slug'];
+$canonical_url   = 'https://hdropshipping.com/category/' . $cat['slug'];
+$page_title      = 'Best ' . $cat['name'] . ' Tools & Software (' . date('Y') . ')';
+$page_heading    = $cat['name'] . ' Tools';
+$page_subheading = $cat['description'];
+$page_desc       = 'Explore the top ' . $cat['name'] . ' dropshipping tools and software platforms. ' . ($cat['description'] ?? '');
+$og_title        = $page_title . ' — ' . SITE_NAME;
+$og_description  = $page_desc;
+$active_cat      = $cat['slug'];
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => $cat['name'], 'url' => '/category/' . $cat['slug']]
+];
+
+$structured_data = [
+    '@type' => 'CollectionPage',
+    'name' => $page_title,
+    'description' => $page_desc,
+    'url' => $canonical_url
+];
 
 include __DIR__ . '/../header.php';
 ?>
+
+<!-- Breadcrumbs -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb" style="margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+    <a href="/index.php" style="color:var(--muted)">Home</a>
+    <?= icon('chevron-right', '', 12) ?>
+    <span style="color:var(--text);font-weight:600"><?= e($cat['name']) ?></span>
+</nav>
+
+<!-- Category Page H1 Heading -->
+<div class="category-header-banner" style="margin-bottom:20px">
+    <h1 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:6px">
+        <span><?= e($cat['icon'] ?? '📁') ?></span>
+        <span>Best <?= e($cat['name']) ?> Dropshipping Tools</span>
+    </h1>
+    <p style="color:var(--muted);font-size:14px;max-width:680px;line-height:1.55;margin:0">
+        <?= e($cat['description']) ?>
+    </p>
+</div>
 
 <!-- Category Filter Pills -->
 <div class="category-pills-bar" role="navigation" aria-label="Categories">
@@ -54,7 +88,7 @@ include __DIR__ . '/../header.php';
         <span>All Tools</span>
     </a>
     <?php foreach ($cats as $c): ?>
-        <a href="/category/index.php?slug=<?= e($c['slug']) ?>" class="cat-pill <?= $c['slug'] === $active_cat ? 'active-pill' : '' ?>">
+        <a href="/category/<?= e($c['slug']) ?>" class="cat-pill <?= $c['slug'] === $active_cat ? 'active-pill' : '' ?>">
             <span><?= e($c['name']) ?></span>
         </a>
     <?php endforeach; ?>

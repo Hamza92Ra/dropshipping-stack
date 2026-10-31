@@ -38,12 +38,12 @@ if ($logged_in) {
     $recommended_tools = $stack_info['recommended'];
     $my_reviews_count  = $stack_info['reviews_count'];
 } else {
+    $canonical_url   = 'https://hdropshipping.com/';
     $page_title      = 'DropshippingStack — Vetted Dropshipping Software Directory';
     $page_heading    = 'Overview & Dashboard';
     $page_subheading = 'Track, compare and assemble the highest ROI software stack for your store.';
+    $page_desc       = 'Explore the curated directory of vetted dropshipping software tools, profit calculators, and execution roadmaps. Compare Shopify, WooCommerce, Minea, Zendrop and more.';
 }
-
-$page_desc = SITE_TAGLINE;
 
 // ── Real Global Statistics (Cached 5 min with Safe DB Fallback) ───────────
 $global_stats = cache_remember('global_stats', 300, function() use ($pdo) {
@@ -261,7 +261,8 @@ include __DIR__ . '/header.php';
                             <div class="my-stack-row-left">
                                 <div class="my-stack-logo">
                                     <img src="<?= e(tool_logo_url($tool)) ?>"
-                                         alt="<?= e($tool['name']) ?>"
+                                         srcset="<?= e(tool_logo_srcset($tool)) ?>"
+                                         alt="<?= e($tool['name']) ?> logo"
                                          class="skeleton-img"
                                          width="40"
                                          height="40"
@@ -326,7 +327,8 @@ include __DIR__ . '/header.php';
                         <div class="my-stack-row-left">
                             <div class="my-stack-logo">
                                 <img src="<?= e(tool_logo_url($rec)) ?>"
-                                     alt="<?= e($rec['name']) ?>"
+                                     srcset="<?= e(tool_logo_srcset($rec)) ?>"
+                                     alt="<?= e($rec['name']) ?> logo"
                                      class="skeleton-img"
                                      width="40"
                                      height="40"
@@ -363,6 +365,16 @@ include __DIR__ . '/header.php';
          Real data only: tools, categories, upvotes, pricing.
          No fake delta pills, no fake sparklines, no hardcoded numbers.
          ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Primary H1 Hero Heading for SEO and Crawlers -->
+    <div class="homepage-hero-heading" style="margin-bottom:24px">
+        <h1 style="font-size:28px;font-weight:800;letter-spacing:-0.025em;color:var(--text);margin-bottom:8px;line-height:1.25">
+            Curated Dropshipping Software Stack &amp; Profit Toolkit
+        </h1>
+        <p style="font-size:15px;color:var(--muted);max-width:720px;line-height:1.55;margin:0">
+            Track, compare, and assemble the highest-ROI software stack for your store. Real pricing benchmarks, vetted tools, and honest merchant feedback.
+        </p>
+    </div>
 
     <!-- Real Stats Grid (Compact 2x2 on Mobile) -->
     <section class="stats-grid" aria-label="Key Performance Indicators">
@@ -472,11 +484,12 @@ include __DIR__ . '/header.php';
                     $dt_domain = !empty($dt['website_url']) ? parse_url($dt['website_url'], PHP_URL_HOST) : '';
                     $dt_rating = (float)($dt['rating'] ?? 0);
                 ?>
-                    <a href="/tool/index.php?slug=<?= e($dt['slug']) ?>" class="deck-item">
+                    <a href="/tool/<?= e($dt['slug']) ?>" class="deck-item">
                         <div class="deck-tool-left">
                             <div class="deck-tool-logo">
                                 <img src="<?= e(tool_logo_url($dt)) ?>"
-                                     alt="<?= e($dt['name']) ?>"
+                                     srcset="<?= e(tool_logo_srcset($dt)) ?>"
+                                     alt="<?= e($dt['name']) ?> logo"
                                      class="skeleton-img"
                                      width="36"
                                      height="36"

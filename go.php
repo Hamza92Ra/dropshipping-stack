@@ -20,6 +20,7 @@ $pdo->prepare("INSERT INTO clicks (tool_id, ip_hash) VALUES (?,?)")->execute([$t
 $pdo->prepare("UPDATE tools SET clicks = clicks + 1 WHERE id = ?")->execute([$tool['id']]);
 
 // Redirect to affiliate link (prefer affiliate_link over website_url)
+header("X-Robots-Tag: noindex, nofollow", true);
 $url = $tool['affiliate_link'] ?: $tool['website_url'];
 header("Location: $url");
 exit;

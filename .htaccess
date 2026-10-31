@@ -2,17 +2,60 @@ Options -Indexes
 
 RewriteEngine On
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. GOOGLE VERIFICATION & SITEMAP SPECIAL HEADERS
+# ─────────────────────────────────────────────────────────────────────────────
+<Files "googlee71d85bbb3e57211.html">
+    Require all granted
+    ForceType text/plain
+    Header set Content-Type "text/plain; charset=utf-8"
+</Files>
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. CANONICAL REDIRECTS (HTTPS & non-www)
+# ─────────────────────────────────────────────────────────────────────────────
+# Force HTTPS (supports direct Apache, reverse proxies, and Cloudflare)
+RewriteCond %{HTTP:X-Forwarded-Proto} =http [OR]
+RewriteCond %{HTTP:CF-Visitor} '"scheme":"http"' [OR]
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} =""
+RewriteRule ^ https://hdropshipping.com%{REQUEST_URI} [L,R=301]
+
+# Force non-www canonical host
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. LEGACY / QUERY-STRING 301 REDIRECTS
+# ─────────────────────────────────────────────────────────────────────────────
+# /politique.php -> /privacy.php
+RewriteRule ^politique\.php$ /privacy.php [L,R=301]
+
+# /tool/index.php?slug=xxx -> /tool/xxx
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s+/tool/index\.php\?slug=([a-z0-9-]+) [NC]
+RewriteRule ^ /tool/%1? [L,R=301]
+
+# /category/index.php?slug=xxx -> /category/xxx
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s+/category/index\.php\?slug=([a-z0-9-]+) [NC]
+RewriteRule ^ /category/%1? [L,R=301]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. CLEAN ROUTING & REWRITES
+# ─────────────────────────────────────────────────────────────────────────────
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
-
 RewriteRule ^tool/([a-z0-9-]+)/?$ /tool/index.php?slug=$1 [L,QSA]
-
 RewriteRule ^category/([a-z0-9-]+)/?$ /category/index.php?slug=$1 [L,QSA]
-
 RewriteRule ^go/([a-z0-9-]+)/?$ /go.php?slug=$1 [L,QSA]
 
-<Files "config.php">
+# Custom 404 Error Document
+ErrorDocument 404 /404.php
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. SECURITY: PROTECT SENSITIVE FILES
+# ─────────────────────────────────────────────────────────────────────────────
+<FilesMatch "^(\.env|\.git|config\.php|dropshipping_stack\.sql)">
     Require all denied
-</Files>
+</FilesMatch>
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PERFORMANCE OPTIMIZATIONS (Gzip Compression & Browser Caching)
@@ -53,8 +96,10 @@ RewriteRule ^go/([a-z0-9-]+)/?$ /go.php?slug=$1 [L,QSA]
     ExpiresActive On
     ExpiresDefault "access plus 1 month"
 
-    # HTML: no-cache (always dynamic and fresh)
+    # HTML & XML: fresh
     ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType text/xml "access plus 0 seconds"
+    ExpiresByType application/xml "access plus 0 seconds"
 
     # CSS & JavaScript: 1 month (uses ?v= cache-busting query strings)
     ExpiresByType text/css "access plus 1 month"
@@ -84,11 +129,10 @@ RewriteRule ^go/([a-z0-9-]+)/?$ /go.php?slug=$1 [L,QSA]
 
 # 3. HTTP Headers & Cache-Control via mod_headers
 <IfModule mod_headers.c>
-    # HTML: no-cache
+    # Dynamic Pages: revalidate
     <FilesMatch "\.(php|html|htm)$">
-        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Cache-Control "no-cache, must-revalidate"
         Header set Pragma "no-cache"
-        Header set Expires 0
     </FilesMatch>
 
     # CSS & JS: public cache 1 month (2592000s)

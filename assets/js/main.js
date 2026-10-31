@@ -1006,7 +1006,7 @@ function clearMobileSearch() {
                     let html = '<div class="mobile-search-group-title">Verified Tools</div>';
                     list.slice(0, 6).forEach(t => {
                         html += `
-                            <a href="/tool/index.php?slug=${encodeURIComponent(t.slug)}" class="mobile-search-item">
+                            <a href="/tool/${encodeURIComponent(t.slug)}" class="mobile-search-item">
                                 <div class="mobile-search-item-info">
                                     <strong class="mobile-search-item-name">${escapeHtml(t.name)}</strong>
                                     <span class="mobile-search-item-tagline">${escapeHtml(t.tagline || '')}</span>

@@ -3,10 +3,16 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
 
-$page_title      = 'Dropshipping Cost & Profit Calculator';
+$canonical_url   = 'https://hdropshipping.com/calculator.php';
+$page_title      = 'Dropshipping Profit & Cost Calculator (' . date('Y') . ')';
 $page_heading    = 'Profit & Cost Calculator';
 $page_subheading = 'Model your store revenue, ad spend, and SaaS tool expenses with real margins';
-$page_desc       = 'Enter your monthly revenue and see exactly how much each dropshipping tool costs vs how much you will probably make.';
+$page_desc       = 'Free dropshipping profit calculator. Enter monthly revenue, margins, and ad spend to model real take-home net profit after software subscriptions.';
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => 'Profit Calculator', 'url' => '/calculator.php']
+];
 
 // Load saved settings if logged in
 $saved = null;
@@ -110,7 +116,7 @@ include __DIR__ . '/header.php';
     top: 90px;
 }
 
-.calc-inputs h3 {
+.calc-inputs h2, .calc-inputs h3 {
     font-size: 16px;
     font-weight: 800;
     color: var(--text);
@@ -479,7 +485,7 @@ include __DIR__ . '/header.php';
     <div class="calc-grid">
         <!-- Inputs Card -->
         <div class="calc-inputs">
-            <h3>Configuration Parameters</h3>
+            <h2>Configuration Parameters</h2>
 
             <div class="input-group">
                 <label for="revenue">Monthly Gross Revenue</label>

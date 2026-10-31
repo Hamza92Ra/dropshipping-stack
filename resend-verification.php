@@ -28,6 +28,7 @@ if ($email) {
 }
 
 $page_title = 'Resend Verification';
+$noindex    = true;
 include __DIR__ . '/header.php';
 ?>
 

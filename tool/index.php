@@ -16,7 +16,8 @@ $t = $tool->fetch();
 
 if (!$t) {
     http_response_code(404);
-    die('Tool not found.');
+    include __DIR__ . '/../404.php';
+    exit;
 }
 
 // Reviews
@@ -83,10 +84,55 @@ $cons = json_decode($t['cons'] ?? '[]', true) ?: [];
 $round_rating = (int)round((float)$t['rating']);
 $domain = !empty($t['website_url']) ? parse_url($t['website_url'], PHP_URL_HOST) : '';
 
-$page_title      = $t['name'] . ' In-Depth Review (' . date('Y') . ') — ' . SITE_NAME;
-$page_heading    = e($t['name']);
-$page_subheading = e($t['tagline']);
-$page_desc       = $t['tagline'];
+$canonical_url   = 'https://hdropshipping.com/tool/' . $t['slug'];
+$page_title      = $t['name'] . ' In-Depth Review & Pricing (' . date('Y') . ')';
+$page_heading    = $t['name'];
+$page_subheading = $t['tagline'];
+$page_desc       = !empty($t['description']) ? mb_substr(strip_tags($t['description']), 0, 155) . '...' : ($t['tagline'] ?? '');
+$og_type         = 'product';
+$og_title        = $page_title . ' — ' . SITE_NAME;
+$og_description  = $page_desc;
+$og_image        = tool_logo_url($t);
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => $t['cat_name'] ?? 'Categories', 'url' => '/category/' . ($t['cat_slug'] ?? '')],
+    ['name' => $t['name'], 'url' => '/tool/' . $t['slug']]
+];
+
+// Structured Data (JSON-LD Product)
+$clean_logo = tool_logo_url($t);
+$full_logo_url = preg_match('#^https?://#i', $clean_logo) ? $clean_logo : (rtrim(SITE_URL, '/') . $clean_logo);
+$price_val = number_format((float)($t['price_from'] ?? 0), 2, '.', '');
+
+$structured_data = [
+    '@type' => 'Product',
+    'name' => $t['name'],
+    'image' => $full_logo_url,
+    'description' => strip_tags($t['description'] ?: $t['tagline']),
+    'brand' => [
+        '@type' => 'Brand',
+        'name' => $t['name']
+    ],
+    'category' => $t['cat_name'] ?? 'Dropshipping Software',
+    'offers' => [
+        '@type' => 'Offer',
+        'price' => $price_val,
+        'priceCurrency' => 'USD',
+        'availability' => 'https://schema.org/InStock',
+        'url' => 'https://hdropshipping.com/tool/' . $t['slug']
+    ]
+];
+
+if (!empty($t['review_count']) && (int)$t['review_count'] > 0 && (float)$t['rating'] > 0) {
+    $structured_data['aggregateRating'] = [
+        '@type' => 'AggregateRating',
+        'ratingValue' => number_format((float)$t['rating'], 1, '.', ''),
+        'reviewCount' => (int)$t['review_count'],
+        'bestRating' => '5',
+        'worstRating' => '1'
+    ];
+}
 
 // Release session lock early if not posting
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && session_status() === PHP_SESSION_ACTIVE) {
@@ -196,7 +242,7 @@ include __DIR__ . '/../header.php';
     margin-bottom: 24px;
 }
 
-.detail-card h3 {
+.detail-card h2, .detail-card h3 {
     font-size: 18px;
     font-weight: 800;
     color: var(--text);
@@ -227,7 +273,7 @@ include __DIR__ . '/../header.php';
     padding: 20px;
 }
 
-.pros-box h4 {
+.pros-box h3, .pros-box h4 {
     font-size: 13.5px;
     font-weight: 700;
     color: var(--positive-text);
@@ -237,7 +283,7 @@ include __DIR__ . '/../header.php';
     gap: 6px;
 }
 
-.cons-box h4 {
+.cons-box h3, .cons-box h4 {
     font-size: 13.5px;
     font-weight: 700;
     color: var(--negative-text);
@@ -331,7 +377,7 @@ include __DIR__ . '/../header.php';
     box-shadow: var(--shadow-sm);
 }
 
-.sidebar-facts-card h4 {
+.sidebar-facts-card h3, .sidebar-facts-card h4 {
     font-size: 12.5px;
     font-weight: 700;
     text-transform: uppercase;
@@ -491,7 +537,7 @@ include __DIR__ . '/../header.php';
         <nav class="breadcrumb-nav" aria-label="Breadcrumb">
             <a href="/index.php">Home</a>
             <?= icon('chevron-right', '', 12) ?>
-            <a href="/category/index.php?slug=<?= e($t['cat_slug']) ?>"><?= e($t['cat_name'] ?? 'Software') ?></a>
+            <a href="/category/<?= e($t['cat_slug']) ?>"><?= e($t['cat_name'] ?? 'Software') ?></a>
             <?= icon('chevron-right', '', 12) ?>
             <span style="color:var(--text);font-weight:600"><?= e($t['name']) ?></span>
         </nav>
@@ -500,7 +546,8 @@ include __DIR__ . '/../header.php';
         <div class="tool-hero-card">
             <div class="tool-hero-logo">
                 <img src="<?= e(tool_logo_url($t)) ?>"
-                     alt="<?= e($t['name']) ?>"
+                     srcset="<?= e(tool_logo_srcset($t)) ?>"
+                     alt="<?= e($t['name']) ?> dropshipping software logo"
                      class="skeleton-img"
                      width="64"
                      height="64"
@@ -554,10 +601,10 @@ include __DIR__ . '/../header.php';
         <div class="detail-section-group" id="detailSectionOverview">
             <!-- Description Card -->
             <div class="detail-card">
-                <h3>
+                <h2>
                     <?= icon('info', '', 18) ?>
                     <span>Overview & Capabilities</span>
-                </h3>
+                </h2>
                 <div class="detail-desc-text">
                     <?= nl2br(e($t['description'])) ?>
                 </div>
@@ -566,17 +613,17 @@ include __DIR__ . '/../header.php';
             <!-- Pros & Cons -->
             <?php if (!empty($pros) || !empty($cons)): ?>
                 <div class="detail-card">
-                    <h3>
+                    <h2>
                         <?= icon('scale', '', 18) ?>
                         <span>Pros & Cons Analysis</span>
-                    </h3>
+                    </h2>
                     <div class="pros-cons-grid">
                         <?php if (!empty($pros)): ?>
                             <div class="pros-box">
-                                <h4>
+                                <h3>
                                     <?= icon('check-circle', '', 16) ?>
                                     <span>Strengths</span>
-                                </h4>
+                                </h3>
                                 <ul class="pros-cons-list">
                                     <?php foreach ($pros as $p): ?>
                                         <li>
@@ -590,10 +637,10 @@ include __DIR__ . '/../header.php';
 
                         <?php if (!empty($cons)): ?>
                             <div class="cons-box">
-                                <h4>
+                                <h3>
                                     <?= icon('x', '', 16) ?>
                                     <span>Limitations</span>
-                                </h4>
+                                </h3>
                                 <ul class="pros-cons-list">
                                     <?php foreach ($cons as $c): ?>
                                         <li>
@@ -612,10 +659,10 @@ include __DIR__ . '/../header.php';
         <!-- Section Group: Pricing & Facts (Mobile Mirror) -->
         <div class="detail-section-group mobile-hidden" id="detailSectionPricingMobile">
             <div class="detail-card">
-                <h3>
+                <h2>
                     <?= icon('dollar-sign', '', 18) ?>
                     <span>Software Benchmark Facts</span>
-                </h3>
+                </h2>
                 <div class="facts-row">
                     <span class="facts-key">Category</span>
                     <span class="facts-val"><?= e($t['cat_name'] ?? 'General') ?></span>
@@ -650,10 +697,10 @@ include __DIR__ . '/../header.php';
         <!-- Section Group: Reviews -->
         <div class="detail-section-group" id="detailSectionReviews">
             <div class="detail-card">
-                <h3>
+                <h2>
                     <?= icon('message-square', '', 18) ?>
                     <span>User Reviews (<?= count($reviews) ?>)</span>
-                </h3>
+                </h2>
 
                 <?= $flash ?>
 
@@ -682,7 +729,7 @@ include __DIR__ . '/../header.php';
 
                 <!-- Leave a Review Form -->
                 <div style="margin-top:28px;padding-top:24px;border-top:1px solid var(--border-subtle)">
-                    <h4 style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:14px">Submit a Review</h4>
+                    <h3 style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:14px">Submit a Review</h3>
                     <form method="POST">
                         <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                         <input type="hidden" name="submit_review" value="1">
@@ -717,9 +764,9 @@ include __DIR__ . '/../header.php';
     <!-- Right Sidebar (Desktop) -->
     <aside class="tool-sidebar-panel" id="toolSidebarPanel">
         <div class="sidebar-cta-card">
-            <h3><?= e($t['name']) ?></h3>
+            <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px"><?= e($t['name']) ?></div>
             <p>Visit the official site to explore plans or start a trial.</p>
-            <a href="/go.php?slug=<?= e($t['slug']) ?>" class="btn-primary" target="_blank" rel="noopener noreferrer" style="width:100%;padding:12px;font-size:14px">
+            <a href="/go/<?= e($t['slug']) ?>" class="btn-primary" target="_blank" rel="sponsored nofollow noopener" style="width:100%;padding:12px;font-size:14px">
                 <span>Visit <?= e($t['name']) ?></span>
                 <?= icon('arrow-up-right', '', 15) ?>
             </a>
@@ -732,7 +779,7 @@ include __DIR__ . '/../header.php';
         </div>
 
         <div class="sidebar-facts-card">
-            <h4>Software Benchmark Facts</h4>
+            <h3>Software Benchmark Facts</h3>
             <div class="facts-row">
                 <span class="facts-key">Category</span>
                 <span class="facts-val"><?= e($t['cat_name'] ?? 'General') ?></span>
@@ -764,7 +811,7 @@ include __DIR__ . '/../header.php';
         </div>
 
         <div class="sidebar-facts-card" style="font-size:12px;color:var(--muted);line-height:1.55">
-            <h4 style="margin-bottom:8px">Affiliate Disclosure</h4>
+            <h3 style="margin-bottom:8px">Affiliate Disclosure</h3>
             <p>We may receive compensation when you click on links and subscribe to software products. This helps support our independent directory vetting process at zero cost to you.</p>
         </div>
     </aside>
@@ -777,7 +824,7 @@ include __DIR__ . '/../header.php';
         <span class="mobile-sticky-tool-name"><?= e($t['name']) ?></span>
         <span class="mobile-sticky-tool-price"><?= (float)$t['price_from'] > 0 ? '$' . number_format((float)$t['price_from'], 0) . '/mo' : ucfirst($t['price_type']) ?></span>
     </div>
-    <a href="/go.php?slug=<?= e($t['slug']) ?>" class="mobile-sticky-visit-btn" target="_blank" rel="noopener noreferrer">
+    <a href="/go/<?= e($t['slug']) ?>" class="mobile-sticky-visit-btn" target="_blank" rel="sponsored nofollow noopener">
         <span>Visit Site</span>
         <?= icon('arrow-up-right', '', 14) ?>
     </a>
@@ -814,7 +861,6 @@ window.addEventListener('resize', () => {
     }
 });
 
-<script>
 // Star picker logic
 document.querySelectorAll('.star-btn').forEach(btn => {
     btn.addEventListener('click', function() {

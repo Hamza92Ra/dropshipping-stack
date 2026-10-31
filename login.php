@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title      = 'Sign In';
 $page_heading    = 'Account Authentication';
 $page_subheading = 'Access your saved stack, preferences, and community votes';
+$noindex         = true;
 
 include __DIR__ . '/header.php';
 ?>

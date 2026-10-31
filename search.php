@@ -5,6 +5,7 @@ require_once __DIR__ . '/functions.php';
 
 $q = trim($_GET['q'] ?? '');
 $page_title = $q ? 'Search: ' . $q : 'Search Tools';
+$noindex    = true;
 $results    = [];
 
 if (strlen($q) >= 2) {

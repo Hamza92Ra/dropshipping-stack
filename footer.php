@@ -66,16 +66,26 @@ require_once __DIR__ . '/functions.php';
                     </p>
                 </div>
 
-                <!-- Link Columns (Tools, Compare, Roadmap, Calculator, Legal) -->
+                <!-- Link Columns (Tools, Categories, Compare & Roadmap, Calculator, Legal) -->
                 <div class="footer-links-grid">
                     <div class="footer-col">
-                        <h4 class="footer-col-title">Tools</h4>
-                        <a href="/tool/index.php?slug=shopify">Shopify</a>
-                        <a href="/tool/index.php?slug=minea">Minea</a>
-                        <a href="/tool/index.php?slug=zendrop">Zendrop</a>
-                        <a href="/tool/index.php?slug=klaviyo">Klaviyo</a>
-                        <a href="/tool/index.php?slug=triple-whale">Triple Whale</a>
-                        <a href="/index.php">All 20+ Tools</a>
+                        <h4 class="footer-col-title">Top Tools</h4>
+                        <a href="/tool/shopify">Shopify Review</a>
+                        <a href="/tool/minea">Minea Review</a>
+                        <a href="/tool/zendrop">Zendrop Review</a>
+                        <a href="/tool/klaviyo">Klaviyo Review</a>
+                        <a href="/tool/triple-whale">Triple Whale Review</a>
+                        <a href="/index.php">All 20+ Curated Tools</a>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">Categories</h4>
+                        <a href="/category/store-builders">Store Builders</a>
+                        <a href="/category/product-research">Product Research</a>
+                        <a href="/category/suppliers">Sourcing &amp; Suppliers</a>
+                        <a href="/category/marketing">Email &amp; Ad Marketing</a>
+                        <a href="/category/analytics">Store Analytics</a>
+                        <a href="/category/automation">Fulfillment Automation</a>
                     </div>
 
                     <div class="footer-col">
@@ -88,18 +98,12 @@ require_once __DIR__ . '/functions.php';
                     </div>
 
                     <div class="footer-col">
-                        <h4 class="footer-col-title">Roadmap</h4>
-                        <a href="/roadmap.php#stage-beginner">Beginner Stage</a>
-                        <a href="/roadmap.php#stage-intermediate">Intermediate Stage</a>
-                        <a href="/roadmap.php#stage-advanced">Scaling Stage</a>
+                        <h4 class="footer-col-title">Growth Resources</h4>
                         <a href="/roadmap.php">Execution Roadmap</a>
-                    </div>
-
-                    <div class="footer-col">
-                        <h4 class="footer-col-title">Calculator</h4>
                         <a href="/calculator.php">Profit Calculator</a>
                         <a href="/calculator.php#simulate">Margin Simulator</a>
                         <a href="/stack-builder.php">Stack Builder</a>
+                        <a href="/submit.php">Submit a Tool</a>
                     </div>
 
                     <div class="footer-col">
@@ -108,7 +112,6 @@ require_once __DIR__ . '/functions.php';
                         <a href="/privacy.php">Privacy Policy</a>
                         <a href="/affiliate-disclosure.php">Affiliate Disclosure</a>
                         <button type="button" class="footer-btn-link" onclick="openIntroModal()">How It Works</button>
-                        <a href="/submit.php">Submit a Tool</a>
                     </div>
                 </div>
             </div>

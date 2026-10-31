@@ -1,10 +1,25 @@
 <?php
 @define('APP', true);
 require_once __DIR__ . '/config.php';
-$page_title = 'Affiliate Disclosure';
+$canonical_url   = 'https://hdropshipping.com/affiliate-disclosure.php';
+$page_title      = 'Affiliate Disclosure — ' . SITE_NAME;
+$page_heading    = 'Affiliate Disclosure';
+$page_subheading = 'Transparent disclosure of how we earn revenue at no extra cost to you';
+$page_desc       = 'Affiliate Disclosure for ' . SITE_NAME . '. Clear information on our affiliate relationships, how links work, and our commitment to unbiased editorial reviews.';
+
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => '/'],
+    ['name' => 'Affiliate Disclosure', 'url' => '/affiliate-disclosure.php']
+];
+
 include __DIR__ . '/header.php';
 ?>
-<div class="page-wrap" style="max-width:720px;padding-top:48px;padding-bottom:80px">
+<div class="page-wrap" style="max-width:760px;padding-top:24px;padding-bottom:80px">
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+        <a href="/index.php" style="color:var(--muted)">Home</a>
+        <?= icon('chevron-right', '', 12) ?>
+        <span style="color:var(--text);font-weight:600">Affiliate Disclosure</span>
+    </nav>
     <h1 style="font-size:30px;font-weight:800;color:var(--ink);margin-bottom:8px">Affiliate Disclosure</h1>
     <p class="text-muted" style="margin-bottom:32px">Last updated: <?= date('F Y') ?></p>
 
